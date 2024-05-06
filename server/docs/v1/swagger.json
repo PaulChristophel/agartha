@@ -1,0 +1,1836 @@
+{
+    "swagger": "2.0",
+    "info": {
+        "description": "This is the Agartha API Backend",
+        "title": "Agartha API",
+        "contact": {
+            "name": "API Support",
+            "url": "http://oit.gatech.edu",
+            "email": "pmartin@gatech.edu"
+        },
+        "license": {
+            "name": "Apache 2.0",
+            "url": "http://www.apache.org/licenses/LICENSE-2.0.html"
+        },
+        "version": "1.0"
+    },
+    "paths": {
+        "/api/v1/conformity": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Get paginated conformity items with count and navigation links.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Conformity"
+                ],
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Number of items per page",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Page number of results to retrieve",
+                        "name": "page",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dto.ConformityPageResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/httputil.HTTPError400"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/httputil.HTTPError401"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/httputil.HTTPError404"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/httputil.HTTPError500"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/conformity/{id}": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Get all GetConformity",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Conformity"
+                ],
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "conformity object to get",
+                        "name": "id",
+                        "in": "path"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.Conformity"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/httputil.HTTPError400"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/httputil.HTTPError401"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/httputil.HTTPError404"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/httputil.HTTPError500"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/high_state": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Get all HighStates",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "HighState"
+                ],
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Page number of results to retrieve",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "restrict to X results",
+                        "name": "per_page",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dto.HighStatePageResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/httputil.HTTPError400"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/httputil.HTTPError401"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/httputil.HTTPError404"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/httputil.HTTPError500"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/high_state/jid/{jid}": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Get all HighStates for a specific jid",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "HighState"
+                ],
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "jid of the salt return item to retrieve",
+                        "name": "jid",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/model.HighState"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/httputil.HTTPError400"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/httputil.HTTPError401"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/httputil.HTTPError404"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/httputil.HTTPError500"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/high_state/{id}": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Get all HighStates for a specific id",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "HighState"
+                ],
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "id of the salt return item to retrieve",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/model.HighState"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/httputil.HTTPError400"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/httputil.HTTPError401"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/httputil.HTTPError404"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/httputil.HTTPError500"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/jid": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Get paginated jids with count and navigation links.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "JID"
+                ],
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Filter items from this date (RFC3339 format).",
+                        "name": "since",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Filter items up to this date (RFC3339 format).",
+                        "name": "until",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Page number of results to retrieve",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Number of items per page",
+                        "name": "per_page",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dto.JIDPageResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/httputil.HTTPError400"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/httputil.HTTPError401"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/httputil.HTTPError404"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/httputil.HTTPError500"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/jid/{jid}": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Get one jid by JID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "JID"
+                ],
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "jid to return",
+                        "name": "jid",
+                        "in": "path"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.JID"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/httputil.HTTPError400"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/httputil.HTTPError401"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/httputil.HTTPError404"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/httputil.HTTPError500"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/salt_cache": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Retrieve a list of salt_cache items filtered by bank and key with pagination support.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "SaltCache"
+                ],
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Bank of the cached item to search (Supports wildcards * and ? for single char matches.)",
+                        "name": "bank",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Key of the cached item to search (Supports wildcards * and ? for single char matches.)",
+                        "name": "key",
+                        "in": "query"
+                    },
+                    {
+                        "type": "boolean",
+                        "description": "Load the data field. This defaults to false for performance reasons",
+                        "name": "load_data",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Filter items from this date (RFC3339 format).",
+                        "name": "since",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Filter items up to this date (RFC3339 format).",
+                        "name": "until",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Page number of results to retrieve",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Number of items per page",
+                        "name": "per_page",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dto.SaltCachePageResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/httputil.HTTPError400"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/httputil.HTTPError401"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/httputil.HTTPError404"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/httputil.HTTPError500"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/salt_cache/uuid/{uuid}": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Get one salt_cache item by UUID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "SaltCache"
+                ],
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "uuid of the salt cache item to retrieve",
+                        "name": "uuid",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.SaltCache"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/httputil.HTTPError400"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/httputil.HTTPError401"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/httputil.HTTPError404"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/httputil.HTTPError500"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Delete one salt_cache item by UUID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "SaltCache"
+                ],
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "uuid of the salt cache item to delete",
+                        "name": "uuid",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/httputil.HTTPError200"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/httputil.HTTPError400"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/httputil.HTTPError401"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/httputil.HTTPError404"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/httputil.HTTPError500"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/salt_cache/{bank}/{key}": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Get one salt_cache item by bank and key",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "SaltCache"
+                ],
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "bank of the salt cache item to retrieve",
+                        "name": "bank",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "key of the salt cache item to retrieve",
+                        "name": "key",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.SaltCache"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/httputil.HTTPError400"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/httputil.HTTPError401"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/httputil.HTTPError404"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/httputil.HTTPError500"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Delete one salt_cache item by bank and key",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "SaltCache"
+                ],
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "bank of the salt cache item to delete",
+                        "name": "bank",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "key of the salt cache item to delete",
+                        "name": "key",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/httputil.HTTPError200"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/httputil.HTTPError400"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/httputil.HTTPError401"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/httputil.HTTPError404"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/httputil.HTTPError500"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/salt_event": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Get all SaltEvents",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "SaltEvent"
+                ],
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "tag of the event sent to the master (Supports wildcards * and ? for single char matches.)",
+                        "name": "tag",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "id of the master that received the event",
+                        "name": "master_id",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Filter items from this date (RFC3339 format).",
+                        "name": "since",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Filter items up to this date (RFC3339 format).",
+                        "name": "until",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Page number of results to retrieve",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "restrict to X results",
+                        "name": "per_page",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dto.SaltEventPageResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/httputil.HTTPError400"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/httputil.HTTPError401"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/httputil.HTTPError404"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/httputil.HTTPError500"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/salt_event/{id}": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Get all SaltEvents",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "SaltEvent"
+                ],
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "return salt event with given id",
+                        "name": "id",
+                        "in": "path"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.SaltEvent"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/httputil.HTTPError400"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/httputil.HTTPError401"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/httputil.HTTPError404"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/httputil.HTTPError500"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/salt_return": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Get all SaltReturns",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "SaltReturn"
+                ],
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Filter items by minion id (Supports wildcards * and ? for single char matches.)",
+                        "name": "minion_id",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Filter items by function (Supports wildcards * and ? for single char matches.)",
+                        "name": "fun",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Filter items by success status (true/false). This can be null so it's a string in the database.",
+                        "name": "success",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Filter items from this date (RFC3339 format).",
+                        "name": "since",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Filter items up to this date (RFC3339 format).",
+                        "name": "until",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "restrict to X results",
+                        "name": "per_page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Page number of results to retrieve",
+                        "name": "page",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dto.SaltReturnPageResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/httputil.HTTPError400"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/httputil.HTTPError401"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/httputil.HTTPError404"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/httputil.HTTPError500"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/salt_return/{jid}": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Get all SaltReturns for a specific jid",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "SaltReturn"
+                ],
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "jid of the salt return item to retrieve",
+                        "name": "jid",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/model.SaltReturn"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/httputil.HTTPError400"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/httputil.HTTPError401"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/httputil.HTTPError404"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/httputil.HTTPError500"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/secure/auth_user/{id}": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Get one authUser by AuthUser ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "AuthUser"
+                ],
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "authUsers to return",
+                        "name": "id",
+                        "in": "path"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.AuthUser"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/httputil.HTTPError400"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/httputil.HTTPError401"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/httputil.HTTPError404"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/httputil.HTTPError500"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/secure/user_settings/{id}": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Get one userSetting by UserSetting ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "UserSetting"
+                ],
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "userSettings to return",
+                        "name": "id",
+                        "in": "path"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.UserSettings"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/httputil.HTTPError400"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/httputil.HTTPError401"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/httputil.HTTPError404"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/httputil.HTTPError500"
+                        }
+                    }
+                }
+            }
+        },
+        "/auth/token": {
+            "post": {
+                "description": "Creates a new jwt token for the specified user",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "auth"
+                ],
+                "parameters": [
+                    {
+                        "description": "Credentials",
+                        "name": "credentials",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/auth.Credentials"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/auth.Token"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/httputil.HTTPError400"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/httputil.HTTPError401"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/httputil.HTTPError403"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/httputil.HTTPError500"
+                        }
+                    }
+                }
+            }
+        },
+        "/ping": {
+            "get": {
+                "description": "Pings the server to see if it is alive.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Ping"
+                ],
+                "summary": "ping the server",
+                "responses": {
+                    "200": {
+                        "description": "pong",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/httputil.HTTPError400"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/httputil.HTTPError401"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/httputil.HTTPError403"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/httputil.HTTPError500"
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "auth.Credentials": {
+            "type": "object",
+            "properties": {
+                "password": {
+                    "type": "string"
+                },
+                "username": {
+                    "type": "string"
+                }
+            }
+        },
+        "auth.Token": {
+            "type": "object",
+            "properties": {
+                "token": {
+                    "type": "string",
+                    "example": "Bearer foo.bar.blah"
+                }
+            }
+        },
+        "dto.ConformityPageResponse": {
+            "type": "object",
+            "properties": {
+                "paging": {
+                    "$ref": "#/definitions/dto.PageResponse"
+                },
+                "results": {
+                    "description": "Array of salt conformity results",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/model.Conformity"
+                    }
+                }
+            }
+        },
+        "dto.HighStatePageResponse": {
+            "type": "object",
+            "properties": {
+                "paging": {
+                    "$ref": "#/definitions/dto.PageResponse"
+                },
+                "results": {
+                    "description": "Array of salt highstate results",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/model.HighState"
+                    }
+                }
+            }
+        },
+        "dto.JIDPageResponse": {
+            "type": "object",
+            "properties": {
+                "paging": {
+                    "$ref": "#/definitions/dto.PageResponse"
+                },
+                "results": {
+                    "description": "Array of salt jid results",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/model.JID"
+                    }
+                }
+            }
+        },
+        "dto.PageResponse": {
+            "type": "object",
+            "properties": {
+                "count": {
+                    "description": "Total number of items that match the query",
+                    "type": "integer"
+                },
+                "next": {
+                    "description": "URL to the next page of results",
+                    "type": "string"
+                },
+                "num_pages": {
+                    "description": "Total number of pages that match the query",
+                    "type": "integer"
+                },
+                "per_page": {
+                    "description": "Total number of items per page that match the query",
+                    "type": "integer"
+                },
+                "previous": {
+                    "description": "URL to the previous page of results",
+                    "type": "string"
+                }
+            }
+        },
+        "dto.SaltCachePageResponse": {
+            "type": "object",
+            "properties": {
+                "paging": {
+                    "$ref": "#/definitions/dto.PageResponse"
+                },
+                "results": {
+                    "description": "Array of salt cache results",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/model.SaltCache"
+                    }
+                }
+            }
+        },
+        "dto.SaltEventPageResponse": {
+            "type": "object",
+            "properties": {
+                "paging": {
+                    "$ref": "#/definitions/dto.PageResponse"
+                },
+                "results": {
+                    "description": "Array of salt event results",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/model.SaltEvent"
+                    }
+                }
+            }
+        },
+        "dto.SaltReturnPageResponse": {
+            "type": "object",
+            "properties": {
+                "paging": {
+                    "$ref": "#/definitions/dto.PageResponse"
+                },
+                "results": {
+                    "description": "Array of salt return results",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/model.SaltReturn"
+                    }
+                }
+            }
+        },
+        "github_com_jackc_pgtype.JSON": {
+            "type": "object",
+            "properties": {
+                "bytes": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
+                "status": {
+                    "$ref": "#/definitions/github_com_jackc_pgtype.Status"
+                }
+            }
+        },
+        "github_com_jackc_pgtype.JSONB": {
+            "type": "object",
+            "properties": {
+                "bytes": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
+                "status": {
+                    "$ref": "#/definitions/github_com_jackc_pgtype.Status"
+                }
+            }
+        },
+        "github_com_jackc_pgtype.Status": {
+            "type": "integer",
+            "enum": [
+                0,
+                1,
+                2
+            ],
+            "x-enum-varnames": [
+                "Undefined",
+                "Null",
+                "Present"
+            ]
+        },
+        "github_com_jackc_pgx_pgtype.JSONB": {
+            "type": "object",
+            "properties": {
+                "bytes": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
+                "status": {
+                    "$ref": "#/definitions/github_com_jackc_pgx_pgtype.Status"
+                }
+            }
+        },
+        "github_com_jackc_pgx_pgtype.Status": {
+            "type": "integer",
+            "enum": [
+                0,
+                1,
+                2
+            ],
+            "x-enum-varnames": [
+                "Undefined",
+                "Null",
+                "Present"
+            ]
+        },
+        "httputil.HTTPError200": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "integer",
+                    "example": 200
+                },
+                "message": {
+                    "type": "string",
+                    "example": "Success"
+                }
+            }
+        },
+        "httputil.HTTPError400": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "integer",
+                    "example": 400
+                },
+                "message": {
+                    "type": "string",
+                    "example": "Bad Request"
+                }
+            }
+        },
+        "httputil.HTTPError401": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "integer",
+                    "example": 401
+                },
+                "message": {
+                    "type": "string",
+                    "example": "Unauthorized"
+                }
+            }
+        },
+        "httputil.HTTPError403": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "integer",
+                    "example": 403
+                },
+                "message": {
+                    "type": "string",
+                    "example": "Forbidden"
+                }
+            }
+        },
+        "httputil.HTTPError404": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "integer",
+                    "example": 404
+                },
+                "message": {
+                    "type": "string",
+                    "example": "Not Found"
+                }
+            }
+        },
+        "httputil.HTTPError500": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "integer",
+                    "example": 500
+                },
+                "message": {
+                    "type": "string",
+                    "example": "Internal Server Error"
+                }
+            }
+        },
+        "model.AuthUser": {
+            "type": "object",
+            "properties": {
+                "dateJoined": {
+                    "type": "string"
+                },
+                "email": {
+                    "type": "string"
+                },
+                "firstName": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "isActive": {
+                    "type": "boolean"
+                },
+                "isStaff": {
+                    "type": "boolean"
+                },
+                "isSuperuser": {
+                    "type": "boolean"
+                },
+                "lastLogin": {
+                    "type": "string"
+                },
+                "lastName": {
+                    "type": "string"
+                },
+                "password": {
+                    "type": "string"
+                },
+                "username": {
+                    "type": "string"
+                }
+            }
+        },
+        "model.Conformity": {
+            "type": "object",
+            "properties": {
+                "alterTime": {
+                    "type": "string"
+                },
+                "changedCount": {
+                    "type": "integer"
+                },
+                "falseCount": {
+                    "type": "integer"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "success": {
+                    "type": "string"
+                },
+                "trueCount": {
+                    "type": "integer"
+                },
+                "unchangedCount": {
+                    "type": "integer"
+                },
+                "user": {
+                    "type": "string"
+                }
+            }
+        },
+        "model.HighState": {
+            "type": "object",
+            "properties": {
+                "alterTime": {
+                    "type": "string"
+                },
+                "fullRet": {
+                    "$ref": "#/definitions/github_com_jackc_pgtype.JSON"
+                },
+                "fun": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "jid": {
+                    "type": "string"
+                },
+                "return": {
+                    "$ref": "#/definitions/github_com_jackc_pgtype.JSON"
+                },
+                "success": {
+                    "type": "string"
+                },
+                "user": {
+                    "type": "string"
+                }
+            }
+        },
+        "model.JID": {
+            "type": "object",
+            "properties": {
+                "alterTime": {
+                    "type": "string"
+                },
+                "jid": {
+                    "type": "string"
+                },
+                "load": {
+                    "$ref": "#/definitions/github_com_jackc_pgtype.JSON"
+                }
+            }
+        },
+        "model.SaltCache": {
+            "type": "object",
+            "properties": {
+                "alterTime": {
+                    "type": "string"
+                },
+                "bank": {
+                    "type": "string"
+                },
+                "data": {
+                    "$ref": "#/definitions/github_com_jackc_pgx_pgtype.JSONB"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "psqlkey": {
+                    "type": "string"
+                }
+            }
+        },
+        "model.SaltEvent": {
+            "type": "object",
+            "properties": {
+                "alterTime": {
+                    "type": "string"
+                },
+                "data": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "masterID": {
+                    "type": "string"
+                },
+                "tag": {
+                    "type": "string"
+                }
+            }
+        },
+        "model.SaltReturn": {
+            "type": "object",
+            "properties": {
+                "alterTime": {
+                    "type": "string"
+                },
+                "fullRet": {
+                    "$ref": "#/definitions/github_com_jackc_pgtype.JSON"
+                },
+                "fun": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "jid": {
+                    "type": "string"
+                },
+                "return": {
+                    "$ref": "#/definitions/github_com_jackc_pgtype.JSON"
+                },
+                "success": {
+                    "type": "string"
+                },
+                "uuid": {
+                    "type": "string"
+                }
+            }
+        },
+        "model.UserSettings": {
+            "type": "object",
+            "properties": {
+                "created": {
+                    "type": "string"
+                },
+                "saltPermissions": {
+                    "type": "string"
+                },
+                "settings": {
+                    "$ref": "#/definitions/github_com_jackc_pgtype.JSONB"
+                },
+                "token": {
+                    "type": "string"
+                },
+                "user": {
+                    "$ref": "#/definitions/model.AuthUser"
+                },
+                "userID": {
+                    "type": "integer"
+                }
+            }
+        }
+    },
+    "securityDefinitions": {
+        "Bearer": {
+            "description": "Type \"Bearer\" followed by a space and JWT token.",
+            "type": "apiKey",
+            "name": "Authorization",
+            "in": "header"
+        }
+    }
+}
