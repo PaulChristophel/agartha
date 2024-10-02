@@ -1,0 +1,30 @@
+http:
+  host: ""
+  port: 8080
+  secret: mysecret
+  get_started_url: "https://example.com"
+  forgot_password_url: "https://example.com"
+db:
+  port: 5432
+  host: psql.example.com
+  db_name: example
+  user: example
+  password: foobar
+  sslmode: require
+  tables:
+    jids: "jids"
+    salt_cache: "salt_cache"
+    salt_returns: "salt_returns"
+    salt_events: "salt_events"
+ldap:
+  ldap_domain_default: AD.EXAMPLE.COM
+  server: ldaps://ad.example.com:636
+  user: cn=svcacct,ou=USERS,dc=ad,dc=example,dc=com
+  password: foobar
+  base_dn: DC=ad,DC=example,DC=com
+  filter: (&(ObjectClass=person)(sAMAccountName=%s))
+salt:
+  auth: agartha
+  url: http://salt-api.example.svc.cluster.local:8080
+  external_url: https://salt.example.com
+  insecure: false

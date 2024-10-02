@@ -1,50 +1,46 @@
-# React Template（⚡️）
+## Minimal [(Free version)](https://minimal-kit-react.vercel.app/)
 
-⚡️ A minimal React Vite starter template.
+![license](https://img.shields.io/badge/license-MIT-blue.svg)
 
-## Feature
+> Free React Admin Dashboard made with Material-UI components and React.
 
-- ⚡️ Fast - Build tools based on vite.
-- 👻 Small - Based on the smallest runnable build.
-- 💄 Prettier - Integrated Prettier to help you format the code.
-- ✅ Safety - Https is enabled by default.
-- 😎 Reliable - Integrated eslint and commitlint.
-- 🤖 Intelligent - Integrated renovate to help you maintain the dependent version.
+![preview](public/assets/preview.jpg)
 
-## Preview
+## Demo
 
-[![qekup8.png](https://s1.ax1x.com/2022/03/20/qekup8.png)](https://imgtu.com/i/qekup8)
+- [Dashboard Page](https://minimal-kit-react.vercel.app/)
+- [Users Page](https://minimal-kit-react.vercel.app/user)
+- [Products Page](https://minimal-kit-react.vercel.app/products)
+- [Blog Page](https://minimal-kit-react.vercel.app/blog)
+- [Login Page](https://minimal-kit-react.vercel.app/login)
+- [Not Found Page](https://minimal-kit-react.vercel.app/404)
 
-## Getting Started
+## Quick start
 
-```bash
-npx degit lzm0x219/template-vite-react myapp
+- [Download from Github](https://github.com/minimal-ui-kit/material-kit-react/archive/refs/heads/main.zip) or clone the repo : `git clone https://github.com/minimal-ui-kit/material-kit-react.git`
+- Recommended `Node.js v18.x`.
+- **Install:** `yarn install`
+- **Start:** `yarn dev`
+- **Build:** `yarn build`
 
-cd myapp
+## Upgrade to PRO Version
 
-git init
-```
+| Minimal Free     | [Minimal Pro](https://material-ui.com/store/items/minimal-dashboard/) |
+| :--------------- | :-------------------------------------------------------------------- |
+| **6** Demo Pages | **70+** Demo Pages                                                    |
+| -                | Authentication with **Amplify**, **Auth0**, **JWT** and **Firebase**  |
+| -                | [+More components](https://minimals.cc/components)                    |
+| -                | Dark & light mode                                                     |
+| -                | Next.js version                                                       |
+| -                | TypeScript version (Standard Plus and Extended license)               |
+| -                | Design Figma File (Standard Plus and Extended license)                |
+| -                | Complete Users Flows                                                  |
+| -                | Learn more: [Package & License](https://docs.minimals.cc/package)     |
 
-### Prerequisites
+## License
 
-- `npm` and `pnpm` should be installed.
-- `git` should be installed (recommended v2.4.11 or higher)
+Distributed under the MIT License. See [LICENSE](https://github.com/minimal-ui-kit/minimal.free/blob/main/LICENSE.md) for more information.
 
-### Available scripts
+## Contact us
 
-#### `pnpm dev`
-
-Runs the app in development mode.
-Open https://localhost:5173 to view it in the browser.
-
-The page will automatically reload if you make changes to the code.
-You will see the build errors and lint warnings in the console.
-
-#### `pnpm build`
-
-Builds the app for production to the `dist` folder.
-It correctly bundles React in production mode and optimizes the build for the best performance.
-
-The build is minified and the filenames include the hashes.
-
-Your app is ready to be deployed.
+Email: support@minimals.cc

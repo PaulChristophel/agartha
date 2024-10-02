@@ -1,0 +1,16 @@
+master: salt-master
+pki_dir: /var/salt/pki/minion
+log_level: quiet
+log_file: /dev/null
+log_level_logfile: quiet
+# recon_randomize: True
+# recon_default: 5000
+# recon_max: 5000
+id: salt-minion
+rejected_retry: true
+master_tries: -1
+auth_tries: 7
+tcp_authentication_retries: -1
+acceptance_wait_time: 2
+autosign_grains:
+  - id

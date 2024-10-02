@@ -8,12 +8,9 @@ import (
 	"github.com/PaulChristophel/agartha/server/httputil"
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v5"
-	"github.com/spf13/viper"
 )
 
-var jwtSecret = []byte(viper.GetString("secret"))
-
-func AuthRequired() gin.HandlerFunc {
+func AuthRequired(jwtSecret []byte) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		// get JWT token from Authorization header
 		authHeader := c.GetHeader("Authorization")
@@ -23,7 +20,7 @@ func AuthRequired() gin.HandlerFunc {
 			c.Abort()
 			return
 		}
-		authToken := parts[1] // this is the token you are interested in
+		authToken := parts[1]
 
 		// parse and validate JWT token
 		token, err := jwt.Parse(authToken, func(token *jwt.Token) (interface{}, error) {

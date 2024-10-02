@@ -24,7 +24,12 @@ func UniqueAuthRequired(db *gorm.DB) gin.HandlerFunc {
 			c.Abort()
 			return
 		}
-		username := usernameInterface.(string)
+		username, ok := usernameInterface.(string)
+		if !ok {
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid username type"})
+			c.Abort()
+			return
+		}
 
 		// Try to extract the resource ID from the URL
 		resourceID := c.Param("id")

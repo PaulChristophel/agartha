@@ -1,0 +1,240 @@
+name: Production Release
+run-name: "Production Release (branch: ${{ github.ref_name }})"
+
+on:
+  workflow_dispatch: {}
+  # schedule:
+  #   - cron: "0 10 * * *"
+  # push:
+  #   branches:
+  #     - master
+  #   tags:
+  #     - '!v[0-9]+.[0-9]+-[0-9]+'
+
+jobs:
+  # run-musl-tests:
+  #   runs-on: ubuntu-22.04
+  #   env:
+  #     ACR_URL: ${{ secrets.ACR_URL }}
+  #     ACR_USERNAME: ${{ secrets.ACR_USERNAME }}
+  #     ACR_PASSWORD: ${{ secrets.ACR_PASSWORD }}
+  #     ENV: "debug"
+  #   steps:
+  #   - uses: actions/checkout@v4
+  #   - name: Get Build Version
+  #     run: |
+  #       echo "BUILD=${GITHUB_REF:10}" | tee -a $GITHUB_ENV
+  #       echo "SHORT_SHA=${GITHUB_SHA:0:12}" | tee -a $GITHUB_ENV
+  #       echo "GITHUB_DATE=$(date -u +'%Y-%m-%dT%H:%M:%SZ')" | tee -a $GITHUB_ENV
+  #       echo "GITHUB_PSEUDODATE=$(date -u '+%Y%m%d%H%M%S')" | tee -a $GITHUB_ENV
+  #       echo "GITHUB_VERSION=$(cat VERSION)" | tee -a $GITHUB_ENV
+  #       echo "VERSION=${GITHUB_VERSION}-${GITHUB_PSEUDODATE}-${SHORT_SHA}" | tee -a $GITHUB_ENV
+  #   - name: Run Tests
+  #     run: |
+  #       docker login $ACR_URL --username $ACR_USERNAME --password $ACR_PASSWORD
+  #       docker compose -f docker-compose-tests-musl.yaml up --exit-code-from test
+
+  run-glibc-tests:
+    runs-on: ubuntu-22.04
+    env:
+      ACR_URL: ${{ secrets.ACR_URL }}
+      ACR_USERNAME: ${{ secrets.ACR_USERNAME }}
+      ACR_PASSWORD: ${{ secrets.ACR_PASSWORD }}
+      ENV: "release"
+    steps:
+    - uses: actions/checkout@v4
+    - name: Get Build Version
+      run: |
+        echo "BUILD=${GITHUB_REF:10}" | tee -a $GITHUB_ENV
+        echo "SHORT_SHA=${GITHUB_SHA:0:12}" | tee -a $GITHUB_ENV
+        echo "GITHUB_DATE=$(date -u +'%Y-%m-%dT%H:%M:%SZ')" | tee -a $GITHUB_ENV
+        echo "GITHUB_PSEUDODATE=$(date -u '+%Y%m%d%H%M%S')" | tee -a $GITHUB_ENV
+        echo "GITHUB_VERSION=$(cat VERSION)" | tee -a $GITHUB_ENV
+        echo "VERSION=${GITHUB_VERSION}-${GITHUB_PSEUDODATE}-${SHORT_SHA}" | tee -a $GITHUB_ENV
+    - name: Run Tests
+      run: |
+        docker login $ACR_URL --username $ACR_USERNAME --password $ACR_PASSWORD
+        docker compose -f docker-compose-tests-glibc.yaml up --exit-code-from test
+
+  # build-alpine-test:
+  #   runs-on: ubuntu-22.04
+  #   needs: [run-musl-tests]
+  #   env:
+  #     ACR_URL: ${{ secrets.ACR_URL }}
+  #     ACR_USERNAME: ${{ secrets.ACR_USERNAME }}
+  #     ACR_PASSWORD: ${{ secrets.ACR_PASSWORD }}
+  #     ENV: "debug"
+  #   steps:
+  #   - uses: actions/checkout@v4
+  #   - name: Get Build Version
+  #     run: |
+  #       echo "BUILD=${GITHUB_REF:10}" | tee -a $GITHUB_ENV
+  #       echo "SHORT_SHA=${GITHUB_SHA:0:12}" | tee -a $GITHUB_ENV
+  #       echo "GITHUB_DATE=$(date -u +'%Y-%m-%dT%H:%M:%SZ')" | tee -a $GITHUB_ENV
+  #       echo "GITHUB_PSEUDODATE=$(date -u '+%Y%m%d%H%M%S')" | tee -a $GITHUB_ENV
+  #       echo "GITHUB_VERSION=$(cat VERSION)" | tee -a $GITHUB_ENV
+  #       echo "VERSION=${GITHUB_VERSION}-${GITHUB_PSEUDODATE}-${SHORT_SHA}" | tee -a $GITHUB_ENV
+  #   - name: Podman
+  #     continue-on-error: false
+  #     run: |
+  #       podman pull docker.io/library/golang:alpine
+  #       podman pull docker.io/library/alpine:edge
+  #       podman build \
+  #       -f Dockerfile \
+  #       --build-arg=ENV=${ENV} \
+  #       --build-arg=SHORT_SHA=${SHORT_SHA} \
+  #       --build-arg=GITHUB_SHA=${GITHUB_SHA} \
+  #       --build-arg=GITHUB_DATE=${GITHUB_DATE} \
+  #       --build-arg=GITHUB_PSEUDODATE=${GITHUB_PSEUDODATE} \
+  #       --build-arg=GITHUB_VERSION=${GITHUB_VERSION} \
+  #       . \
+  #       -t oitacr.azurecr.io/pmartin47/agartha:latest-alpine \
+  #       -t oitacr.azurecr.io/pmartin47/agartha:${GITHUB_VERSION}-${GITHUB_PSEUDODATE}-${SHORT_SHA}-alpine \
+  #       --target alpine
+  #   - name: Push to Docker Hub
+  #     run: |
+  #       podman login $ACR_URL --username $ACR_USERNAME --password $ACR_PASSWORD
+  #       podman images | awk "/$ACR_URL\/pmartin47\/agartha/ { print \$1\":\"\$2 }" | xargs -I {} podman push {}
+  #       podman logout
+  #   - name: Docker System Prune
+  #     run: |
+  #       podman system prune --force --all
+
+  # build-slim-musl-test:
+  #   runs-on: ubuntu-22.04
+  #   needs: [run-musl-tests]
+  #   env:
+  #     ACR_URL: ${{ secrets.ACR_URL }}
+  #     ACR_USERNAME: ${{ secrets.ACR_USERNAME }}
+  #     ACR_PASSWORD: ${{ secrets.ACR_PASSWORD }}
+  #     ENV: "debug"
+  #   steps:
+  #   - uses: actions/checkout@v4
+  #   - name: Get Build Version
+  #     run: |
+  #       echo "BUILD=${GITHUB_REF:10}" | tee -a $GITHUB_ENV
+  #       echo "SHORT_SHA=${GITHUB_SHA:0:12}" | tee -a $GITHUB_ENV
+  #       echo "GITHUB_DATE=$(date -u +'%Y-%m-%dT%H:%M:%SZ')" | tee -a $GITHUB_ENV
+  #       echo "GITHUB_PSEUDODATE=$(date -u '+%Y%m%d%H%M%S')" | tee -a $GITHUB_ENV
+  #       echo "GITHUB_VERSION=$(cat VERSION)" | tee -a $GITHUB_ENV
+  #       echo "VERSION=${GITHUB_VERSION}-${GITHUB_PSEUDODATE}-${SHORT_SHA}" | tee -a $GITHUB_ENV
+  #   - name: Podman
+  #     continue-on-error: false
+  #     run: |
+  #       podman pull docker.io/library/golang:alpine
+  #       podman pull docker.io/library/alpine:edge
+  #       podman build \
+  #       -f Dockerfile \
+  #       --build-arg=ENV=${ENV} \
+  #       --build-arg=SHORT_SHA=${SHORT_SHA} \
+  #       --build-arg=GITHUB_SHA=${GITHUB_SHA} \
+  #       --build-arg=GITHUB_DATE=${GITHUB_DATE} \
+  #       --build-arg=GITHUB_PSEUDODATE=${GITHUB_PSEUDODATE} \
+  #       --build-arg=GITHUB_VERSION=${GITHUB_VERSION} \
+  #       . \
+  #       -t oitacr.azurecr.io/pmartin47/agartha:latest \
+  #       -t oitacr.azurecr.io/pmartin47/agartha:latest-slim \
+  #       -t oitacr.azurecr.io/pmartin47/agartha:latest-slim-musl \
+  #       -t oitacr.azurecr.io/pmartin47/agartha:${GITHUB_VERSION}-${GITHUB_PSEUDODATE}-${SHORT_SHA}-slim \
+  #       -t oitacr.azurecr.io/pmartin47/agartha:${GITHUB_VERSION}-${GITHUB_PSEUDODATE}-${SHORT_SHA}-slim-musl \
+  #       -t oitacr.azurecr.io/pmartin47/agartha:${GITHUB_VERSION}-${GITHUB_PSEUDODATE}-${SHORT_SHA} \
+  #       --target slim
+  #   - name: Push to Docker Hub
+  #     run: |
+  #       podman login $ACR_URL --username $ACR_USERNAME --password $ACR_PASSWORD
+  #       podman images | awk "/$ACR_URL\/pmartin47\/agartha/ { print \$1\":\"\$2 }" | xargs -I {} podman push {}
+  #       podman logout
+  #   - name: Docker System Prune
+  #     run: |
+  #       podman system prune --force --all
+
+  # build-debian-test:
+  #   runs-on: ubuntu-22.04
+  #   needs: [run-glibc-tests]
+  #   env:
+  #     ACR_URL: ${{ secrets.ACR_URL }}
+  #     ACR_USERNAME: ${{ secrets.ACR_USERNAME }}
+  #     ACR_PASSWORD: ${{ secrets.ACR_PASSWORD }}
+  #     ENV: "debug"
+  #   steps:
+  #   - uses: actions/checkout@v4
+  #   - name: Get Build Version
+  #     run: |
+  #       echo "BUILD=${GITHUB_REF:10}" | tee -a $GITHUB_ENV
+  #       echo "SHORT_SHA=${GITHUB_SHA:0:12}" | tee -a $GITHUB_ENV
+  #       echo "GITHUB_DATE=$(date -u +'%Y-%m-%dT%H:%M:%SZ')" | tee -a $GITHUB_ENV
+  #       echo "GITHUB_PSEUDODATE=$(date -u '+%Y%m%d%H%M%S')" | tee -a $GITHUB_ENV
+  #       echo "GITHUB_VERSION=$(cat VERSION)" | tee -a $GITHUB_ENV
+  #       echo "VERSION=${GITHUB_VERSION}-${GITHUB_PSEUDODATE}-${SHORT_SHA}" | tee -a $GITHUB_ENV
+  #   - name: Podman
+  #     continue-on-error: false
+  #     run: |
+  #       podman pull docker.io/library/golang:bookworm
+  #       podman pull docker.io/library/debian:bookworm
+  #       podman build \
+  #       -f Dockerfile-glibc \
+  #       --build-arg=ENV=${ENV} \
+  #       --build-arg=SHORT_SHA=${SHORT_SHA} \
+  #       --build-arg=GITHUB_SHA=${GITHUB_SHA} \
+  #       --build-arg=GITHUB_DATE=${GITHUB_DATE} \
+  #       --build-arg=GITHUB_PSEUDODATE=${GITHUB_PSEUDODATE} \
+  #       --build-arg=GITHUB_VERSION=${GITHUB_VERSION} \
+  #       . \
+  #       -t oitacr.azurecr.io/pmartin47/agartha:latest-debian \
+  #       -t oitacr.azurecr.io/pmartin47/agartha:${GITHUB_VERSION}-${GITHUB_PSEUDODATE}-${SHORT_SHA}-debian \
+  #       --target debian
+  #   - name: Push to Docker Hub
+  #     run: |
+  #       podman login $ACR_URL --username $ACR_USERNAME --password $ACR_PASSWORD
+  #       podman images | awk "/$ACR_URL\/pmartin47\/agartha/ { print \$1\":\"\$2 }" | xargs -I {} podman push {}
+  #       podman logout
+  #   - name: Docker System Prune
+  #     run: |
+  #       podman system prune --force --all
+
+  build-slim-glibc-test:
+    runs-on: ubuntu-22.04
+    needs: [run-glibc-tests]
+    env:
+      ACR_URL: ${{ secrets.ACR_URL }}
+      ACR_USERNAME: ${{ secrets.ACR_USERNAME }}
+      ACR_PASSWORD: ${{ secrets.ACR_PASSWORD }}
+      ENV: "release"
+    steps:
+    - uses: actions/checkout@v4
+    - name: Get Build Version
+      run: |
+        echo "BUILD=${GITHUB_REF:10}" | tee -a $GITHUB_ENV
+        echo "SHORT_SHA=${GITHUB_SHA:0:12}" | tee -a $GITHUB_ENV
+        echo "GITHUB_DATE=$(date -u +'%Y-%m-%dT%H:%M:%SZ')" | tee -a $GITHUB_ENV
+        echo "GITHUB_PSEUDODATE=$(date -u '+%Y%m%d%H%M%S')" | tee -a $GITHUB_ENV
+        echo "GITHUB_VERSION=$(cat VERSION)" | tee -a $GITHUB_ENV
+        echo "VERSION=${GITHUB_VERSION}-${GITHUB_PSEUDODATE}-${SHORT_SHA}" | tee -a $GITHUB_ENV
+    - name: Podman
+      continue-on-error: false
+      run: |
+        podman pull docker.io/library/golang:bookworm
+        podman pull docker.io/library/debian:bookworm
+        podman build \
+        -f Dockerfile-glibc \
+        --build-arg=ENV=${ENV} \
+        --build-arg=SHORT_SHA=${SHORT_SHA} \
+        --build-arg=GITHUB_SHA=${GITHUB_SHA} \
+        --build-arg=GITHUB_DATE=${GITHUB_DATE} \
+        --build-arg=GITHUB_PSEUDODATE=${GITHUB_PSEUDODATE} \
+        --build-arg=GITHUB_VERSION=${GITHUB_VERSION} \
+        . \
+        -t oitacr.azurecr.io/pmartin47/agartha:latest-glibc \
+        -t oitacr.azurecr.io/pmartin47/agartha:latest-slim-glibc \
+        -t oitacr.azurecr.io/pmartin47/agartha:${GITHUB_VERSION}-${GITHUB_PSEUDODATE}-${SHORT_SHA}-slim-glibc \
+        -t oitacr.azurecr.io/pmartin47/agartha:${GITHUB_VERSION}-${GITHUB_PSEUDODATE}-${SHORT_SHA}-glibc \
+        --target slim-glibc
+    - name: Push to Docker Hub
+      run: |
+        podman login $ACR_URL --username $ACR_USERNAME --password $ACR_PASSWORD
+        podman images | awk "/$ACR_URL\/pmartin47\/agartha/ { print \$1\":\"\$2 }" | xargs -I {} podman push {}
+        podman logout
+    - name: Docker System Prune
+      run: |
+        podman system prune --force --all
+

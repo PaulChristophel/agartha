@@ -1,0 +1,56 @@
+cache: pgjsonb
+cache.pgjsonb.dbname: 'agartha'
+cache.pgjsonb.host: 'db'
+cache.pgjsonb.password: 'agartha'
+cache.pgjsonb.port: 5432
+cache.pgjsonb.user: 'agartha'
+event_return:
+  - pgupsert
+master_job_cache: pgupsert
+returner.pgupsert.db: 'agartha'
+returner.pgupsert.host: 'db'
+returner.pgupsert.passwd: 'agartha'
+returner.pgupsert.port: 5432
+returner.pgupsert.user: 'agartha'
+external_auth:
+  agartha:
+    megaman:
+      - test.ping
+      - minion\*:
+        - network.*
+      - '@wheel':
+        - key.list_all
+      - minion2:
+        - network.*
+        - state.*
+      - 'G@os:RedHat':
+        - kmod.*
+    megadude:
+      - .*
+      - '@runner'
+      - '@wheel'
+      - '@jobs'
+file_roots:
+  base:
+    - /srv
+pillar_roots:
+  base:
+    - /pillar
+log_level: quiet
+log_file: /dev/null
+log_level_logfile: quiet
+rest_cherrypy:
+  port: 8000
+  host: 0.0.0.0
+  debug: True
+  # ssl_crt: /etc/pki/tls/certs/localhost.crt
+  # ssl_key: /etc/pki/tls/certs/localhost.key
+master_id: salt-master
+id: salt-master
+autosign_grains_dir: /etc/salt/auto
+pki_dir: /var/lib/salt/pki/master
+reactor:
+  - minion_start:
+    - /srv/highstate.sls
+event_return_blacklist:
+- salt/auth

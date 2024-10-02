@@ -1,0 +1,46 @@
+# Build the application
+FROM docker.io/pcm0/build-base:glibc as builder-glibc
+ARG ENV=debug
+ARG SHORT_SHA=devel
+ARG GITHUB_SHA=development
+ARG GITHUB_DATE='2006-01-02T15:04:05Z'
+ARG GITHUB_PSEUDODATE='20060102150405'
+ARG GITHUB_VERSION='0.0.0'
+ARG USER_ID=1000
+RUN groupadd -g ${USER_ID} agartha
+RUN useradd -u ${USER_ID} -s /usr/sbin/nologin -d /opt/agartha -m -g agartha agartha
+
+COPY go.mod go.sum Makefile ./
+COPY web/package.json web/pnpm-lock.yaml ./web/
+RUN ENV=${ENV} make configure
+COPY . .
+RUN ENV=${ENV} make build
+
+# Export it to debian
+FROM debian:bookworm-slim AS debian
+ARG ENV=debug
+ARG USER_ID=1000
+ENV DEBIAN_FRONTEND=noninteractive
+ENV APT_KEY_DONT_WARN_ON_DANGEROUS_USAGE=1
+COPY --from=builder-glibc /etc/passwd /etc/passwd
+COPY --from=builder-glibc /etc/group /etc/group
+COPY --from=builder-glibc /opt/agartha /opt/agartha
+COPY --from=builder-glibc /usr/src/app/bin/${ENV}/agartha /usr/local/bin/agartha
+RUN apt update && apt upgrade -y && apt install -y curl ca-certificates tzdata && apt autoclean -y && apt autoremove -y
+USER ${USER_ID}:${USER_ID}
+ENTRYPOINT ["/usr/local/bin/agartha"]
+
+# Export it to scratch
+FROM scratch as slim-glibc
+ARG ENV=debug
+ARG USER_ID=1000
+COPY --from=builder-glibc /lib/x86_64-linux-gnu/libc.so.6 /lib/x86_64-linux-gnu/libc.so.6
+COPY --from=builder-glibc /lib64/ld-linux-x86-64.so.2 /lib64/ld-linux-x86-64.so.2 
+COPY --from=builder-glibc /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
+COPY --from=builder-glibc /usr/share/zoneinfo /usr/share/zoneinfo
+COPY --from=builder-glibc /etc/passwd /etc/passwd
+COPY --from=builder-glibc /etc/group /etc/group
+COPY --from=builder-glibc /opt/agartha /opt/agartha
+COPY --from=builder-glibc /usr/src/app/bin/${ENV}/agartha /usr/local/bin/agartha
+USER ${USER_ID}:${USER_ID}
+ENTRYPOINT ["/usr/local/bin/agartha"]

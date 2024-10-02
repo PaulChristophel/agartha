@@ -1,27 +1,34 @@
 {
   "compilerOptions": {
-    "baseUrl": "./",
+    "allowJs": true,
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "baseUrl": ".",
+    "paths": {
+      "src/*": ["src/*"]
+    },
     "target": "ESNext",
     "useDefineForClassFields": true,
-    "lib": ["DOM", "DOM.Iterable", "ESNext"],
-    "allowJs": false,
-    "skipLibCheck": true,
-    "esModuleInterop": false,
-    "allowSyntheticDefaultImports": true,
-    "strict": true,
-    "forceConsistentCasingInFileNames": true,
+    "lib": ["ESNext", "DOM", "DOM.Iterable"],
+    "types": ["node"],
     "module": "ESNext",
-    "moduleResolution": "Node",
+    "skipLibCheck": true,
+
+    /* Bundler mode */
+    "moduleResolution": "bundler",
+    "allowImportingTsExtensions": true,
     "resolveJsonModule": true,
     "isolatedModules": true,
     "noEmit": true,
     "jsx": "react-jsx",
-    "sourceMap": true,
-    "types": ["vite/client", "@total-typescript/ts-reset"],
-    "paths": {
-      "@/*": ["./src/*"]
-    }
+
+    /* Linting */
+    "strict": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noFallthroughCasesInSwitch": true,
+    "forceConsistentCasingInFileNames": true
   },
-  "include": ["src"],
+  "include": ["src", "declarations.d.ts"],
   "references": [{ "path": "./tsconfig.node.json" }]
 }

@@ -5,14 +5,13 @@ import (
 )
 
 type Conformity struct {
-	ID             string     `gorm:"primaryKey;type:varchar(255);not null;index:idx_salt_returns_id"`
-	AlterTime      *time.Time `gorm:"type:TIMESTAMP WITH TIME ZONE;DEFAULT:now();index:idx_salt_returns_updated"`
-	Success        string     `gorm:"type:varchar(10);not null"`
-	User           string     `gorm:"type:text"`
-	TrueCount      int64      `gorm:"column:true_count;type:bigint;not null"`
-	FalseCount     int64      `gorm:"column:false_count;type:bigint;not null"`
-	ChangedCount   int64      `gorm:"column:changed_count;type:bigint;not null"`
-	UnchangedCount int64      `gorm:"column:unchanged_count;type:bigint;not null"`
+	ID             string     `json:"id" gorm:"->;primaryKey;type:varchar(255);not null;" example:"server.example.com"`
+	AlterTime      *time.Time `json:"alter_time" gorm:"->;type:TIMESTAMP WITH TIME ZONE;DEFAULT:now();" example:"2006-01-02T15:04:05.999999-07:00"`
+	Success        bool       `json:"success" gorm:"->;column:success;type:boolean;not null" example:"true"`
+	TrueCount      int64      `json:"true_count" gorm:"->;column:true_count;type:bigint;not null" example:"302"`
+	FalseCount     int64      `json:"false_count" gorm:"->;column:false_count;type:bigint;not null" example:"0"`
+	ChangedCount   int64      `json:"changed_count" gorm:"->;column:changed_count;type:bigint;not null" example:"12"`
+	UnchangedCount int64      `json:"unchanged_count" gorm:"->;column:unchanged_count;type:bigint;not null" example:"290"`
 }
 
 func (Conformity) TableName() string {

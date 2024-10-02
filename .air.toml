@@ -5,19 +5,20 @@ tmp_dir = "bin/debug"
 [build]
   args_bin = []
   bin = "bin/debug/agartha"
-  cmd = "ENV=DEVELOPMENT make run"
+  full_bin = "GIN_MODE=debug bin/debug/agartha serve"
+  cmd = "GIN_MODE=debug go build -o ./bin/debug/agartha ."
+  post_cmd = ["ps | awk '!/awk/&&/agartha serve/ { print $1 }' | xargs -I {} kill {}"]
   delay = 1000
-  exclude_dir = ["assets", "tmp", "vendor", "testdata", "web/node_modules", "bin", "server/docs"]
-  exclude_file = []
-  exclude_regex = ["_test.go"]
+  exclude_dir = ["assets", "tmp", "vendor", "testdata", "web", "bin", "server/docs", "extras", "docker-compose", ".pnpm-store", ".github"]
+  exclude_file = [".gitignore", ".dockerignore", ".containerignore", "LICENSE", "Makefile"]
+  exclude_regex = ["_test.go", "Dockerfile", "docker-compose", "example", ".md"]
   exclude_unchanged = false
   follow_symlink = false
-  full_bin = ""
   include_dir = []
-  include_ext = ["go", "tpl", "tmpl", "html", "ts", "vue", ".env", "json", "toml"]
+  include_ext = ["go", "yaml", "toml"]
   kill_delay = "0s"
   log = "build-errors.log"
-  send_interrupt = false
+  send_interrupt = true
   stop_on_error = true
 
 [color]

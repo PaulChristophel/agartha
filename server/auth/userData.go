@@ -1,15 +1,17 @@
 package auth
 
 import (
+	"errors"
 	"fmt"
 	"log"
+	"net/http"
 	"strings"
 
+	"github.com/gin-gonic/gin"
 	"github.com/go-ldap/ldap/v3"
-	"github.com/spf13/viper"
 )
 
-type UserData struct {
+type userData struct {
 	FirstName         string
 	LastName          string
 	Email             string
@@ -17,16 +19,75 @@ type UserData struct {
 	UserPrincipalName string
 }
 
-func authenticate(username, password string) (UserData, error) {
-	var userData UserData
-	var ldap_server = viper.GetString("ldap_server")
+func auth(creds credentials, c *gin.Context) (userData, error) {
+	var userData userData
+	var err error
+	switch creds.Method {
+	case "ldap":
+		userData, err = authLDAP(creds.Username, creds.Password)
+	case "cas":
+		userData, err = authCAS(creds.Username, c)
+	default:
+		userData, err = authLocal(creds.Username, creds.Password)
+	}
+
+	return userData, err
+}
+
+func authLocal(username, password string) (userData, error) {
+	// demonstration. Update this to actually check the database
+	if username == "localuser" && password == "localpassword" {
+		return userData{
+			FirstName:         "Local",
+			LastName:          "User",
+			Email:             "local.user@example.com",
+			SamAccountName:    username,
+			UserPrincipalName: username,
+		}, nil
+	}
+	return userData{}, errors.New("invalid local credentials")
+}
+
+func authCAS(username string, c *gin.Context) (userData, error) {
+	var userData userData
+
+	ticket := c.Query("ticket")
+	if ticket == "" {
+		redirectURL := fmt.Sprintf("%s/login?service=%s", casOptions.Server, casOptions.ServiceURL)
+		c.Redirect(http.StatusFound, redirectURL)
+		return userData, errors.New("no CAS ticket provided")
+	}
+
+	validateURL := fmt.Sprintf("%s/serviceValidate?ticket=%s&service=%s", casOptions.Server, ticket, casOptions.ServiceURL)
+	resp, err := http.Get(validateURL)
+	if err != nil {
+		return userData, fmt.Errorf("failed to validate CAS ticket: %w", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return userData, errors.New("CAS ticket validation failed")
+	}
+
+	userData.FirstName = "First"
+	userData.LastName = "Last"
+	userData.Email = "email@example.com"
+	userData.SamAccountName = username
+	userData.UserPrincipalName = username
+
+	return userData, nil
+}
+
+func authLDAP(username, password string) (userData, error) {
+	var userData userData
+	var ldap_server = ldapOptions.Server
 	l, err := ldap.DialURL(ldap_server)
 	if err != nil {
 		return userData, fmt.Errorf("failed to connect: %w", err)
 	}
 	defer l.Close()
 
-	ldapDomain := viper.GetString("ldap_domain_default")
+	ldapDomain := ldapOptions.LDAPDomainDefault
 	if !strings.HasSuffix(username, ldapDomain) {
 		userData.SamAccountName = username
 		userData.UserPrincipalName = username + "@" + ldapDomain
@@ -43,20 +104,20 @@ func authenticate(username, password string) (UserData, error) {
 	}
 
 	// Rebind as a service account with permissions to search
-	serviceUser := viper.GetString("ldap_user")
-	servicePassword := viper.GetString("ldap_password")
+	serviceUser := ldapOptions.User
+	servicePassword := ldapOptions.Password
 	err = l.Bind(serviceUser, servicePassword)
 	if err != nil {
 		return userData, fmt.Errorf("failed to bind as service user: %w", err)
 	}
 
 	// Authorization: check that the user satisfies the LDAP filter
-	filter := fmt.Sprintf(viper.GetString("ldap_filter"), userData.SamAccountName)
+	filter := fmt.Sprintf(ldapOptions.Filter, userData.SamAccountName)
 	searchRequest := ldap.NewSearchRequest(
-		viper.GetString("ldap_base_dn"), // The base dn to search
+		ldapOptions.BaseDN,
 		ldap.ScopeWholeSubtree, ldap.NeverDerefAliases, 0, 0, false,
 		filter,
-		[]string{"dn", "sAMAccountName", "givenName", "sn", "mail"}, // A list attributes to retrieve
+		[]string{"dn", "sAMAccountName", "givenName", "sn", "mail"},
 		nil,
 	)
 	sr, err := l.Search(searchRequest)

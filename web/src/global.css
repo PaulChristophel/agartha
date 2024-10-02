@@ -1,0 +1,9 @@
+/* scrollbar */
+@import 'simplebar-react/dist/simplebar.min.css';
+
+.hidden {
+    visibility: hidden;
+    height: 0;
+    margin: 0;
+    padding: 0;
+  }

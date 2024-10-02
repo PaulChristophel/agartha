@@ -1,0 +1,139 @@
+version: '3.9'
+
+volumes:
+  salt-pki:
+    driver: local
+    driver_opts:
+      type: "tmpfs"
+      device: "tmpfs"
+      o: "size=8m,uid=1000"
+  salt-master-etc:
+    driver: local
+    driver_opts:
+      type: "tmpfs"
+      device: "tmpfs"
+      o: "size=8m,uid=1000"
+  salt-minion-etc:
+    driver: local
+    driver_opts:
+      type: "tmpfs"
+      device: "tmpfs"
+      o: "size=8m,uid=0"
+  # salt-cache:
+  #   driver: local
+  #   driver_opts:
+  #     type: "tmpfs"
+  #     device: "tmpfs"
+  #     o: "size=16m,uid=1000"
+  salt-run:
+    driver: local
+    driver_opts:
+      type: "tmpfs"
+      device: "tmpfs"
+      o: "size=8m,uid=1000"
+
+services:
+  db:
+    image: postgres:alpine
+    restart: always
+    environment:
+      POSTGRES_DB: agartha
+      POSTGRES_USER: agartha
+      POSTGRES_PASSWORD: agartha
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U agartha -d agartha -h 127.0.0.1 -p 5432"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    pull_policy: always
+
+  salt-master:
+    depends_on:
+      - db
+    image: pcm0/salt:3.11-3006-isalt
+    restart: always
+    user: "1000:1000"
+    ports:
+      - "4505:4505"
+      - "4506:4506"
+    pull_policy: if_not_present
+    entrypoint: /bin/sh
+    command: -c "python /script/wait.py && /usr/local/salt/bin/salt-master"
+    volumes: 
+      # - salt-cache:/var/cache/salt/master
+      - ./extras:/var/cache/salt/master/extmods
+      - salt-run:/var/run/salt/master
+      # - salt-master-etc:/etc/salt
+      - ./docker-compose/etc:/etc/salt
+      # - salt-pki:/etc/salt/pki
+      - salt-pki:/var/lib/salt/pki
+      - ./docker-compose/script:/script
+      - ./docker-compose/srv:/srv
+      - ./docker-compose/pillar:/pillar
+      
+
+  salt-api:
+    depends_on:
+      - db
+    image: pcm0/salt:3.11-3006
+    restart: always
+    user: "1000:1000"
+    ports:
+      - "8000:8000"
+    pull_policy: if_not_present
+    entrypoint: /bin/sh
+    command: -c "python /script/wait.py && /usr/local/salt/bin/salt-api"
+    volumes:
+      # - salt-cache:/var/cache/salt/master
+      - ./extras:/var/cache/salt/master/extmods
+      - salt-run:/var/run/salt/master
+      # - salt-master-etc:/etc/salt
+      - ./docker-compose/etc:/etc/salt
+      # - salt-pki:/etc/salt/pki
+      - salt-pki:/var/lib/salt/pki
+      - ./docker-compose/script:/script
+      
+  salt-minion:
+    depends_on:
+      - salt-master
+    image: pcm0/salt:3.11-3006
+    user: "0:0"
+    restart: always
+    pull_policy: if_not_present
+    entrypoint: /bin/sh
+    command: -c "/usr/local/salt/bin/salt-minion"
+    volumes:
+      - salt-minion-etc:/etc/salt
+      - ./docker-compose/etc/minion:/etc/salt/minion
+
+  salt-minion2:
+    depends_on:
+      - salt-master
+    image: pcm0/salt:3.11-3006
+    user: "0:0"
+    restart: always
+    pull_policy: if_not_present
+    entrypoint: /bin/sh
+    command: -c "/usr/local/salt/bin/salt-minion"
+    volumes:
+      - salt-minion-etc:/etc/salt
+      - ./docker-compose/etc/minion2:/etc/salt/minion
+
+  test:
+    image: docker.io/pcm0/build-base:musl
+    depends_on:
+      - db
+    volumes:
+      - .:/app
+    working_dir: /app
+    environment:
+      AGARTHA_DB_DB_BACKEND: agartha
+      AGARTHA_DB_DB_NAME: agartha
+      AGARTHA_DB_USER: agartha
+      AGARTHA_DB_PASSWORD: agartha
+      AGARTHA_DB_HOST: db
+      AGARTHA_DB_PORT: 5432
+      AGARTHA_DB_SSLMODE: disable
+    command: sh -c "make test-ci"

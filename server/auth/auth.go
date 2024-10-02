@@ -7,5 +7,6 @@ import (
 func AddRoutes(rg *gin.RouterGroup) {
 	grp := rg.Group("/")
 
-	grp.POST("/token", GetToken)
+	grp.POST("/token", RetrieveToken)
+	grp.GET("/method", GetMethod)
 }

@@ -1,7 +1,16 @@
+docker-compose/etc/pki
+
 .DS_Store
 bin/
 tmp/
 config.yaml
+config.bak.yaml
+
+# Docs
+# Ignore everything in server/docs/
+server/docs/*
+# Except the .empty file
+!server/docs/.empty
 
 # Logs
 logs
@@ -606,6 +615,7 @@ web_modules/
 
 # Optional npm cache directory
 .npm
+.pnpm-store/
 
 # Optional eslint cache
 .eslintcache

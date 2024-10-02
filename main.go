@@ -2,6 +2,7 @@ package main
 
 import (
 	"embed"
+	"fmt"
 	"log"
 	"os"
 
@@ -9,22 +10,21 @@ import (
 	"github.com/PaulChristophel/agartha/server/db"
 	"github.com/PaulChristophel/agartha/server/routes"
 	"github.com/akamensky/argparse"
-	// "github.com/akamensky/argparse"
 )
 
 //go:embed web/dist/*
-var f embed.FS
+var dist embed.FS
 
 //	@title			Agartha API
 //	@version		1.0
 //	@description	This is the Agartha API Backend
 
 //	@contact.name	API Support
-//	@contact.url	http://oit.gatech.edu
-//	@contact.email	pmartin@gatech.edu
+//	@contact.url	https://github.com/PaulChristophel/agartha/issues
+//	@contact.email	kind.frog8344@fastmail.com
 
-//	@license.name	Apache 2.0
-//	@license.url	http://www.apache.org/licenses/LICENSE-2.0.html
+//	@license.name	AGPL 3.0
+//	@license.url	https://www.gnu.org/licenses/agpl-3.0.html#license-text
 
 // @securityDefinitions.apikey	Bearer
 // @in							header
@@ -34,27 +34,46 @@ func main() {
 	// Create new parser object
 	parser := argparse.NewParser("agartha", "A web frontend for Salt and API for the Salt database.")
 
-	parser.NewCommand("migrate", "Run migrations.")
-	parser.NewCommand("serve", "Creates a listener service that runs the server.")
+	// Define commands
+	migrateCmd := parser.NewCommand("migrate", "Run migrations.")
+	serveCmd := parser.NewCommand("serve", "Creates a listener service that runs the server.")
+	versionCmd := parser.NewCommand("version", "Returns the version of the server.")
 
 	// Parse input
 	err := parser.Parse(os.Args)
 	if err != nil || len(os.Args) <= 1 {
-		// In case of error print error and print usage
-		// This can also be done by passing -h or --help flags
-		log.Print(parser.Usage(err))
+		// In case of error or no arguments, print usage
+		fmt.Print(parser.Usage(err))
 		return
 	}
-	switch os.Args[1] {
-	case "migrate":
-		config.Config()
-		db.ConnectToDatabase()
-		db.Migrate()
-	case "serve", "run":
-		config.Config()
-		db.ConnectToDatabase()
-		routes.Router(f)
+
+	// Initialize config
+	err = config.InitConfig()
+	if err != nil {
+		fmt.Print(err)
+		return
+	}
+
+	// Handle commands
+	switch {
+	case migrateCmd.Happened():
+		db.ConnectToDatabase(config.AgarthaConfig.DB)
+		err = db.Migrate(config.AgarthaConfig.DB.Tables)
+		if err != nil {
+			log.Fatalf("Migration failed: %v", err)
+		}
+		log.Println("Migration completed successfully.")
+	case serveCmd.Happened():
+		db.ConnectToDatabase(config.AgarthaConfig.DB)
+		err = routes.Router(dist, *config.AgarthaConfig)
+		if err != nil {
+			log.Fatalf("Server failed: %v", err)
+		}
+	case versionCmd.Happened():
+		routes.PrintVersion()
 	default:
-		log.Print(parser.Usage(err))
+		log.Printf("Unknown command\n")
+		log.Println(parser.Usage(nil))
+		os.Exit(1)
 	}
 }

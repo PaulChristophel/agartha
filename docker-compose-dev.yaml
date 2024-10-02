@@ -1,0 +1,191 @@
+version: '3.9'
+
+volumes:
+  salt-pki:
+    driver: local
+    # driver_opts:
+    #   type: "tmpfs"
+    #   device: "tmpfs"
+    #   o: "size=8m,uid=1000"
+  salt-master-etc:
+    driver: local
+    driver_opts:
+      type: "tmpfs"
+      device: "tmpfs"
+      o: "size=8m,uid=1000"
+  salt-minion-etc:
+    driver: local
+    driver_opts:
+      type: "tmpfs"
+      device: "tmpfs"
+      o: "size=8m,uid=0"
+  # salt-cache:
+  #   driver: local
+  #   driver_opts:
+  #     type: "tmpfs"
+  #     device: "tmpfs"
+  #     o: "size=16m,uid=1000"
+  salt-run:
+    driver: local
+    # driver_opts:
+    #   type: "tmpfs"
+    #   device: "tmpfs"
+    #   o: "size=8m,uid=1000"
+  pnpm-store:
+    driver: local
+    # driver_opts:
+    #   type: "none"
+    #   device: "tmpfs"
+    #   o: "uid=1000"
+  node_modules:
+    driver: local
+    # driver_opts:
+    #   type: "tmpfs"
+    #   device: "tmpfs"
+    #   o: "size=256m,uid=1000"
+  dist:
+    driver: local
+    # driver_opts:
+    #   type: "tmpfs"
+    #   device: "tmpfs"
+    #   o: "size=256m,uid=1000"
+
+services:
+  db:
+    image: postgres:alpine
+    pull_policy: if_not_present
+    restart: always
+    environment:
+      POSTGRES_DB: agartha
+      POSTGRES_USER: agartha
+      POSTGRES_PASSWORD: agartha
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U agartha -d agartha -h 127.0.0.1 -p 5432"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+
+  salt-master:
+    depends_on:
+      - db
+    image: pcm0/salt:3.11-3006-isalt
+    pull_policy: if_not_present
+    restart: always
+    user: "0:0"
+    ports:
+      - "4505:4505"
+      - "4506:4506"
+    entrypoint: /bin/sh
+    command: -c "python /script/wait.py && /usr/local/salt/bin/salt-master"
+    volumes: 
+      # - salt-cache:/var/cache/salt/master
+      - ./extras:/var/cache/salt/master/extmods
+      - salt-run:/var/run/salt/master
+      # - salt-master-etc:/etc/salt
+      - ./docker-compose/etc:/etc/salt
+      # - salt-pki:/etc/salt/pki
+      - salt-pki:/var/lib/salt/pki
+      - ./docker-compose/script:/script
+      - ./docker-compose/srv:/srv
+      - ./docker-compose/pillar:/pillar
+      
+
+  salt-api:
+    depends_on:
+      - db
+    image: pcm0/salt:3.11-3006
+    pull_policy: if_not_present
+    restart: always
+    user: "0:0"
+    ports:
+      - "8000:8000"
+    entrypoint: /bin/sh
+    command: -c "python /script/wait.py && /usr/local/salt/bin/salt-api"
+    volumes:
+      # - salt-cache:/var/cache/salt/master
+      - ./extras:/var/cache/salt/master/extmods
+      - salt-run:/var/run/salt/master
+      # - salt-master-etc:/etc/salt
+      - ./docker-compose/etc:/etc/salt
+      # - salt-pki:/etc/salt/pki
+      - salt-pki:/var/lib/salt/pki
+      - ./docker-compose/script:/script
+      
+  salt-minion:
+    depends_on:
+      - salt-master
+    image: pcm0/salt:3.11-3006
+    pull_policy: if_not_present
+    user: "0:0"
+    restart: always
+    entrypoint: /bin/sh
+    command: -c "/usr/local/salt/bin/salt-minion"
+    volumes:
+      - salt-minion-etc:/etc/salt
+      - ./docker-compose/etc/minion:/etc/salt/minion
+
+  salt-minion2:
+    depends_on:
+      - salt-master
+    image: pcm0/salt:3.11-3006
+    pull_policy: if_not_present
+    user: "0:0"
+    restart: always
+    entrypoint: /bin/sh
+    command: -c "/usr/local/salt/bin/salt-minion"
+    volumes:
+      - salt-minion-etc:/etc/salt
+      - ./docker-compose/etc/minion2:/etc/salt/minion
+
+  backend:
+    image: docker.io/pcm0/build-base:glibc
+    pull_policy: always
+    depends_on:
+      - db
+      - frontend
+    volumes:
+      - dist:/app/web/dist
+      - .:/app
+      - ./docker-compose/script:/script
+    working_dir: /app
+    environment:
+      ENV: debug
+      AGARTHA_DB_DB_BACKEND: agartha
+      AGARTHA_DB_DB_NAME: agartha
+      AGARTHA_DB_USER: agartha
+      AGARTHA_DB_PASSWORD: agartha
+      AGARTHA_DB_HOST: db
+      AGARTHA_DB_PORT: 5432
+      AGARTHA_DB_SSLMODE: disable
+    entrypoint: /bin/sh
+    command: -c "/script/backend.sh"
+    ports:
+      - "8080:8080"
+
+  frontend:
+    image: docker.io/pcm0/build-base:glibc
+    pull_policy: if_not_present
+    depends_on:
+      - db
+    volumes:
+      - pnpm-store:/app/.pnpm-store
+      - node_modules:/app/web/node_modules
+      - dist:/app/web/dist
+      - .:/app
+      - ./docker-compose/script:/script
+    working_dir: /app
+    environment:
+      ENV: debug
+      AGARTHA_DB_DB_BACKEND: agartha
+      AGARTHA_DB_DB_NAME: agartha
+      AGARTHA_DB_USER: agartha
+      AGARTHA_DB_PASSWORD: agartha
+      AGARTHA_DB_HOST: db
+      AGARTHA_DB_PORT: 5432
+      AGARTHA_DB_SSLMODE: disable
+    command: sh -c "/script/frontend.sh"
+    ports:
+      - "3030:3030"

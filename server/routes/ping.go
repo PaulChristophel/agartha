@@ -3,6 +3,7 @@ package routes
 import (
 	"net/http"
 
+	// So swagger can document the function
 	_ "github.com/PaulChristophel/agartha/server/httputil"
 	"github.com/gin-gonic/gin"
 )
@@ -21,12 +22,9 @@ func AddPingRoutes(rg *gin.RouterGroup) {
 //	@Tags			Ping
 //	@Accept			json
 //	@Produce		json
-//	@Success		200	{string}	pong "pong"
-//	@Failure		400	{object}	httputil.HTTPError400
-//	@Failure		401	{object}	httputil.HTTPError401
-//	@Failure		403	{object}	httputil.HTTPError403
+//	@Success		200	{string}	string	"pong"
 //	@Failure		500	{object}	httputil.HTTPError500
 //	@Router			/ping [get]
 func Ping(c *gin.Context) {
-	c.JSON(http.StatusOK, "pong")
+	c.String(http.StatusOK, "pong")
 }

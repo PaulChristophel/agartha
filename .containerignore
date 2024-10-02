@@ -1,4 +1,5 @@
 .DS_Store
+.github
 bin/
 tmp/
 config.yaml
@@ -442,6 +443,7 @@ FakesAssemblies/
 # Node.js Tools for Visual Studio
 .ntvs_analysis.dat
 node_modules/
+web/node_modules/
 
 # Visual Studio 6 build log
 *.plg

@@ -45,6 +45,16 @@ type HTTPError405 struct {
 	Message string `json:"message" example:"Method Not Allowed"`
 }
 
+type HTTPError406 struct {
+	Code    int    `json:"code" example:"406"`
+	Message string `json:"message" example:"Not Acceptable"`
+}
+
+type HTTPError413 struct {
+	Code    int    `json:"code" example:"413"`
+	Message string `json:"message" example:"Request Entity Too Large"`
+}
+
 type HTTPError500 struct {
 	Code    int    `json:"code" example:"500"`
 	Message string `json:"message" example:"Internal Server Error"`
