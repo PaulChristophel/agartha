@@ -24,7 +24,7 @@ interface KeysWidgetProps {
 }
 
 const KeysWidget: React.FC<KeysWidgetProps> = ({ sx, ...other }) => {
-  const { minions, minionsDenied, minionsPre, minionsRejected, isLoading } = useKeys();
+  const { minions, minionsDenied, minionsPre, minionsRejected, isLoading, error } = useKeys();
 
   return (
     <Card
@@ -43,58 +43,68 @@ const KeysWidget: React.FC<KeysWidgetProps> = ({ sx, ...other }) => {
         <TableContainer component={Paper}>
           <Table size="small">
             <TableBody>
-              <TableRow>
-                <TableCell align="left">
-                  <Box display="flex" alignItems="center">
-                    <CheckIcon />
-                    <Typography variant="body2" color="text.secondary" ml={1}>
-                      Accepted
-                    </Typography>
-                  </Box>
-                </TableCell>
-                <TableCell align="right">
-                  {isLoading ? <CircularProgress size={20} /> : minions.length}
-                </TableCell>
-              </TableRow>
-              <TableRow>
-                <TableCell align="left">
-                  <Box display="flex" alignItems="center">
-                    <DoDisturbIcon />
-                    <Typography variant="body2" color="text.secondary" ml={1}>
-                      Rejected
-                    </Typography>
-                  </Box>
-                </TableCell>
-                <TableCell align="right">
-                  {isLoading ? <CircularProgress size={20} /> : minionsRejected.length}
-                </TableCell>
-              </TableRow>
-              <TableRow>
-                <TableCell align="left">
-                  <Box display="flex" alignItems="center">
-                    <ThumbDownOffAltIcon />
-                    <Typography variant="body2" color="text.secondary" ml={1}>
-                      Denied
-                    </Typography>
-                  </Box>
-                </TableCell>
-                <TableCell align="right">
-                  {isLoading ? <CircularProgress size={20} /> : minionsDenied.length}
-                </TableCell>
-              </TableRow>
-              <TableRow>
-                <TableCell align="left">
-                  <Box display="flex" alignItems="center">
-                    <PendingActionsIcon />
-                    <Typography variant="body2" color="text.secondary" ml={1}>
-                      Unaccepted
-                    </Typography>
-                  </Box>
-                </TableCell>
-                <TableCell align="right">
-                  {isLoading ? <CircularProgress size={20} /> : minionsPre.length}
-                </TableCell>
-              </TableRow>
+              {error ? (
+                <TableRow>
+                  <TableCell colSpan={2} align="center">
+                    <Typography color="error">Failed to load keys: {error.message}</Typography>
+                  </TableCell>
+                </TableRow>
+              ) : (
+                <>
+                  <TableRow>
+                    <TableCell align="left">
+                      <Box display="flex" alignItems="center">
+                        <CheckIcon />
+                        <Typography variant="body2" color="text.secondary" ml={1}>
+                          Accepted
+                        </Typography>
+                      </Box>
+                    </TableCell>
+                    <TableCell align="right">
+                      {isLoading ? <CircularProgress size={20} /> : minions.length}
+                    </TableCell>
+                  </TableRow>
+                  <TableRow>
+                    <TableCell align="left">
+                      <Box display="flex" alignItems="center">
+                        <DoDisturbIcon />
+                        <Typography variant="body2" color="text.secondary" ml={1}>
+                          Rejected
+                        </Typography>
+                      </Box>
+                    </TableCell>
+                    <TableCell align="right">
+                      {isLoading ? <CircularProgress size={20} /> : minionsRejected.length}
+                    </TableCell>
+                  </TableRow>
+                  <TableRow>
+                    <TableCell align="left">
+                      <Box display="flex" alignItems="center">
+                        <ThumbDownOffAltIcon />
+                        <Typography variant="body2" color="text.secondary" ml={1}>
+                          Denied
+                        </Typography>
+                      </Box>
+                    </TableCell>
+                    <TableCell align="right">
+                      {isLoading ? <CircularProgress size={20} /> : minionsDenied.length}
+                    </TableCell>
+                  </TableRow>
+                  <TableRow>
+                    <TableCell align="left">
+                      <Box display="flex" alignItems="center">
+                        <PendingActionsIcon />
+                        <Typography variant="body2" color="text.secondary" ml={1}>
+                          Unaccepted
+                        </Typography>
+                      </Box>
+                    </TableCell>
+                    <TableCell align="right">
+                      {isLoading ? <CircularProgress size={20} /> : minionsPre.length}
+                    </TableCell>
+                  </TableRow>
+                </>
+              )}
             </TableBody>
           </Table>
         </TableContainer>

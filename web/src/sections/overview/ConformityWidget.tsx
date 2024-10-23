@@ -42,17 +42,17 @@ const ConformityWidget: React.FC<ConformityWidgetProps> = ({ sx, ...other }) => 
     []
   );
 
-  const { isLoading: isLoadingTrue, totalCount: totalTrueCount } = useConformityPaginated(
-    trueQueryParams,
-    1,
-    1
-  );
+  const {
+    isLoading: isLoadingTrue,
+    totalCount: totalTrueCount,
+    error: trueError,
+  } = useConformityPaginated(trueQueryParams, 1, 1);
 
-  const { isLoading: isLoadingFalse, totalCount: totalFalseCount } = useConformityPaginated(
-    falseQueryParams,
-    1,
-    1
-  );
+  const {
+    isLoading: isLoadingFalse,
+    totalCount: totalFalseCount,
+    error: falseError,
+  } = useConformityPaginated(falseQueryParams, 1, 1);
 
   const total = totalTrueCount + totalFalseCount;
   const data = [
@@ -76,18 +76,28 @@ const ConformityWidget: React.FC<ConformityWidgetProps> = ({ sx, ...other }) => 
       <TableContainer component={Paper}>
         <Table size="small">
           <TableBody>
-            <TableRow>
-              <TableCell align="left">Conforming</TableCell>
-              <TableCell align="right">
-                {isLoadingTrue ? <CircularProgress size={20} /> : totalTrueCount}
-              </TableCell>
-            </TableRow>
-            <TableRow>
-              <TableCell align="left">Non-Conforming</TableCell>
-              <TableCell align="right">
-                {isLoadingFalse ? <CircularProgress size={20} /> : totalFalseCount}
-              </TableCell>
-            </TableRow>
+            {trueError || falseError ? (
+              <TableRow>
+                <TableCell colSpan={2} align="center">
+                  <Typography color="error">Failed to load conformity data</Typography>
+                </TableCell>
+              </TableRow>
+            ) : (
+              <>
+                <TableRow>
+                  <TableCell align="left">Conforming</TableCell>
+                  <TableCell align="right">
+                    {isLoadingTrue ? <CircularProgress size={20} /> : totalTrueCount}
+                  </TableCell>
+                </TableRow>
+                <TableRow>
+                  <TableCell align="left">Non-Conforming</TableCell>
+                  <TableCell align="right">
+                    {isLoadingFalse ? <CircularProgress size={20} /> : totalFalseCount}
+                  </TableCell>
+                </TableRow>
+              </>
+            )}
           </TableBody>
         </Table>
       </TableContainer>

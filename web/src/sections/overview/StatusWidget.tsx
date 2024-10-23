@@ -91,56 +91,66 @@ const StatusWidget: React.FC<StatusWidgetProps> = ({ sx, ...other }) => {
       <TableContainer component={Paper}>
         <Table size="small">
           <TableBody>
-            <TableRow>
-              <TableCell align="left">Salt Status</TableCell>
-              <TableCell align="right">
-                {isStatusLoading ? (
-                  <CircularProgress size={20} />
-                ) : (
-                  <Chip
-                    label={status}
-                    color={status === 'OK' ? 'success' : 'error'}
-                    variant="outlined"
-                  />
-                )}
-              </TableCell>
-            </TableRow>
-            <TableRow>
-              <TableCell align="left">Salt</TableCell>
-              <TableCell align="right">
-                {isSaltVersionLoading ? (
-                  <CircularProgress size={20} />
-                ) : (
-                  saltVersionError || saltVersionData
-                )}
-              </TableCell>
-            </TableRow>
-            <TableRow>
-              <TableCell align="left">Agartha</TableCell>
-              <TableCell align="right">{Version}</TableCell>
-            </TableRow>
-            <TableRow>
-              <TableCell align="left">Jobs</TableCell>
-              <TableCell align="right">
-                {isJIDLoading ? <CircularProgress size={20} /> : fShortenNumber(totalJIDCount)}
-              </TableCell>
-            </TableRow>
-            <TableRow>
-              <TableCell align="left">Events</TableCell>
-              <TableCell align="right">
-                {isEventLoading ? <CircularProgress size={20} /> : fShortenNumber(totalEventCount)}
-              </TableCell>
-            </TableRow>
-            <TableRow>
-              <TableCell align="left">Returns</TableCell>
-              <TableCell align="right">
-                {isReturnLoading ? (
-                  <CircularProgress size={20} />
-                ) : (
-                  fShortenNumber(totalReturnCount)
-                )}
-              </TableCell>
-            </TableRow>
+            {saltVersionError ? (
+              <TableRow>
+                <TableCell colSpan={2} align="center">
+                  <Typography color="error">Error: {saltVersionError}</Typography>
+                </TableCell>
+              </TableRow>
+            ) : (
+              <>
+                <TableRow>
+                  <TableCell align="left">Salt Status</TableCell>
+                  <TableCell align="right">
+                    {isStatusLoading ? (
+                      <CircularProgress size={20} />
+                    ) : (
+                      <Chip
+                        label={status}
+                        color={status === 'OK' ? 'success' : 'error'}
+                        variant="outlined"
+                      />
+                    )}
+                  </TableCell>
+                </TableRow>
+                <TableRow>
+                  <TableCell align="left">Salt</TableCell>
+                  <TableCell align="right">
+                    {isSaltVersionLoading ? <CircularProgress size={20} /> : saltVersionData}
+                  </TableCell>
+                </TableRow>
+                <TableRow>
+                  <TableCell align="left">Agartha</TableCell>
+                  <TableCell align="right">{Version}</TableCell>
+                </TableRow>
+                <TableRow>
+                  <TableCell align="left">Jobs</TableCell>
+                  <TableCell align="right">
+                    {isJIDLoading ? <CircularProgress size={20} /> : fShortenNumber(totalJIDCount)}
+                  </TableCell>
+                </TableRow>
+                <TableRow>
+                  <TableCell align="left">Events</TableCell>
+                  <TableCell align="right">
+                    {isEventLoading ? (
+                      <CircularProgress size={20} />
+                    ) : (
+                      fShortenNumber(totalEventCount)
+                    )}
+                  </TableCell>
+                </TableRow>
+                <TableRow>
+                  <TableCell align="left">Returns</TableCell>
+                  <TableCell align="right">
+                    {isReturnLoading ? (
+                      <CircularProgress size={20} />
+                    ) : (
+                      fShortenNumber(totalReturnCount)
+                    )}
+                  </TableCell>
+                </TableRow>
+              </>
+            )}
           </TableBody>
         </Table>
       </TableContainer>
