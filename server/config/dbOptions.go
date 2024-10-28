@@ -16,4 +16,5 @@ type SaltDBTables struct {
 	SaltCache   string `mapstructure:"salt_cache" yaml:"salt_cache"`
 	SaltReturns string `mapstructure:"salt_returns" yaml:"salt_returns"`
 	SaltEvents  string `mapstructure:"salt_events" yaml:"salt_events"`
+	UseJSONB    bool   `mapstructure:"use_jsonb" yaml:"use_jsonb"`
 }

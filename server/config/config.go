@@ -52,6 +52,7 @@ func NewConfig() *Config {
 				SaltCache:   "salt_cache",
 				SaltReturns: "salt_returns",
 				SaltEvents:  "salt_events",
+				UseJSONB:    false,
 			},
 		},
 		Salt: SaltOptions{

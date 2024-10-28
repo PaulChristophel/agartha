@@ -16,7 +16,7 @@ import (
 var dist embed.FS
 
 //	@title			Agartha API
-//	@version		1.0
+//	@version		v0.5.22-20241023132336-a7ba9526a84e
 //	@description	This is the Agartha API Backend
 
 //	@contact.name	API Support
@@ -58,7 +58,11 @@ func main() {
 	switch {
 	case migrateCmd.Happened():
 		db.ConnectToDatabase(config.AgarthaConfig.DB)
-		err = db.Migrate(config.AgarthaConfig.DB.Tables)
+		if config.AgarthaConfig.DB.Tables.UseJSONB {
+			err = db.MigrateJSONB(config.AgarthaConfig.DB.Tables)
+		} else {
+			err = db.Migrate(config.AgarthaConfig.DB.Tables)
+		}
 		if err != nil {
 			log.Fatalf("Migration failed: %v", err)
 		}
