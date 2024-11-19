@@ -38,7 +38,7 @@ require (
 	github.com/go-openapi/swag v0.23.0 // indirect
 	github.com/go-playground/locales v0.14.1 // indirect
 	github.com/go-playground/universal-translator v0.18.1 // indirect
-	github.com/go-playground/validator/v10 v10.22.1 // indirect
+	github.com/go-playground/validator/v10 v10.23.0 // indirect
 	github.com/go-sql-driver/mysql v1.8.1 // indirect
 	github.com/goccy/go-json v0.10.3 // indirect
 	github.com/gorilla/context v1.1.2 // indirect
@@ -75,19 +75,19 @@ require (
 	github.com/ugorji/go/codec v1.2.12 // indirect
 	github.com/wader/gormstore/v2 v2.0.3 // indirect
 	go.uber.org/multierr v1.11.0 // indirect
-	golang.org/x/arch v0.11.0 // indirect
-	golang.org/x/crypto v0.28.0 // indirect
-	golang.org/x/exp v0.0.0-20241009180824-f66d83c29e7c // indirect
-	golang.org/x/sync v0.8.0 // indirect
-	golang.org/x/sys v0.26.0 // indirect
-	golang.org/x/text v0.19.0 // indirect
-	golang.org/x/tools v0.26.0 // indirect
+	golang.org/x/arch v0.12.0 // indirect
+	golang.org/x/crypto v0.29.0 // indirect
+	golang.org/x/exp v0.0.0-20241108190413-2d47ceb2692f // indirect
+	golang.org/x/sync v0.9.0 // indirect
+	golang.org/x/sys v0.27.0 // indirect
+	golang.org/x/text v0.20.0 // indirect
+	golang.org/x/tools v0.27.0 // indirect
 	gopkg.in/ini.v1 v1.67.0 // indirect
 	gorm.io/driver/mysql v1.5.7 // indirect
 )
 
 require (
 	github.com/gin-gonic/gin v1.10.0
-	golang.org/x/net v0.30.0 // indirect
-	google.golang.org/protobuf v1.35.1 // indirect
+	golang.org/x/net v0.31.0 // indirect
+	google.golang.org/protobuf v1.35.2 // indirect
 )
