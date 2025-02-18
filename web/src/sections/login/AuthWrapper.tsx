@@ -59,7 +59,7 @@ const AuthWrapper: React.FC<AuthWrapperProps> = ({ children }) => {
 };
 
 AuthWrapper.propTypes = {
-  children: PropTypes.node.isRequired,
+  children: PropTypes.element.isRequired,
 };
 
 export default AuthWrapper;
