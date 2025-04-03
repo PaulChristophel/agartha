@@ -9,7 +9,7 @@ require (
 	github.com/go-ldap/ldap/v3 v3.4.10
 	github.com/golang-jwt/jwt/v5 v5.2.2
 	github.com/google/uuid v1.6.0
-	github.com/spf13/viper v1.20.0
+	github.com/spf13/viper v1.20.1
 	github.com/stretchr/testify v1.10.0
 	github.com/swaggo/files v1.0.1
 	github.com/swaggo/gin-swagger v1.6.0
@@ -37,7 +37,7 @@ require (
 	github.com/go-openapi/swag v0.23.1 // indirect
 	github.com/go-playground/locales v0.14.1 // indirect
 	github.com/go-playground/universal-translator v0.18.1 // indirect
-	github.com/go-playground/validator/v10 v10.25.0 // indirect
+	github.com/go-playground/validator/v10 v10.26.0 // indirect
 	github.com/go-sql-driver/mysql v1.8.1 // indirect
 	github.com/go-viper/mapstructure/v2 v2.2.1 // indirect
 	github.com/goccy/go-json v0.10.5 // indirect
@@ -64,7 +64,7 @@ require (
 	github.com/pelletier/go-toml/v2 v2.2.3 // indirect
 	github.com/pmezard/go-difflib v1.0.1-0.20181226105442-5d4384ee4fb2 // indirect
 	github.com/rogpeppe/go-internal v1.12.0 // indirect
-	github.com/sagikazarmark/locafero v0.8.0 // indirect
+	github.com/sagikazarmark/locafero v0.9.0 // indirect
 	github.com/sagikazarmark/slog-shim v0.1.0 // indirect
 	github.com/sourcegraph/conc v0.3.0 // indirect
 	github.com/spf13/afero v1.14.0 // indirect
@@ -88,6 +88,6 @@ require (
 
 require (
 	github.com/gin-gonic/gin v1.10.0
-	golang.org/x/net v0.37.0 // indirect
+	golang.org/x/net v0.38.0 // indirect
 	google.golang.org/protobuf v1.36.6 // indirect
 )
