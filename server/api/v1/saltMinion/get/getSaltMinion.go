@@ -137,9 +137,9 @@ func GetSaltMinion(c *gin.Context) {
 	// Apply filters based on provided minionID and key
 	if minionID != "" {
 		if strings.Contains(minionID, "*") {
-			baseQuery = baseQuery.Where("minion_id LIKE ?", strings.Replace(minionID, "*", "%", -1))
+			baseQuery = baseQuery.Where("minion_id LIKE ?", strings.ReplaceAll(minionID, "*", "%"))
 		} else if strings.Contains(minionID, "?") {
-			baseQuery = baseQuery.Where("minion_id LIKE ?", strings.Replace(minionID, "?", "_", -1))
+			baseQuery = baseQuery.Where("minion_id LIKE ?", strings.ReplaceAll(minionID, "?", "_"))
 		} else {
 			baseQuery = baseQuery.Where("minion_id = ?", minionID)
 		}

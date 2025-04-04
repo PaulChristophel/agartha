@@ -45,7 +45,7 @@ func OrderBy(orderBy string, validColumns []string, jsonCol string, jsonPath []s
 			validatedColumns = append(validatedColumns, colName+" "+sortDirection)
 		} else if jsonPathMap[colName] || jsonPathMap["\""+colName+"\""] {
 			// Handle JSON path columns
-			validatedColumns = append(validatedColumns, fmt.Sprintf("jsonb_extract_path_text(%s, '%s') %s", jsonCol, strings.Replace(colName, ".", "', '", -1), sortDirection))
+			validatedColumns = append(validatedColumns, fmt.Sprintf("jsonb_extract_path_text(%s, '%s') %s", jsonCol, strings.ReplaceAll(colName, ".", "', '"), sortDirection))
 		} else {
 			return "", fmt.Errorf("invalid column name '%s'. Valid columns: %v", colName, validColumns)
 		}

@@ -114,9 +114,9 @@ func GetSaltCache(c *gin.Context) {
 	// Apply filters based on provided bank and key
 	if bank != "" {
 		if strings.Contains(bank, "*") {
-			baseQuery = baseQuery.Where("bank LIKE ?", strings.Replace(bank, "*", "%", -1))
+			baseQuery = baseQuery.Where("bank LIKE ?", strings.ReplaceAll(bank, "*", "%"))
 		} else if strings.Contains(bank, "?") {
-			baseQuery = baseQuery.Where("bank LIKE ?", strings.Replace(bank, "?", "_", -1))
+			baseQuery = baseQuery.Where("bank LIKE ?", strings.ReplaceAll(bank, "?", "_"))
 		} else {
 			baseQuery = baseQuery.Where("bank = ?", bank)
 		}
@@ -124,9 +124,9 @@ func GetSaltCache(c *gin.Context) {
 	}
 	if key != "" {
 		if strings.Contains(key, "*") {
-			baseQuery = baseQuery.Where("psql_key LIKE ?", strings.Replace(key, "*", "%", -1))
+			baseQuery = baseQuery.Where("psql_key LIKE ?", strings.ReplaceAll(key, "*", "%"))
 		} else if strings.Contains(key, "?") {
-			baseQuery = baseQuery.Where("psql_key LIKE ?", strings.Replace(key, "?", "_", -1))
+			baseQuery = baseQuery.Where("psql_key LIKE ?", strings.ReplaceAll(key, "?", "_"))
 		} else {
 			baseQuery = baseQuery.Where("psql_key = ?", key)
 		}

@@ -111,18 +111,18 @@ func GetSaltReturns(c *gin.Context) {
 
 	if id != "" {
 		if strings.Contains(id, "*") {
-			filterQuery = filterQuery.Where("id LIKE ?", strings.Replace(id, "*", "%", -1))
+			filterQuery = filterQuery.Where("id LIKE ?", strings.ReplaceAll(id, "*", "%"))
 		} else if strings.Contains(id, "?") {
-			filterQuery = filterQuery.Where("id LIKE ?", strings.Replace(id, "?", "_", -1))
+			filterQuery = filterQuery.Where("id LIKE ?", strings.ReplaceAll(id, "?", "_"))
 		} else {
 			filterQuery = filterQuery.Where("id = ?", id)
 		}
 	}
 	if jid != "" {
 		if strings.Contains(jid, "*") {
-			filterQuery = filterQuery.Where("jid LIKE ?", strings.Replace(jid, "*", "%", -1))
+			filterQuery = filterQuery.Where("jid LIKE ?", strings.ReplaceAll(jid, "*", "%"))
 		} else if strings.Contains(jid, "?") {
-			filterQuery = filterQuery.Where("jid LIKE ?", strings.Replace(jid, "?", "_", -1))
+			filterQuery = filterQuery.Where("jid LIKE ?", strings.ReplaceAll(jid, "?", "_"))
 		} else {
 			filterQuery = filterQuery.Where("jid = ?", jid)
 		}
@@ -135,10 +135,10 @@ func GetSaltReturns(c *gin.Context) {
 		for _, element := range funs {
 			if strings.Contains(element, "*") {
 				orConditions = append(orConditions, "fun LIKE ?")
-				args = append(args, strings.Replace(element, "*", "%", -1))
+				args = append(args, strings.ReplaceAll(element, "*", "%"))
 			} else if strings.Contains(element, "?") {
 				orConditions = append(orConditions, "fun LIKE ?")
-				args = append(args, strings.Replace(element, "?", "_", -1))
+				args = append(args, strings.ReplaceAll(element, "?", "_"))
 			} else {
 				orConditions = append(orConditions, "fun = ?")
 				args = append(args, element)

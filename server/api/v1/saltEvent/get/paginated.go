@@ -81,20 +81,20 @@ func GetSaltEvents(c *gin.Context) {
 	filterQuery := db.Select(selection).Model(&model.SaltEvent{})
 	if tag != "" {
 		if strings.Contains(tag, "*") {
-			filterQuery = filterQuery.Where("tag LIKE ?", strings.Replace(tag, "*", "%", -1))
+			filterQuery = filterQuery.Where("tag LIKE ?", strings.ReplaceAll(tag, "*", "%"))
 		} else if strings.Contains(tag, "?") {
-			filterQuery = filterQuery.Where("tag LIKE ?", strings.Replace(tag, "?", "_", -1))
+			filterQuery = filterQuery.Where("tag LIKE ?", strings.ReplaceAll(tag, "?", "_"))
 		} else {
 			filterQuery = filterQuery.Where("tag = ?", tag)
 		}
 		log.Debug("Applied tag filter", zap.String("tag", tag))
 	}
 	if masterID != "" {
-		masterID = strings.Replace(masterID, "_", "\\_", -1)
+		masterID = strings.ReplaceAll(masterID, "_", "\\_")
 		if strings.Contains(masterID, "*") {
-			filterQuery = filterQuery.Where("master_id LIKE ?", strings.Replace(masterID, "*", "%", -1))
+			filterQuery = filterQuery.Where("master_id LIKE ?", strings.ReplaceAll(masterID, "*", "%"))
 		} else if strings.Contains(masterID, "?") {
-			filterQuery = filterQuery.Where("master_id LIKE ?", strings.Replace(masterID, "?", "_", -1))
+			filterQuery = filterQuery.Where("master_id LIKE ?", strings.ReplaceAll(masterID, "?", "_"))
 		} else {
 			filterQuery = filterQuery.Where("master_id = ?", masterID)
 		}

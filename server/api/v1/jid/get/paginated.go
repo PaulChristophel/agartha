@@ -70,9 +70,9 @@ func GetJIDs(c *gin.Context) {
 
 	if filter != "" {
 		if strings.Contains(filter, "*") {
-			baseQuery = baseQuery.Where("jid LIKE ?", strings.Replace(filter, "*", "%", -1))
+			baseQuery = baseQuery.Where("jid LIKE ?", strings.ReplaceAll(filter, "*", "%"))
 		} else if strings.Contains(filter, "?") {
-			baseQuery = baseQuery.Where("jid LIKE ?", strings.Replace(filter, "?", "_", -1))
+			baseQuery = baseQuery.Where("jid LIKE ?", strings.ReplaceAll(filter, "?", "_"))
 		} else {
 			baseQuery = baseQuery.Where("jid = ?", filter)
 		}
