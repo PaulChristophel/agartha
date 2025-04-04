@@ -1,6 +1,7 @@
 package db
 
 import (
+	"log"
 	"testing"
 
 	"github.com/DATA-DOG/go-sqlmock"
@@ -23,7 +24,12 @@ func TestConnectToDatabase(t *testing.T) {
 	// Create a new mock database
 	db, mock, err := sqlmock.New()
 	assert.NoError(t, err)
-	defer db.Close()
+	defer func() {
+		if derr := db.Close(); derr != nil {
+			// Optionally log the error
+			log.Printf("failed to close db connection: %v", derr)
+		}
+	}()
 
 	// Set the global DB variable to the mock database
 	DB, err = gorm.Open(postgres.New(postgres.Config{

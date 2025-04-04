@@ -63,7 +63,12 @@ func authCAS(username string, c *gin.Context) (userData, error) {
 	if err != nil {
 		return userData, fmt.Errorf("failed to validate CAS ticket: %w", err)
 	}
-	defer resp.Body.Close()
+	defer func() {
+		if cerr := resp.Body.Close(); cerr != nil {
+			// Optionally log the error
+			log.Printf("failed to close response body: %v", cerr)
+		}
+	}()
 
 	if resp.StatusCode != http.StatusOK {
 		return userData, errors.New("CAS ticket validation failed")
@@ -85,7 +90,13 @@ func authLDAP(username, password string) (userData, error) {
 	if err != nil {
 		return userData, fmt.Errorf("failed to connect: %w", err)
 	}
-	defer l.Close()
+
+	defer func() {
+		if lerr := l.Close(); lerr != nil {
+			// Optionally log the error
+			log.Printf("failed to close ldap connection: %v", lerr)
+		}
+	}()
 
 	ldapDomain := ldapOptions.LDAPDomainDefault
 	if !strings.HasSuffix(username, ldapDomain) {

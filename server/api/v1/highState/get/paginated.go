@@ -90,9 +90,9 @@ func GetHighStates(c *gin.Context) {
 
 	if id != "" {
 		if strings.Contains(id, "*") {
-			filterQuery = filterQuery.Where("id LIKE ?", strings.Replace(id, "*", "%", -1))
+			filterQuery = filterQuery.Where("id LIKE ?", strings.ReplaceAll(id, "*", "%"))
 		} else if strings.Contains(id, "?") {
-			filterQuery = filterQuery.Where("id LIKE ?", strings.Replace(id, "?", "_", -1))
+			filterQuery = filterQuery.Where("id LIKE ?", strings.ReplaceAll(id, "?", "_"))
 		} else {
 			filterQuery = filterQuery.Where("id = ?", id)
 		}

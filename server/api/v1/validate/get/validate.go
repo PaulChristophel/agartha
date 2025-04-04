@@ -5,7 +5,6 @@ import (
 
 	// So swagger can document the function
 	"github.com/PaulChristophel/agartha/server/httputil"
-	_ "github.com/PaulChristophel/agartha/server/httputil"
 	"github.com/gin-gonic/gin"
 )
 
