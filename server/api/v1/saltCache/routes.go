@@ -22,6 +22,7 @@ func AddRoutes(rg *gin.RouterGroup) {
 	get.SetRefreshing(&isRefreshing)
 
 	grp.DELETE("/uuid/:uuid", delete.DeleteSaltCacheUUID)
+	grp.DELETE("/bank/:bank", delete.DeleteSaltCacheBank)
 	grp.DELETE("/:bank/:key", delete.DeleteSaltCacheBankKey)
 	grp.GET("", get.GetSaltCache)
 	grp.GET("/fun_keys", get.ListSaltCacheDataKeys)

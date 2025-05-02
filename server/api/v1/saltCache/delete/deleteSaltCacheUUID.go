@@ -29,33 +29,27 @@ import (
 //	@Security		Bearer
 func DeleteSaltCacheUUID(c *gin.Context) {
 	db := db.DB.Table(table)
-	var saltCache model.SaltCache
 
-	// Read the param saltCache
-	uuid := c.Param("uuid")
+	uuid, ok := httputil.MustUnescapeParam(c, "uuid")
+	if !ok {
+		return
+	}
 
 	if uuid == "" {
-		httputil.NewError(c, http.StatusBadRequest, "uuid required.")
+		httputil.NewError(c, http.StatusBadRequest, "uuid is required.")
 		return
 	}
 
-	// Find the saltCache with the given bank
-	db.Where("id = ?", uuid).Find(&saltCache)
-
-	// If no such saltCache present return an error
-	if saltCache.Bank == "" {
-		httputil.NewError(c, http.StatusBadRequest, "No salt_cache item present.")
-		return
-	}
-
-	// Delete the note and return error if encountered
-	err := db.Delete(&saltCache, "id = ? ", uuid).Error
-
-	if err != nil {
+	// Safely delete with WHERE clause only
+	tx := db.Where("id = ?", uuid).Delete(&model.SaltCache{})
+	if tx.Error != nil {
 		httputil.NewError(c, http.StatusInternalServerError, "Failed to delete cache item.")
 		return
 	}
+	if tx.RowsAffected == 0 {
+		httputil.NewError(c, http.StatusNotFound, fmt.Sprintf("No salt_cache item found with UUID: %s", uuid))
+		return
+	}
 
-	// Return success message
 	httputil.NewError(c, http.StatusOK, fmt.Sprintf("Deleted salt_cache item %s", uuid))
 }

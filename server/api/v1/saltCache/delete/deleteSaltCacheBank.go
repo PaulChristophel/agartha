@@ -14,8 +14,8 @@ import (
 
 // DeleteSaltCacheBankKey func one saltCache by SaltCache
 //
-//	@Summary		Delete one salt_cache item by bank and key
-//	@Description	Delete one salt_cache item by bank and key
+//	@Summary		Delete a salt_cache bank
+//	@Description	Deletes a salt_cache bank and all associated keys
 //	@Tags			SaltCache
 //	@Accept			json
 //	@Produce		json
@@ -24,11 +24,11 @@ import (
 //	@Failure		401	{object}	httputil.HTTPError401
 //	@Failure		404	{object}	httputil.HTTPError404
 //	@Failure		500	{object}	httputil.HTTPError500
-//	@router			/api/v1/salt_cache/{bank}/{key} [delete]
+//	@router			/api/v1/salt_cache/bank/{bank} [delete]
 //	@Param			bank	path	string	true	"bank of the salt cache item to delete"
 //	@Param			key		path	string	true	"key of the salt cache item to delete"
 //	@Security		Bearer
-func DeleteSaltCacheBankKey(c *gin.Context) {
+func DeleteSaltCacheBank(c *gin.Context) {
 	db := db.DB.Table(table)
 
 	bank, ok := httputil.MustUnescapeParam(c, "bank")
@@ -36,26 +36,21 @@ func DeleteSaltCacheBankKey(c *gin.Context) {
 		return
 	}
 
-	key, ok := httputil.MustUnescapeParam(c, "key")
-	if !ok {
+	if bank == "" {
+		httputil.NewError(c, http.StatusBadRequest, "bank is required.")
 		return
 	}
 
-	if bank == "" || key == "" {
-		httputil.NewError(c, http.StatusBadRequest, "bank and key are required.")
-		return
-	}
-
-	// Safely delete with explicit WHERE clause
-	tx := db.Where("bank = ? AND psql_key = ?", bank, key).Delete(&model.SaltCache{})
+	// Safely delete with explicit WHERE clause only
+	tx := db.Where("bank = ?", bank).Delete(&model.SaltCache{})
 	if tx.Error != nil {
-		httputil.NewError(c, http.StatusInternalServerError, "Failed to delete cache item.")
+		httputil.NewError(c, http.StatusInternalServerError, "Failed to delete salt_cache bank.")
 		return
 	}
 	if tx.RowsAffected == 0 {
-		httputil.NewError(c, http.StatusNotFound, "No salt_cache item found to delete.")
+		httputil.NewError(c, http.StatusNotFound, fmt.Sprintf("No salt_cache items found for bank: %s", bank))
 		return
 	}
 
-	httputil.NewError(c, http.StatusOK, fmt.Sprintf("Deleted salt_cache item %s/%s", bank, key))
+	httputil.NewError(c, http.StatusOK, fmt.Sprintf("Deleted all salt_cache items in bank: %s", bank))
 }
