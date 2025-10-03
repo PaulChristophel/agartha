@@ -44,12 +44,12 @@ build-web-dev: fmt-web lint-web-fix
 build-go: fmt-go lint-go
 	@echo "USING LDFLAGS=$(LDFLAGS) FOR BUILD"
 	git tag -f v$(VERSION)
-	go build -ldflags=$(LDFLAGS) -v -o $(release_dir)/${BINARY_NAME}
+	CGO_ENABLED=0 go build -ldflags=$(LDFLAGS) -v -o $(release_dir)/${BINARY_NAME}
 
 build-go-dev: fmt-go lint-go
 	@echo "USING LDFLAGS=$(LDFLAGS) FOR BUILD"
 	git tag -f v$(VERSION)-$(DATE)-$(BUILD)
-	go build -v -ldflags=$(LDFLAGS) -o $(debug_dir)/${BINARY_NAME}
+	CGO_ENABLED=0 go build -v -ldflags=$(LDFLAGS) -o $(debug_dir)/${BINARY_NAME}
 
 run: watch
 watch: watch-go run-web run-compose

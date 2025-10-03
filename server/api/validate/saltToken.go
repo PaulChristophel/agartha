@@ -6,7 +6,7 @@ import (
 )
 
 func Token(token string) (string, error) {
-	const pattern = `^[a-f0-9]{40}$`
+	const pattern = `^[a-f0-9]{40,128}$`
 	re := regexp.MustCompile(pattern)
 	if re.MatchString(token) {
 		return token, nil

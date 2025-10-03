@@ -33,7 +33,7 @@ FROM scratch as slim
 ARG ENV=debug
 ARG USER_ID=1000
 # Import dependencies
-COPY --from=builder-musl /lib/ld-musl-x86_64.so.1 /lib/ld-musl-x86_64.so.1
+# COPY --from=builder-musl /lib/ld-musl-x86_64.so.1 /lib/ld-musl-x86_64.so.1
 COPY --from=builder-musl /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
 COPY --from=builder-musl /usr/share/zoneinfo /usr/share/zoneinfo
 COPY --from=builder-musl /etc/passwd /etc/passwd
