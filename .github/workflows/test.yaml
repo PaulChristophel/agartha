@@ -170,8 +170,8 @@ jobs:
   #   - name: Podman
   #     continue-on-error: false
   #     run: |
-  #       podman pull docker.io/library/golang:bookworm
-  #       podman pull docker.io/library/debian:bookworm
+  #       podman pull docker.io/library/golang:trixie
+  #       podman pull docker.io/library/debian:trixie
   #       podman build \
   #       -f Dockerfile-glibc \
   #       --build-arg=ENV=${ENV} \
@@ -214,8 +214,8 @@ jobs:
     - name: Podman
       continue-on-error: false
       run: |
-        podman pull docker.io/library/golang:bookworm
-        podman pull docker.io/library/debian:bookworm
+        podman pull docker.io/library/golang:trixie
+        podman pull docker.io/library/debian:trixie
         podman build \
         -f Dockerfile-glibc \
         --build-arg=ENV=${ENV} \
