@@ -200,6 +200,9 @@ jobs:
       ACR_URL: ${{ secrets.ACR_URL }}
       ACR_USERNAME: ${{ secrets.ACR_USERNAME }}
       ACR_PASSWORD: ${{ secrets.ACR_PASSWORD }}
+      DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+      DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+      
       ENV: "debug"
     steps:
     - uses: actions/checkout@v4
@@ -229,9 +232,16 @@ jobs:
         -t oitacr.azurecr.io/pmartin47/agartha:latest-slim-glibc-test \
         -t oitacr.azurecr.io/pmartin47/agartha:${GITHUB_VERSION}-${GITHUB_PSEUDODATE}-${SHORT_SHA}-slim-glibc-test \
         -t oitacr.azurecr.io/pmartin47/agartha:${GITHUB_VERSION}-${GITHUB_PSEUDODATE}-${SHORT_SHA}-glibc-test \
+        -t docker.io/pcm0/agartha:latest-glibc-test \
+        -t docker.io/pcm0/agartha:latest-slim-glibc-test \
+        -t docker.io/pcm0/agartha:${GITHUB_VERSION}-${GITHUB_PSEUDODATE}-${SHORT_SHA}-slim-glibc-test \
+        -t docker.io/pcm0/agartha:${GITHUB_VERSION}-${GITHUB_PSEUDODATE}-${SHORT_SHA}-glibc-test \
         --target slim-glibc
     - name: Push to Docker Hub
       run: |
+        podman login docker.io --username $DOCKER_USERNAME --password $DOCKER_PASSWORD
+        podman images | awk "/docker.io\/pcm0\/agartha/ { print \$1\":\"\$2 }" | xargs -I {} podman push {}
+        podman logout
         podman login $ACR_URL --username $ACR_USERNAME --password $ACR_PASSWORD
         podman images | awk "/$ACR_URL\/pmartin47\/agartha/ { print \$1\":\"\$2 }" | xargs -I {} podman push {}
         podman logout

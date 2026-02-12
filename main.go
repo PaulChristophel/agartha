@@ -16,7 +16,7 @@ import (
 var dist embed.FS
 
 //	@title			Agartha API
-//	@version		v0.5.22-20241023132336-a7ba9526a84e
+//	@version		1.0
 //	@description	This is the Agartha API Backend
 
 //	@contact.name	API Support
