@@ -1,6 +1,8 @@
 package routes
 
 import (
+	"crypto/tls"
+	"crypto/x509"
 	"embed"
 	"fmt"
 	"html/template"
@@ -96,7 +98,43 @@ func Router(frontend embed.FS, agarthaOptions config.Config) error {
 	router.Use(sessions.Sessions("agarthaAuthSession", store))
 	addServerRoutes(router)
 	addStaticRoutes(router, frontend)
-	err = router.Run(fmt.Sprintf("%s:%d", options.Host, options.Port))
+
+	addr := fmt.Sprintf("%s:%d", options.Host, options.Port)
+	srv := &http.Server{
+		Addr:    addr,
+		Handler: router,
+	}
+
+	// TLS support (server cert/key). Put full chain (server + intermediates) in the cert PEM file.
+	// Expected config fields (add to config.HTTPOptions as needed):
+	//   options.TLSCertFile string
+	//   options.TLSKeyFile  string
+	//   options.TLSClientCAFile string (optional)
+	if options.TLSCertFile != "" && options.TLSKeyFile != "" {
+		tlsCfg := &tls.Config{
+			MinVersion: tls.VersionTLS12,
+		}
+
+		// Optional mTLS: verify client certs against a provided CA bundle (PEM).
+		if options.TLSClientCAFile != "" {
+			caPEM, readErr := os.ReadFile(options.TLSClientCAFile)
+			if readErr != nil {
+				log.Error("Failed to read TLS client CA file", zap.Error(readErr))
+				return readErr
+			}
+			pool := x509.NewCertPool()
+			if !pool.AppendCertsFromPEM(caPEM) {
+				return fmt.Errorf("failed to parse TLS client CA PEM: %s", options.TLSClientCAFile)
+			}
+			tlsCfg.ClientCAs = pool
+			tlsCfg.ClientAuth = tls.VerifyClientCertIfGiven
+		}
+
+		srv.TLSConfig = tlsCfg
+		err = srv.ListenAndServeTLS(options.TLSCertFile, options.TLSKeyFile)
+	} else {
+		err = srv.ListenAndServe()
+	}
 	if err != nil {
 		log.Error("Failed to start server", zap.Error(err))
 	}
