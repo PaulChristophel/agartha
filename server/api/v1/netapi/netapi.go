@@ -85,9 +85,6 @@ func proxy(c *gin.Context, target, repl string) {
 		}).DialContext,
 	}
 
-	incomingPath := "" + c.Request.URL.Path
-	incomingRawQuery := c.Request.URL.RawQuery
-
 	orig := proxy.Director
 
 	proxy.Director = func(req *http.Request) {
