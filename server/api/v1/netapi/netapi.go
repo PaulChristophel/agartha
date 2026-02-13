@@ -85,34 +85,46 @@ func proxy(c *gin.Context, target, repl string) {
 		}).DialContext,
 	}
 
-	// Custom director to modify the request
-	proxy.Director = func(req *http.Request) {
-		req.Header.Set("User-Agent", "Go-http-client/1.1")
-		if strings.HasPrefix(req.URL.Path, repl+"/netapi") {
-			req.URL.Path = strings.TrimPrefix(req.URL.Path, repl+"/netapi")
-		} else if req.URL.Path == repl {
-			req.URL.Path = "/"
-		}
-		req.Host = remote.Host
-		req.URL.Scheme = remote.Scheme
-		req.URL.Host = remote.Host
+	incomingPath := "" + c.Request.URL.Path
+	incomingRawQuery := c.Request.URL.RawQuery
 
-		// Clear the Authorization header for endpoints other than /login
+	orig := proxy.Director
+
+	proxy.Director = func(req *http.Request) {
+		// capture incoming path + query BEFORE orig mutates it
+		p := req.URL.Path
+		if strings.HasPrefix(p, repl+"/netapi") {
+			p = strings.TrimPrefix(p, repl+"/netapi")
+			if p == "" {
+				p = "/"
+			}
+		}
+		q := req.URL.RawQuery
+
+		orig(req)
+
+		req.Header.Set("User-Agent", "Go-http-client/1.1")
+
+		// join upstream base path (e.g. /pepper/) with rewritten path
+		base := remote.Path
+		if base == "" {
+			base = "/"
+		}
+		req.URL.Path, _ = url.JoinPath(base, p)
+		req.URL.RawQuery = q
+
+		// Clear Authorization header for endpoints other than /login
 		if !strings.Contains(req.URL.Path, "/login") {
 			req.Header.Del("Authorization")
 		}
 
-		if gin.Mode() == gin.DebugMode { // Log the request being forwarded
-			if req.Body != nil {
-				body, err := io.ReadAll(req.Body)
-				if err == nil {
-					logger.GetLogger().Sugar().Debugf("Forwarded Request Body: %s", string(body))
-					req.Body = io.NopCloser(bytes.NewBuffer(body))
-				} else {
-					logger.GetLogger().Sugar().Debugf("Error reading request body: %s", err)
-				}
+		if gin.Mode() == gin.DebugMode && req.Body != nil {
+			body, err := io.ReadAll(req.Body)
+			if err == nil {
+				logger.GetLogger().Sugar().Debugf("Forwarded Request Body: %s", string(body))
+				req.Body = io.NopCloser(bytes.NewBuffer(body))
 			} else {
-				logger.GetLogger().Debug("Request Body is nil")
+				logger.GetLogger().Sugar().Debugf("Error reading request body: %s", err)
 			}
 		}
 	}
