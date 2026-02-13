@@ -44,7 +44,7 @@
     "@xterm/addon-fit": "^0.10.0",
     "@xterm/xterm": "^5.5.0",
     "addon-web-links:": "link:@xterm/addon-web-links:",
-    "apexcharts": "^3.54.1",
+    "apexcharts": "^4.7.0",
     "axios": "^1.13.5",
     "codemirror": "^6.0.2",
     "date-fns": "^4.1.0",
