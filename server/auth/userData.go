@@ -3,12 +3,14 @@ package auth
 import (
 	"errors"
 	"fmt"
-	"log"
 	"net/http"
 	"strings"
 
+	"github.com/PaulChristophel/agartha/server/logger"
+
 	"github.com/gin-gonic/gin"
 	"github.com/go-ldap/ldap/v3"
+	"go.uber.org/zap"
 )
 
 type userData struct {
@@ -49,6 +51,7 @@ func authLocal(username, password string) (userData, error) {
 }
 
 func authCAS(username string, c *gin.Context) (userData, error) {
+	var log = logger.GetLogger()
 	var userData userData
 
 	ticket := c.Query("ticket")
@@ -66,7 +69,7 @@ func authCAS(username string, c *gin.Context) (userData, error) {
 	defer func() {
 		if cerr := resp.Body.Close(); cerr != nil {
 			// Optionally log the error
-			log.Printf("failed to close response body: %v", cerr)
+			log.Error("failed to close response body", zap.Error(cerr))
 		}
 	}()
 
@@ -84,6 +87,7 @@ func authCAS(username string, c *gin.Context) (userData, error) {
 }
 
 func authLDAP(username, password string) (userData, error) {
+	var log = logger.GetLogger()
 	var userData userData
 	var ldap_server = ldapOptions.Server
 	l, err := ldap.DialURL(ldap_server)
@@ -94,7 +98,7 @@ func authLDAP(username, password string) (userData, error) {
 	defer func() {
 		if lerr := l.Close(); lerr != nil {
 			// Optionally log the error
-			log.Printf("failed to close ldap connection: %v", lerr)
+			log.Error("failed to close ldap connection", zap.Error(lerr))
 		}
 	}()
 
@@ -108,7 +112,7 @@ func authLDAP(username, password string) (userData, error) {
 	}
 
 	// First bind with the user credentials to authenticate
-	log.Printf("Binding to %s as %s", ldap_server, userData.UserPrincipalName)
+	log.Debug("binding to ldap server", zap.String("server", ldap_server), zap.String("user", userData.UserPrincipalName))
 	err = l.Bind(userData.UserPrincipalName, password)
 	if err != nil {
 		return userData, fmt.Errorf("failed to bind: %w", err)
