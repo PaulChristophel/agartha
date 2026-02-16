@@ -29,7 +29,6 @@ import (
 //	@Param			key		path	string	true	"key of the salt cache item to retrieve"
 //	@Param			bank	path	string	true	"bank of the salt cache item to retrieve"
 //	@Security		Bearer
-
 func GetSaltCacheBankKey(c *gin.Context) {
 	dbConn := db.DB.Table(table)
 	log := logger.GetLogger()
