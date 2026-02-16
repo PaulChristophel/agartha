@@ -27,6 +27,8 @@ import (
 	"github.com/PaulChristophel/agartha/server/api/v1/secure/userSettings"
 	"github.com/PaulChristophel/agartha/server/api/v1/validate"
 
+	v2SaltCache "github.com/PaulChristophel/agartha/server/api/v2/saltCache"
+
 	// saltCachev2 "github.com/PaulChristophel/agartha/server/api/v2/saltCache"
 	"github.com/PaulChristophel/agartha/server/auth"
 	"github.com/PaulChristophel/agartha/server/config"
@@ -169,10 +171,10 @@ func addServerRoutes(router *gin.Engine) {
 	authUser.AddRoutes(grpV1secure)
 	userSettings.AddRoutes(grpV1secure)
 
-	// grpV2 := router.Group("/api/v2", middleware.AuthRequired([]byte(options.Secret)))
+	grpV2 := router.Group("/api/v2", middleware.AuthRequired([]byte(options.Secret)))
+	v2SaltCache.SetOptions(saltDBTables)
+	v2SaltCache.AddRoutes(grpV2)
 
-	// saltCachev2.SetOptions(saltDBTables)
-	// saltCachev2.AddRoutes(grpV2)
 }
 
 func addDocRoutes(router *gin.Engine, frontend embed.FS) {
