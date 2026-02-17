@@ -23,7 +23,7 @@ func AuthRequired(jwtSecret []byte) gin.HandlerFunc {
 		authToken := parts[1]
 
 		// parse and validate JWT token
-		token, err := jwt.Parse(authToken, func(token *jwt.Token) (interface{}, error) {
+		token, err := jwt.Parse(authToken, func(token *jwt.Token) (any, error) {
 			// ensure the token method conforms to "SigningMethodHMAC"
 			if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 				return nil, fmt.Errorf("unexpected signing method: %s", token.Header["alg"])

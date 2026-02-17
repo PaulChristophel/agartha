@@ -50,7 +50,7 @@ Usage Example:
 */
 func BuildJSONPathWhere(jsonPathFilters []string, column string) (string, error) {
 	// Initialize an empty map to build the combined JSON object
-	filterMap := make(map[string]interface{})
+	filterMap := make(map[string]any)
 
 	for _, filter := range jsonPathFilters {
 		filters := strings.Split(filter, "::")
@@ -88,7 +88,7 @@ func BuildJSONPathWhere(jsonPathFilters []string, column string) (string, error)
 		typ := filters[1]
 
 		// Parse the value according to its type
-		var parsedValue interface{}
+		var parsedValue any
 		var parseErr error
 		switch typ {
 		case "int":
@@ -114,9 +114,9 @@ func BuildJSONPathWhere(jsonPathFilters []string, column string) (string, error)
 				currentMap[key] = parsedValue
 			} else {
 				if _, exists := currentMap[key]; !exists {
-					currentMap[key] = make(map[string]interface{})
+					currentMap[key] = make(map[string]any)
 				}
-				currentMap = currentMap[key].(map[string]interface{})
+				currentMap = currentMap[key].(map[string]any)
 			}
 		}
 	}
@@ -130,14 +130,14 @@ func BuildJSONPathWhere(jsonPathFilters []string, column string) (string, error)
 }
 
 // parseArray parses a string representation of an array into an actual array.
-func parseArray(value string) ([]interface{}, error) {
+func parseArray(value string) ([]any, error) {
 	trimmedValue := strings.Trim(value, "[]")
 	if trimmedValue == "" {
-		return []interface{}{}, nil
+		return []any{}, nil
 	}
 
 	items := strings.Split(trimmedValue, ",")
-	var array []interface{}
+	var array []any
 	for _, item := range items {
 		item = strings.TrimSpace(item)
 		if intValue, err := strconv.Atoi(item); err == nil {

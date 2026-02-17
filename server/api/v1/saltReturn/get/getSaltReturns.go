@@ -130,7 +130,7 @@ func GetSaltReturns(c *gin.Context) {
 	if fun != "" {
 		funs := strings.Split(fun, ",")
 		orConditions := make([]string, 0, len(funs))
-		args := make([]interface{}, 0, len(funs))
+		args := make([]any, 0, len(funs))
 
 		for _, element := range funs {
 			if strings.Contains(element, "*") {

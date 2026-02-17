@@ -19,7 +19,7 @@ func ConnectToDatabase(options config.DBOptions) {
 	dsn := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=%s", options.Host, options.Port, options.User, options.Password, options.DBName, options.SSLMode)
 
 	// Retry logic
-	for i := 0; i < 3; i++ {
+	for i := range 3 {
 		// Connect to the DB and initialize the DB variable
 		DB, err = gorm.Open(postgres.Open(dsn))
 		if err == nil {

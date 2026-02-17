@@ -13,7 +13,7 @@ import (
 func TestSaltCacheMarshalJSON(t *testing.T) {
 	alterTime := time.Now().Truncate(time.Second) // Truncate fractional seconds
 	data := custom.JSON{
-		Data: map[string]interface{}{
+		Data: map[string]any{
 			"key": "value",
 		},
 	}
@@ -41,8 +41,8 @@ func TestSaltCacheMarshalJSON(t *testing.T) {
 	output, err := json.Marshal(cache)
 	assert.NoError(t, err)
 
-	var expected map[string]interface{}
-	var actual map[string]interface{}
+	var expected map[string]any
+	var actual map[string]any
 
 	err = json.Unmarshal([]byte(expectedJSON), &expected)
 	assert.NoError(t, err)
@@ -59,7 +59,7 @@ func TestSaltCacheMarshalJSONEmptyData(t *testing.T) {
 	cache := SaltCache{
 		Bank:    "test_bank",
 		PSQLKey: "test_key",
-		Data:    custom.JSON{Data: map[string]interface{}{}},
+		Data:    custom.JSON{Data: map[string]any{}},
 		ID:      id,
 	}
 
@@ -74,8 +74,8 @@ func TestSaltCacheMarshalJSONEmptyData(t *testing.T) {
 	output, err := json.Marshal(cache)
 	assert.NoError(t, err)
 
-	var expected map[string]interface{}
-	var actual map[string]interface{}
+	var expected map[string]any
+	var actual map[string]any
 
 	err = json.Unmarshal([]byte(expectedJSON), &expected)
 	assert.NoError(t, err)

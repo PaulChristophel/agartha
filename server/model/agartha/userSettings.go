@@ -64,7 +64,7 @@ func (us *UserSettings) SetSettingsFromJSON(jsonStr string) error {
 		jsonStr = defaultSettings
 	}
 
-	var js interface{}
+	var js any
 	if err := json.Unmarshal([]byte(jsonStr), &js); err != nil {
 		return err
 	}

@@ -12,7 +12,7 @@ import (
 func TestSaltEventMarshalJSON(t *testing.T) {
 	alterTime := time.Now().Truncate(time.Second) // Truncate fractional seconds
 	data := custom.JSON{
-		Data: map[string]interface{}{
+		Data: map[string]any{
 			"key": "value",
 		},
 	}
@@ -36,8 +36,8 @@ func TestSaltEventMarshalJSON(t *testing.T) {
 	output, err := json.Marshal(event)
 	assert.NoError(t, err)
 
-	var expected map[string]interface{}
-	var actual map[string]interface{}
+	var expected map[string]any
+	var actual map[string]any
 
 	err = json.Unmarshal([]byte(expectedJSON), &expected)
 	assert.NoError(t, err)
@@ -52,7 +52,7 @@ func TestSaltEventMarshalJSONEmptyData(t *testing.T) {
 	event := SaltEvent{
 		ID:       1,
 		Tag:      "test_tag",
-		Data:     custom.JSON{Data: map[string]interface{}{}},
+		Data:     custom.JSON{Data: map[string]any{}},
 		MasterID: "master_123",
 	}
 
@@ -67,8 +67,8 @@ func TestSaltEventMarshalJSONEmptyData(t *testing.T) {
 	output, err := json.Marshal(event)
 	assert.NoError(t, err)
 
-	var expected map[string]interface{}
-	var actual map[string]interface{}
+	var expected map[string]any
+	var actual map[string]any
 
 	err = json.Unmarshal([]byte(expectedJSON), &expected)
 	assert.NoError(t, err)

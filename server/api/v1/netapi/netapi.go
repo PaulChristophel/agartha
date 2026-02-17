@@ -90,8 +90,8 @@ func proxy(c *gin.Context, target, repl string) {
 	proxy.Director = func(req *http.Request) {
 		// capture incoming path + query BEFORE orig mutates it
 		p := req.URL.Path
-		if strings.HasPrefix(p, repl+"/netapi") {
-			p = strings.TrimPrefix(p, repl+"/netapi")
+		if after, ok := strings.CutPrefix(p, repl+"/netapi"); ok {
+			p = after
 			if p == "" {
 				p = "/"
 			}
