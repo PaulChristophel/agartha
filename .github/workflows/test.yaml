@@ -227,6 +227,7 @@ jobs:
         --build-arg=GITHUB_DATE=${GITHUB_DATE} \
         --build-arg=GITHUB_PSEUDODATE=${GITHUB_PSEUDODATE} \
         --build-arg=GITHUB_VERSION=${GITHUB_VERSION} \
+        -t docker.io/pcm0/agartha:latest-test \
         -t docker.io/pcm0/agartha:latest-glibc-test \
         -t docker.io/pcm0/agartha:latest-debian-glibc-test \
         -t docker.io/pcm0/agartha:${GITHUB_VERSION}-${GITHUB_PSEUDODATE}-${SHORT_SHA}-debian-glibc-test \
