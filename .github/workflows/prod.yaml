@@ -230,7 +230,7 @@ jobs:
         -t docker.io/pcm0/agartha:latest \
         -t docker.io/pcm0/agartha:latest-glibc \
         -t docker.io/pcm0/agartha:latest-slim-glibc \
-        -t docker.io/pcm0/agartha:latest-slim\
+        -t docker.io/pcm0/agartha:latest-slim \
         -t docker.io/pcm0/agartha:${GITHUB_VERSION}-${GITHUB_PSEUDODATE}-${SHORT_SHA}-slim-glibc \
         -t docker.io/pcm0/agartha:${GITHUB_VERSION}-${GITHUB_PSEUDODATE}-${SHORT_SHA}-glibc \
         -t docker.io/pcm0/agartha:${GITHUB_VERSION}-${GITHUB_PSEUDODATE}-${SHORT_SHA} \
