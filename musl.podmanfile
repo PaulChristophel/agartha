@@ -29,7 +29,7 @@ USER ${USER_ID}:${USER_ID}
 ENTRYPOINT ["/usr/local/bin/agartha"]
 
 # Export it to scratch
-FROM scratch as slim
+FROM scratch as slim-musl
 ARG ENV=debug
 ARG USER_ID=1000
 # Import dependencies
