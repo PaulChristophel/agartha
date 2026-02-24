@@ -34,7 +34,7 @@ const AuthWrapper: React.FC<AuthWrapperProps> = ({ children }) => {
     try {
       const decodedToken: JWTToken = jwtDecode(token);
       return decodedToken.exp * 1000 < Date.now();
-    } catch (error) {
+    } catch (_error) {
       return true; // If token cannot be decoded, consider it expired
     }
   };
