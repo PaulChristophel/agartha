@@ -75,9 +75,8 @@ func proxy(c *gin.Context, target, repl string) {
 		logger.GetLogger().Sugar().Fatalf("Could not parse target URL: %v", err)
 	}
 
-	proxy := httputil.NewSingleHostReverseProxy(remote)
-
-	proxy.Director = nil
+	// Do NOT use NewSingleHostReverseProxy (it sets Director, which triggers SA1019 and conflicts with Rewrite in Go 1.26).
+	proxy := &httputil.ReverseProxy{}
 
 	// Custom transport with timeout
 	proxy.Transport = &http.Transport{
@@ -88,7 +87,10 @@ func proxy(c *gin.Context, target, repl string) {
 	}
 
 	proxy.Rewrite = func(pr *httputil.ProxyRequest) {
-		// capture incoming path + query from the inbound request
+		// Standard reverse-proxy rewrite (replaces Director)
+		pr.SetURL(remote)
+
+		// capture incoming path  query from the inbound request
 		p := pr.In.URL.Path
 		if after, ok := strings.CutPrefix(p, repl+"/netapi"); ok {
 			p = after
@@ -97,9 +99,6 @@ func proxy(c *gin.Context, target, repl string) {
 			}
 		}
 		q := pr.In.URL.RawQuery
-
-		// apply the standard single-host reverse proxy rewrite
-		pr.SetURL(remote)
 
 		pr.Out.Header.Set("User-Agent", "Go-http-client/1.1")
 
