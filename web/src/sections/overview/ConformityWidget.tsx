@@ -116,7 +116,11 @@ const ConformityWidget: React.FC<ConformityWidgetProps> = ({ sx, ...other }) => 
               <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
             ))}
           </Pie>
-          <Tooltip formatter={(value: number) => `${((value / total) * 100).toFixed(2)}%`} />
+          <Tooltip
+            formatter={(value: number | undefined) =>
+              value !== undefined ? `${((value / total) * 100).toFixed(2)}%` : ''
+            }
+          />
           <Legend />
         </PieChart>
       </ResponsiveContainer>
