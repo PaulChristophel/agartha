@@ -77,6 +77,8 @@ func proxy(c *gin.Context, target, repl string) {
 
 	proxy := httputil.NewSingleHostReverseProxy(remote)
 
+	proxy.Director = nil
+
 	// Custom transport with timeout
 	proxy.Transport = &http.Transport{
 		DialContext: (&net.Dialer{
@@ -85,41 +87,40 @@ func proxy(c *gin.Context, target, repl string) {
 		}).DialContext,
 	}
 
-	orig := proxy.Director
-
-	proxy.Director = func(req *http.Request) {
-		// capture incoming path + query BEFORE orig mutates it
-		p := req.URL.Path
+	proxy.Rewrite = func(pr *httputil.ProxyRequest) {
+		// capture incoming path + query from the inbound request
+		p := pr.In.URL.Path
 		if after, ok := strings.CutPrefix(p, repl+"/netapi"); ok {
 			p = after
 			if p == "" {
 				p = "/"
 			}
 		}
-		q := req.URL.RawQuery
+		q := pr.In.URL.RawQuery
 
-		orig(req)
+		// apply the standard single-host reverse proxy rewrite
+		pr.SetURL(remote)
 
-		req.Header.Set("User-Agent", "Go-http-client/1.1")
+		pr.Out.Header.Set("User-Agent", "Go-http-client/1.1")
 
 		// join upstream base path (e.g. /pepper/) with rewritten path
 		base := remote.Path
 		if base == "" {
 			base = "/"
 		}
-		req.URL.Path, _ = url.JoinPath(base, p)
-		req.URL.RawQuery = q
+		pr.Out.URL.Path, _ = url.JoinPath(base, p)
+		pr.Out.URL.RawQuery = q
 
 		// Clear Authorization header for endpoints other than /login
-		if !strings.Contains(req.URL.Path, "/login") {
-			req.Header.Del("Authorization")
+		if !strings.Contains(pr.Out.URL.Path, "/login") {
+			pr.Out.Header.Del("Authorization")
 		}
 
-		if gin.Mode() == gin.DebugMode && req.Body != nil {
-			body, err := io.ReadAll(req.Body)
+		if gin.Mode() == gin.DebugMode && pr.Out.Body != nil {
+			body, err := io.ReadAll(pr.Out.Body)
 			if err == nil {
 				logger.GetLogger().Sugar().Debugf("Forwarded Request Body: %s", string(body))
-				req.Body = io.NopCloser(bytes.NewBuffer(body))
+				pr.Out.Body = io.NopCloser(bytes.NewBuffer(body))
 			} else {
 				logger.GetLogger().Sugar().Debugf("Error reading request body: %s", err)
 			}

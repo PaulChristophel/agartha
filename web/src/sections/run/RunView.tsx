@@ -76,7 +76,7 @@ const RunView: React.FC = () => {
   return (
     <Grid container spacing={2}>
       <Grid container item spacing={1}>
-        <Box sx={{ p: 3, borderRadius: 1, border: '1px solid #444' }}>
+        <Box sx={{ p: 3, borderRadius: 1, border: '1px solid #444', width: '100%' }}>
           <Fab
             color="primary"
             aria-label="add"
