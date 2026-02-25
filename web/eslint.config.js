@@ -12,27 +12,7 @@ import perfectionist from 'eslint-plugin-perfectionist';
 import unusedImports from 'eslint-plugin-unused-imports';
 
 export default [
-  {
-    ignores: [
-      'build/*',
-      'dist/*',
-      'public/*',
-      '**/out/*',
-      '**/node_modules/*',
-      '**/.next/*',
-      'next.config.js',
-      'vite.config.js',
-      'vite.config.ts',
-      'src/reportWebVitals.js',
-      'src/service-worker.js',
-      'src/serviceWorkerRegistration.js',
-      'src/setupTests.js',
-      'src/reportWebVitals.ts',
-      'src/service-worker.ts',
-      'src/serviceWorkerRegistration.ts',
-      'src/setupTests.ts',
-    ],
-  },
+  { ignores: ['dist/**', 'build/**', 'coverage/**', 'node_modules/**'] },
 
   js.configs.recommended,
   ...tseslint.configs.recommended,
@@ -70,18 +50,6 @@ export default [
       prettier: prettierPlugin,
     },
     rules: {
-      // Fix crash in @typescript-eslint/no-unused-expressions under ESLint 9 when options end up undefined.
-      // Provide explicit options so the wrapped core rule always receives a complete options object.
-      '@typescript-eslint/no-unused-expressions': [
-        'error',
-        {
-          allowShortCircuit: true,
-          allowTernary: true,
-          allowTaggedTemplates: true,
-          enforceForJSX: true,
-        },
-      ],
-
       // your original disables
       'no-alert': 'off',
       camelcase: 'off',

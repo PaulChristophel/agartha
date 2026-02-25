@@ -1,5 +1,4 @@
 {
-  "type": "module",
   "name": "agartha",
   "author": "Paul Christophel",
   "licence": "AGPL-3.0-or-later",
@@ -19,7 +18,7 @@
     "dev:host": "vite --host --force",
     "vite:start": "vite",
     "vite:build": "vite build",
-    "set:version": "node -e \"const fs=require('fs');const p='./package.json';const j=JSON.parse(fs.readFileSync(p,'utf8'));const v=process.env.PNPMVERSION;if(!v)process.exit(0);if(j.version===v){process.exit(0)};\" && pnpm version \"$PNPMVERSION\" --no-git-tag-version",
+    "set:version": "pnpm version $PNPMVERSION",
     "re:version": "pnpm version 0.0.0"
   },
   "dependencies": {
@@ -83,8 +82,8 @@
     "@types/react-syntax-highlighter": "^15.5.13",
     "@typescript-eslint/eslint-plugin": "^8.56.1",
     "@typescript-eslint/parser": "^8.56.1",
-    "@vitejs/plugin-react": "^5.1.4",
-    "@vitejs/plugin-react-swc": "^4.2.3",
+    "@vitejs/plugin-react": "^4.7.0",
+    "@vitejs/plugin-react-swc": "^3.11.0",
     "eslint": "^9.39.3",
     "eslint-config-prettier": "^10.1.8",
     "eslint-import-resolver-alias": "^1.1.2",
@@ -101,13 +100,12 @@
     "prettier": "^3.8.1",
     "typescript": "^5.9.3",
     "typescript-eslint": "^8.56.1",
-    "vite": "^7.3.1",
-    "vite-plugin-checker": "^0.12.0",
-    "vite-tsconfig-paths": "^6.1.1"
+    "vite": "^5.4.21",
+    "vite-plugin-checker": "^0.8.0",
+    "vite-tsconfig-paths": "^5.1.4"
   },
   "pnpm": {
     "overrides": {
-      "eslint": "9.39.3",
       "axios@>=0.8.1 <0.28.0": ">=0.28.0"
     }
   }
