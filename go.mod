@@ -92,6 +92,6 @@ require (
 
 require (
 	github.com/gin-gonic/gin v1.11.0
-	golang.org/x/net v0.50.0 // indirect
+	golang.org/x/net v0.51.0 // indirect
 	google.golang.org/protobuf v1.36.11 // indirect
 )

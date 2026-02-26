@@ -466,6 +466,24 @@ func MigrateJSONB(options config.SaltDBTables) error {
 		return exec.Error
 	}
 
+	exec = DB.Exec(`REFRESH MATERIALIZED VIEW mat_salt_cache_data_keys;`)
+	if exec.Error != nil {
+		log.Printf("Error during migration: %v", exec.Error)
+		return exec.Error
+	}
+
+	exec = DB.Exec(`REFRESH MATERIALIZED VIEW mat_salt_minions_grains_keys;`)
+	if exec.Error != nil {
+		log.Printf("Error during migration: %v", exec.Error)
+		return exec.Error
+	}
+
+	exec = DB.Exec(`REFRESH MATERIALIZED VIEW mat_salt_minions_pillar_keys;`)
+	if exec.Error != nil {
+		log.Printf("Error during migration: %v", exec.Error)
+		return exec.Error
+	}
+
 	log.Printf("Database Migrated")
 	return nil
 }
