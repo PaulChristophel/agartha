@@ -8,8 +8,14 @@ import { autocompletion } from '@codemirror/autocomplete';
 import { search, searchKeymap } from '@codemirror/search';
 import { Link, useParams, useNavigate, useLocation } from 'react-router-dom';
 
+import Box from '@mui/material/Box';
 import Chip from '@mui/material/Chip';
+import Accordion from '@mui/material/Accordion';
+import Typography from '@mui/material/Typography';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import CircularProgress from '@mui/material/CircularProgress';
+import AccordionSummary from '@mui/material/AccordionSummary';
+import AccordionDetails from '@mui/material/AccordionDetails';
 
 import useHighState from 'src/hooks/highState/useHighState.ts';
 import useConformity from 'src/hooks/conformity/useConformity.ts';
@@ -20,9 +26,17 @@ interface ConformityDetailsPageParams extends Record<string, string | undefined>
   id: string;
 }
 
+// type update
 interface ReturnData {
   result: boolean;
   changes?: Record<string, unknown>;
+  __run_num__?: number;
+  __id__?: string;
+  __sls__?: string;
+  name?: string;
+  comment?: string;
+  duration?: number;
+  start_time?: string;
 }
 
 const ConformityDetailsPage: React.FC = () => {
@@ -35,48 +49,58 @@ const ConformityDetailsPage: React.FC = () => {
   const { alterTime, fun, returnId, returnJid, returnData, success, isLoading, error } =
     useHighState(id || '', true, false);
   const { trueCount, falseCount, changedCount, unchangedCount } = useConformity(id || '');
-  const [formattedLoad, setFormattedLoad] = useState('');
+  const [returnEntries, setReturnEntries] = useState<Array<{ key: string; data: ReturnData }>>([]);
   const [currentFilter, setCurrentFilter] = useState<string | null>(filterFromUrl || null);
 
   useEffect(() => {
-    if (returnData) {
-      let filteredData: Record<string, ReturnData> = {};
+    if (!returnData) return;
 
-      switch (currentFilter) {
-        case 'succeeded':
-          filteredData = Object.fromEntries(
-            Object.entries(returnData).filter(([, value]) => (value as ReturnData).result === true)
-          ) as Record<string, ReturnData>;
-          break;
-        case 'failed':
-          filteredData = Object.fromEntries(
-            Object.entries(returnData).filter(([, value]) => (value as ReturnData).result === false)
-          ) as Record<string, ReturnData>;
-          break;
-        case 'changed':
-          filteredData = Object.fromEntries(
-            Object.entries(returnData).filter(
-              ([, value]) =>
-                (value as ReturnData).changes &&
-                Object.keys((value as ReturnData).changes!).length > 0
-            )
-          ) as Record<string, ReturnData>;
-          break;
-        case 'unchanged':
-          filteredData = Object.fromEntries(
-            Object.entries(returnData).filter(
-              ([, value]) =>
-                !(value as ReturnData).changes ||
-                Object.keys((value as ReturnData).changes!).length === 0
-            )
-          ) as Record<string, ReturnData>;
-          break;
-        default:
-          filteredData = returnData as Record<string, ReturnData>;
-      }
+    let filteredData: Record<string, ReturnData> = {};
 
-      setFormattedLoad(jsYaml.dump(filteredData));
+    switch (currentFilter) {
+      case 'succeeded':
+        filteredData = Object.fromEntries(
+          Object.entries(returnData).filter(([, value]) => (value as ReturnData).result === true)
+        ) as Record<string, ReturnData>;
+        break;
+      case 'failed':
+        filteredData = Object.fromEntries(
+          Object.entries(returnData).filter(([, value]) => (value as ReturnData).result === false)
+        ) as Record<string, ReturnData>;
+        break;
+      case 'changed':
+        filteredData = Object.fromEntries(
+          Object.entries(returnData).filter(
+            ([, value]) =>
+              (value as ReturnData).changes &&
+              Object.keys((value as ReturnData).changes!).length > 0
+          )
+        ) as Record<string, ReturnData>;
+        break;
+      case 'unchanged':
+        filteredData = Object.fromEntries(
+          Object.entries(returnData).filter(
+            ([, value]) =>
+              !(value as ReturnData).changes ||
+              Object.keys((value as ReturnData).changes!).length === 0
+          )
+        ) as Record<string, ReturnData>;
+        break;
+      default:
+        filteredData = returnData as Record<string, ReturnData>;
     }
+
+    const entries = Object.entries(filteredData)
+      .map(([key, data]) => ({ key, data }))
+      .sort((a, b) => {
+        const ar =
+          typeof a.data.__run_num__ === 'number' ? a.data.__run_num__ : Number.MAX_SAFE_INTEGER;
+        const br =
+          typeof b.data.__run_num__ === 'number' ? b.data.__run_num__ : Number.MAX_SAFE_INTEGER;
+        return ar - br;
+      });
+
+    setReturnEntries(entries);
   }, [returnData, currentFilter]);
 
   const handleFilter = (type: string) => {
@@ -103,6 +127,18 @@ const ConformityDetailsPage: React.FC = () => {
     return <div>Error: {error.message}</div>;
   }
 
+  // add helper (place near the component, above return)
+  const titleFromReturnKey = (key: string): string => {
+    // key format example:
+    // cmd_|-Update CA Trust Extract_|-update-ca-certificates --verbose_|-run
+    const parts = key.split('_|-');
+    if (parts.length < 2) return key;
+
+    const second = parts[1] ?? '';
+    // strip any trailing delimiters that can appear in odd cases
+    return second.replaceAll('|-', '').trim() || key;
+  };
+
   return (
     <div
       style={{
@@ -117,7 +153,7 @@ const ConformityDetailsPage: React.FC = () => {
         Minion ID: <Link to={`/minion/${returnId}`}>{returnId}</Link>
       </div>
       <div style={{ marginBottom: '10px' }}>
-        Job ID: <Link to="/returns/?jid={returnJid}">{returnJid}</Link>
+        Job ID: <Link to={`/returns/?jid=${returnJid}`}>{returnJid}</Link>
       </div>
       <div style={{ marginBottom: '10px' }}>
         Function: <Link to={`/returns/?fun=${fun}`}>{fun}</Link>
@@ -168,20 +204,52 @@ const ConformityDetailsPage: React.FC = () => {
       </div>
       <div style={{ marginBottom: '10px' }}>Start Time: {formatTime(alterTime)}</div>
       <div style={{ marginTop: '20px' }}>
-        <h2>Return:</h2>
-        <CodeMirror
-          value={formattedLoad}
-          extensions={[
-            yaml(),
-            keymap.of([...foldKeymap, ...searchKeymap]),
-            autocompletion(),
-            search({
-              top: true, // position search bar at the top
-            }),
-          ]}
-          theme="dark"
-          readOnly
-        />
+        <div style={{ marginTop: '20px' }}>
+          <h2>Returns:</h2>
+
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+            {returnEntries.map(({ key, data }) => {
+              const runNum = typeof data.__run_num__ === 'number' ? data.__run_num__ : undefined;
+
+              return (
+                <Accordion key={key} disableGutters>
+                  <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, width: '100%' }}>
+                      <Typography sx={{ fontFamily: 'monospace', flexGrow: 1 }}>
+                        {titleFromReturnKey(key)}
+                      </Typography>
+
+                      {typeof runNum === 'number' && (
+                        <Chip size="small" variant="outlined" label={`__run_num__: ${runNum}`} />
+                      )}
+
+                      <Chip
+                        size="small"
+                        variant="outlined"
+                        label={String(data.result)}
+                        color={data.result ? 'success' : 'error'}
+                      />
+                    </Box>
+                  </AccordionSummary>
+
+                  <AccordionDetails>
+                    <CodeMirror
+                      value={jsYaml.dump(data)}
+                      extensions={[
+                        yaml(),
+                        keymap.of([...foldKeymap, ...searchKeymap]),
+                        autocompletion(),
+                        search({ top: true }),
+                      ]}
+                      theme="dark"
+                      readOnly
+                    />
+                  </AccordionDetails>
+                </Accordion>
+              );
+            })}
+          </Box>
+        </div>
       </div>
     </div>
   );
