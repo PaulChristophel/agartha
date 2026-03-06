@@ -79,8 +79,8 @@ importers:
         specifier: 'link:@xterm/addon-web-links:'
         version: 'link:@xterm/addon-web-links:'
       apexcharts:
-        specifier: ^5.10.1
-        version: 5.10.1
+        specifier: ^5.10.2
+        version: 5.10.2
       axios:
         specifier: ^1.13.6
         version: 1.13.6
@@ -119,7 +119,7 @@ importers:
         version: 18.3.1
       react-apexcharts:
         specifier: ^1.9.0
-        version: 1.9.0(apexcharts@5.10.1)(react@18.3.1)
+        version: 1.9.0(apexcharts@5.10.2)(react@18.3.1)
       react-dom:
         specifier: ^18.3.1
         version: 18.3.1(react@18.3.1)
@@ -164,8 +164,8 @@ importers:
         specifier: ^4.0.9
         version: 4.0.9
       '@types/node':
-        specifier: ^25.3.3
-        version: 25.3.3
+        specifier: ^25.3.5
+        version: 25.3.5
       '@types/numeral':
         specifier: ^2.0.5
         version: 2.0.5
@@ -189,10 +189,10 @@ importers:
         version: 8.56.1(eslint@9.39.3)(typescript@5.9.3)
       '@vitejs/plugin-react':
         specifier: ^5.1.4
-        version: 5.1.4(vite@7.3.1(@types/node@25.3.3))
+        version: 5.1.4(vite@7.3.1(@types/node@25.3.5))
       '@vitejs/plugin-react-swc':
         specifier: ^4.2.3
-        version: 4.2.3(vite@7.3.1(@types/node@25.3.3))
+        version: 4.2.3(vite@7.3.1(@types/node@25.3.5))
       eslint:
         specifier: 9.39.3
         version: 9.39.3
@@ -243,13 +243,13 @@ importers:
         version: 8.56.1(eslint@9.39.3)(typescript@5.9.3)
       vite:
         specifier: ^7.3.1
-        version: 7.3.1(@types/node@25.3.3)
+        version: 7.3.1(@types/node@25.3.5)
       vite-plugin-checker:
         specifier: ^0.12.0
-        version: 0.12.0(eslint@9.39.3)(optionator@0.9.4)(typescript@5.9.3)(vite@7.3.1(@types/node@25.3.3))
+        version: 0.12.0(eslint@9.39.3)(optionator@0.9.4)(typescript@5.9.3)(vite@7.3.1(@types/node@25.3.5))
       vite-tsconfig-paths:
         specifier: ^6.1.1
-        version: 6.1.1(typescript@5.9.3)(vite@7.3.1(@types/node@25.3.3))
+        version: 6.1.1(typescript@5.9.3)(vite@7.3.1(@types/node@25.3.5))
 
 packages:
 
@@ -1292,8 +1292,8 @@ packages:
       '@types/react':
         optional: true
 
-  '@mui/types@7.4.11':
-    resolution: {integrity: sha512-fZ2xO9D08IKOxO2oUBi1nnVKH6oJUD+64cnv4YAaFoC0E5+i1+S5AHbNqqvZlYYsbPEQ6qEVwuBqY3jl5W4G+Q==}
+  '@mui/types@7.4.12':
+    resolution: {integrity: sha512-iKNAF2u9PzSIj40CjvKJWxFXJo122jXVdrmdh0hMYd+FR+NuJMkr/L88XwWLCRiJ5P1j+uyac25+Kp6YC4hu6w==}
     peerDependencies:
       '@types/react': ^17.0.0 || ^18.0.0 || ^19.0.0
     peerDependenciesMeta:
@@ -1628,8 +1628,8 @@ packages:
   '@types/json5@0.0.29':
     resolution: {integrity: sha512-dRLjCWHYg4oaA77cxO64oO+7JwCwnIzkZPdrrC71jQmQtlhM556pwKo5bUzqvZndkVbeFLIIi+9TC40JNF5hNQ==}
 
-  '@types/node@25.3.3':
-    resolution: {integrity: sha512-DpzbrH7wIcBaJibpKo9nnSQL0MTRdnWttGyE5haGwK86xgMOkFLp7vEyfQPGLOJh5wNYiJ3V9PmUMDhV9u8kkQ==}
+  '@types/node@25.3.5':
+    resolution: {integrity: sha512-oX8xrhvpiyRCQkG1MFchB09f+cXftgIXb3a7UUa4Y3wpmZPw5tyZGTLWhlESOLq1Rq6oDlc8npVU2/9xiCuXMA==}
 
   '@types/numeral@2.0.5':
     resolution: {integrity: sha512-kH8I7OSSwQu9DS9JYdFWbuvhVzvFRoCPCkGxNwoGgaPeDfEPJlcxNvEOypZhQ3XXHsGbfIuYcxcJxKUfJHnRfw==}
@@ -1897,8 +1897,8 @@ packages:
     resolution: {integrity: sha512-zbB9rCJAT1rbjiVDb2hqKFHNYLxgtk8NURxZ3IZwD3F6NtxbXZQCnnSi1Lkx+IDohdPlFp222wVALIheZJQSEg==}
     engines: {node: '>=8'}
 
-  apexcharts@5.10.1:
-    resolution: {integrity: sha512-BpKKRopNm5cziXmA1igmCKiJ02I2g/I4vBtjhB6/50FrrY2IH5csvCzzqiIuFCB+P+2p0MgLAGOJPKOUvXO63w==}
+  apexcharts@5.10.2:
+    resolution: {integrity: sha512-QUGIcJdvjflLD2ohuXFzcrB/6c+8j2XHgPLAPFElHltjdHLvoETx0yAFnh4ltF0GY0Ry18UFgMGEr8XpVjSrYw==}
 
   argparse@2.0.1:
     resolution: {integrity: sha512-8+9WqebbFzpX9OR+Wa6O29asIogeRMzcGtAINdpMHHyAg10f05aSFVBbcEqGf/PXw1EjAZ+q2/bEBg3DvurK3Q==}
@@ -2023,8 +2023,8 @@ packages:
     resolution: {integrity: sha512-P8BjAsXvZS+VIDUI11hHCQEv74YT67YUi5JJFNWIqL235sBmjX4+qx9Muvls5ivyNENctx46xQLQ3aTuE7ssaQ==}
     engines: {node: '>=6'}
 
-  caniuse-lite@1.0.30001776:
-    resolution: {integrity: sha512-sg01JDPzZ9jGshqKSckOQthXnYwOEP50jeVFhaSFbZcOy05TiuuaffDOfcwtCisJ9kNQuLBFibYywv2Bgm9osw==}
+  caniuse-lite@1.0.30001777:
+    resolution: {integrity: sha512-tmN+fJxroPndC74efCdp12j+0rk0RHwV5Jwa1zWaFVyw2ZxAuPeG8ZgWC3Wz7uSjT3qMRQ5XHZ4COgQmsCMJAQ==}
 
   chalk@4.1.2:
     resolution: {integrity: sha512-oKnbhFyRIXpUuez8iBMmyEa4nbj4IOQyuhc/wy9kY7/WVPcwIO9VA668Pu8RkO7+0G76SLROeyw9CpQ061i4mA==}
@@ -4672,7 +4672,7 @@ snapshots:
     dependencies:
       '@babel/runtime': 7.28.6
       '@floating-ui/react-dom': 2.1.8(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
-      '@mui/types': 7.4.11(@types/react@18.3.28)
+      '@mui/types': 7.4.12(@types/react@18.3.28)
       '@mui/utils': 6.4.9(@types/react@18.3.28)(react@18.3.1)
       '@popperjs/core': 2.11.8
       clsx: 2.1.1
@@ -4698,7 +4698,7 @@ snapshots:
       '@mui/base': 5.0.0-beta.60(@types/react@18.3.28)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@mui/material': 6.5.0(@emotion/react@11.14.0(@types/react@18.3.28)(react@18.3.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@18.3.28)(react@18.3.1))(@types/react@18.3.28)(react@18.3.1))(@types/react@18.3.28)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@mui/system': 6.5.0(@emotion/react@11.14.0(@types/react@18.3.28)(react@18.3.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@18.3.28)(react@18.3.1))(@types/react@18.3.28)(react@18.3.1))(@types/react@18.3.28)(react@18.3.1)
-      '@mui/types': 7.4.11(@types/react@18.3.28)
+      '@mui/types': 7.4.12(@types/react@18.3.28)
       '@mui/utils': 6.4.9(@types/react@18.3.28)(react@18.3.1)
       clsx: 2.1.1
       prop-types: 15.8.1
@@ -4772,7 +4772,7 @@ snapshots:
     optionalDependencies:
       '@types/react': 18.3.28
 
-  '@mui/types@7.4.11(@types/react@18.3.28)':
+  '@mui/types@7.4.12(@types/react@18.3.28)':
     dependencies:
       '@babel/runtime': 7.28.6
     optionalDependencies:
@@ -5016,7 +5016,7 @@ snapshots:
 
   '@types/json5@0.0.29': {}
 
-  '@types/node@25.3.3':
+  '@types/node@25.3.5':
     dependencies:
       undici-types: 7.18.2
 
@@ -5238,15 +5238,15 @@ snapshots:
   '@unrs/resolver-binding-win32-x64-msvc@1.11.1':
     optional: true
 
-  '@vitejs/plugin-react-swc@4.2.3(vite@7.3.1(@types/node@25.3.3))':
+  '@vitejs/plugin-react-swc@4.2.3(vite@7.3.1(@types/node@25.3.5))':
     dependencies:
       '@rolldown/pluginutils': 1.0.0-rc.2
       '@swc/core': 1.15.18
-      vite: 7.3.1(@types/node@25.3.3)
+      vite: 7.3.1(@types/node@25.3.5)
     transitivePeerDependencies:
       - '@swc/helpers'
 
-  '@vitejs/plugin-react@5.1.4(vite@7.3.1(@types/node@25.3.3))':
+  '@vitejs/plugin-react@5.1.4(vite@7.3.1(@types/node@25.3.5))':
     dependencies:
       '@babel/core': 7.29.0
       '@babel/plugin-transform-react-jsx-self': 7.27.1(@babel/core@7.29.0)
@@ -5254,7 +5254,7 @@ snapshots:
       '@rolldown/pluginutils': 1.0.0-rc.3
       '@types/babel__core': 7.20.5
       react-refresh: 0.18.0
-      vite: 7.3.1(@types/node@25.3.3)
+      vite: 7.3.1(@types/node@25.3.5)
     transitivePeerDependencies:
       - supports-color
 
@@ -5283,7 +5283,7 @@ snapshots:
     dependencies:
       color-convert: 2.0.1
 
-  apexcharts@5.10.1:
+  apexcharts@5.10.2:
     dependencies:
       '@yr/monotone-cubic-spline': 1.0.3
 
@@ -5428,7 +5428,7 @@ snapshots:
   browserslist@4.28.1:
     dependencies:
       baseline-browser-mapping: 2.10.0
-      caniuse-lite: 1.0.30001776
+      caniuse-lite: 1.0.30001777
       electron-to-chromium: 1.5.307
       node-releases: 2.0.36
       update-browserslist-db: 1.2.3(browserslist@4.28.1)
@@ -5452,7 +5452,7 @@ snapshots:
 
   callsites@3.1.0: {}
 
-  caniuse-lite@1.0.30001776: {}
+  caniuse-lite@1.0.30001777: {}
 
   chalk@4.1.2:
     dependencies:
@@ -6571,9 +6571,9 @@ snapshots:
 
   punycode@2.3.1: {}
 
-  react-apexcharts@1.9.0(apexcharts@5.10.1)(react@18.3.1):
+  react-apexcharts@1.9.0(apexcharts@5.10.2)(react@18.3.1):
     dependencies:
-      apexcharts: 5.10.1
+      apexcharts: 5.10.2
       prop-types: 15.8.1
       react: 18.3.1
 
@@ -7108,7 +7108,7 @@ snapshots:
       d3-time: 3.1.0
       d3-timer: 3.0.1
 
-  vite-plugin-checker@0.12.0(eslint@9.39.3)(optionator@0.9.4)(typescript@5.9.3)(vite@7.3.1(@types/node@25.3.3)):
+  vite-plugin-checker@0.12.0(eslint@9.39.3)(optionator@0.9.4)(typescript@5.9.3)(vite@7.3.1(@types/node@25.3.5)):
     dependencies:
       '@babel/code-frame': 7.29.0
       chokidar: 4.0.3
@@ -7117,24 +7117,24 @@ snapshots:
       picomatch: 4.0.3
       tiny-invariant: 1.3.3
       tinyglobby: 0.2.15
-      vite: 7.3.1(@types/node@25.3.3)
+      vite: 7.3.1(@types/node@25.3.5)
       vscode-uri: 3.1.0
     optionalDependencies:
       eslint: 9.39.3
       optionator: 0.9.4
       typescript: 5.9.3
 
-  vite-tsconfig-paths@6.1.1(typescript@5.9.3)(vite@7.3.1(@types/node@25.3.3)):
+  vite-tsconfig-paths@6.1.1(typescript@5.9.3)(vite@7.3.1(@types/node@25.3.5)):
     dependencies:
       debug: 4.4.3
       globrex: 0.1.2
       tsconfck: 3.1.6(typescript@5.9.3)
-      vite: 7.3.1(@types/node@25.3.3)
+      vite: 7.3.1(@types/node@25.3.5)
     transitivePeerDependencies:
       - supports-color
       - typescript
 
-  vite@7.3.1(@types/node@25.3.3):
+  vite@7.3.1(@types/node@25.3.5):
     dependencies:
       esbuild: 0.27.3
       fdir: 6.5.0(picomatch@4.0.3)
@@ -7143,7 +7143,7 @@ snapshots:
       rollup: 4.59.0
       tinyglobby: 0.2.15
     optionalDependencies:
-      '@types/node': 25.3.3
+      '@types/node': 25.3.5
       fsevents: 2.3.3
 
   vscode-uri@3.1.0: {}
