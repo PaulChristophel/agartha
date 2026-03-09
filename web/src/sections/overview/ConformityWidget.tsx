@@ -1,5 +1,7 @@
 import React from 'react';
+import type { TooltipProps } from 'recharts';
 import { Pie, Cell, Legend, Tooltip, PieChart, ResponsiveContainer } from 'recharts';
+import type { NameType, ValueType } from 'recharts/types/component/DefaultTooltipContent';
 
 import { Theme, SxProps } from '@mui/material/styles';
 import {
@@ -60,6 +62,19 @@ const ConformityWidget: React.FC<ConformityWidgetProps> = ({ sx, ...other }) => 
     { name: 'Non-Conforming', value: totalFalseCount },
   ];
 
+  type TooltipFormatter = NonNullable<TooltipProps<ValueType, NameType>['formatter']>;
+
+  const formatTooltipValue = React.useCallback<TooltipFormatter>(
+    (value) => {
+      if (typeof value !== 'number' || total === 0) {
+        return '';
+      }
+
+      return `${((value / total) * 100).toFixed(2)}%`;
+    },
+    [total]
+  );
+
   return (
     <Card
       sx={{
@@ -116,11 +131,7 @@ const ConformityWidget: React.FC<ConformityWidgetProps> = ({ sx, ...other }) => 
               <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
             ))}
           </Pie>
-          <Tooltip
-            formatter={(value: number | undefined) =>
-              value !== undefined ? `${((value / total) * 100).toFixed(2)}%` : ''
-            }
-          />
+          <Tooltip formatter={formatTooltipValue} />
           <Legend />
         </PieChart>
       </ResponsiveContainer>
