@@ -19,7 +19,7 @@
     "dev:host": "vite --host --force",
     "vite:start": "vite",
     "vite:build": "vite build",
-    "set:version": "node -e \"const fs=require('fs');const p='./package.json';const j=JSON.parse(fs.readFileSync(p,'utf8'));const v=process.env.PNPMVERSION;if(!v)process.exit(0);if(j.version===v){process.exit(0)};\" && pnpm version \"$PNPMVERSION\" --no-git-tag-version",
+    "set:version": "node -e \"const fs=require('fs');const p='./package.json';const j=JSON.parse(fs.readFileSync(p,'utf8'));const v=process.env.PNPMVERSION;if(!v)process.exit(0);if(j.version===v)process.exit(0);j.version=v;fs.writeFileSync(p, JSON.stringify(j, null, 2)+'\\n');\"",
     "re:version": "pnpm version 0.0.0"
   },
   "dependencies": {
