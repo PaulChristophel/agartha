@@ -49,75 +49,140 @@ Usage Example:
     Output: data @> '{"grains":{"id":"test","count":5}}'::jsonb
 */
 func BuildJSONPathWhere(jsonPathFilters []string, column string) (string, error) {
-	// Initialize an empty map to build the combined JSON object
-	filterMap := make(map[string]any)
+	if len(jsonPathFilters) == 0 {
+		return "", fmt.Errorf("no filters provided")
+	}
+
+	var expressions []string
 
 	for _, filter := range jsonPathFilters {
-		filters := strings.Split(filter, "::")
-		if len(filters) != 2 {
-			return "", fmt.Errorf("invalid filter format")
+		keyPart, value, typ, operator, err := parseFilterParts(filter)
+		if err != nil {
+			return "", err
 		}
 
-		// Find the position of the last ':' and split the string accordingly
-		lastColonIndex := strings.LastIndex(filters[0], ":")
-		if lastColonIndex == -1 {
-			return "", fmt.Errorf("invalid key/value format")
+		keys, err := splitKeys(keyPart)
+		if err != nil {
+			return "", err
 		}
 
-		keyPart := filters[0][:lastColonIndex]
-		value := filters[0][lastColonIndex+1:]
-
-		// Handle keys with periods correctly
-		var keys []string
-		if strings.Contains(keyPart, `"`) {
-			// Remove the leading and trailing quotes if present
-			keyPart = strings.Trim(keyPart, `"`)
-			// Split the keys by period
-			keys = strings.Split(keyPart, `"."`)
-			// Ensure the last key part is not mistakenly trimmed
-			if len(keys) > 0 {
-				keys[len(keys)-1] = strings.TrimSuffix(keys[len(keys)-1], `"`)
-			}
-		} else {
-			keys = strings.Split(keyPart, ".")
+		parsedValue, err := parseTypedValue(value, typ)
+		if err != nil {
+			return "", err
 		}
 
-		// Strip quotes from value
-		value = strings.Trim(value, `"`)
-
-		typ := filters[1]
-
-		// Parse the value according to its type
-		var parsedValue any
-		var parseErr error
-		switch typ {
-		case "int":
-			parsedValue, parseErr = strconv.Atoi(value)
-		case "float":
-			parsedValue, parseErr = strconv.ParseFloat(value, 64)
-		case "bool", "boolean":
-			parsedValue, parseErr = strconv.ParseBool(value)
-		case "array":
-			parsedValue, parseErr = parseArray(value)
-		default:
-			parsedValue = value
+		expr, err := buildExpression(column, keys, value, parsedValue, operator)
+		if err != nil {
+			return "", err
 		}
 
-		if parseErr != nil {
-			return "", fmt.Errorf("error parsing value '%s' as %s: %v", value, typ, parseErr)
+		expressions = append(expressions, expr)
+	}
+
+	return strings.Join(expressions, " AND "), nil
+}
+
+func parseFilterParts(filter string) (keyPart string, value string, typ string, operator string, err error) {
+	parts := strings.Split(filter, "::")
+	if len(parts) < 2 {
+		return "", "", "", "", fmt.Errorf("invalid filter format")
+	}
+
+	pathAndValue := parts[0]
+	lastColonIndex := strings.LastIndex(pathAndValue, ":")
+	if lastColonIndex == -1 {
+		return "", "", "", "", fmt.Errorf("invalid key/value format")
+	}
+
+	keyPart = pathAndValue[:lastColonIndex]
+	value = strings.Trim(pathAndValue[lastColonIndex+1:], `"`)
+	typ = parts[1]
+	operator = "eq"
+	if len(parts) > 2 && parts[2] != "" {
+		operator = strings.ToLower(parts[2])
+	}
+
+	return keyPart, value, typ, operator, nil
+}
+
+func splitKeys(keyPart string) ([]string, error) {
+	if keyPart == "" {
+		return nil, fmt.Errorf("empty key part")
+	}
+
+	if strings.Contains(keyPart, `"`) {
+		keyPart = strings.Trim(keyPart, `"`)
+		keys := strings.Split(keyPart, `"."`)
+		if len(keys) > 0 {
+			keys[len(keys)-1] = strings.TrimSuffix(keys[len(keys)-1], `"`)
+		}
+		return keys, nil
+	}
+
+	return strings.Split(keyPart, "."), nil
+}
+
+func parseTypedValue(value string, typ string) (any, error) {
+	var (
+		parsedValue any
+		parseErr    error
+	)
+
+	switch typ {
+	case "int":
+		parsedValue, parseErr = strconv.Atoi(value)
+	case "float":
+		parsedValue, parseErr = strconv.ParseFloat(value, 64)
+	case "bool", "boolean":
+		parsedValue, parseErr = strconv.ParseBool(value)
+	case "array":
+		parsedValue, parseErr = parseArray(value)
+	case "null":
+		parsedValue = nil
+	default:
+		parsedValue = value
+	}
+
+	if parseErr != nil {
+		return nil, fmt.Errorf("error parsing value '%s' as %s: %v", value, typ, parseErr)
+	}
+
+	return parsedValue, nil
+}
+
+func buildExpression(column string, keys []string, rawValue string, parsedValue any, operator string) (string, error) {
+	switch operator {
+	case "eq":
+		return buildContainmentExpr(column, keys, parsedValue)
+	case "not", "neq":
+		eqExpr, err := buildContainmentExpr(column, keys, parsedValue)
+		if err != nil {
+			return "", err
+		}
+		return fmt.Sprintf("NOT (%s)", eqExpr), nil
+	case "like", "not_like":
+		return buildLikeExpr(column, keys, rawValue, operator == "not_like"), nil
+	default:
+		return "", fmt.Errorf("unsupported operator: %s", operator)
+	}
+}
+
+func buildContainmentExpr(column string, keys []string, value any) (string, error) {
+	filterMap := make(map[string]any)
+	currentMap := filterMap
+	for i, key := range keys {
+		if i == len(keys)-1 {
+			currentMap[key] = value
+			continue
 		}
 
-		// Construct the JSON object for the filter
-		currentMap := filterMap
-		for i, key := range keys {
-			if i == len(keys)-1 {
-				currentMap[key] = parsedValue
-			} else {
-				if _, exists := currentMap[key]; !exists {
-					currentMap[key] = make(map[string]any)
-				}
-				currentMap = currentMap[key].(map[string]any)
-			}
+		if _, exists := currentMap[key]; !exists {
+			currentMap[key] = make(map[string]any)
+		}
+		var ok bool
+		currentMap, ok = currentMap[key].(map[string]any)
+		if !ok {
+			return "", fmt.Errorf("invalid nested key structure for %s", key)
 		}
 	}
 
@@ -127,6 +192,25 @@ func BuildJSONPathWhere(jsonPathFilters []string, column string) (string, error)
 	}
 
 	return fmt.Sprintf("%s @> '%s'::jsonb", column, string(filterJSON)), nil
+}
+
+func buildLikeExpr(column string, keys []string, rawValue string, negate bool) string {
+	pathExpression := buildJSONTextAccessor(column, keys)
+	escapedValue := strings.ReplaceAll(rawValue, "'", "''")
+	comparator := "LIKE"
+	if negate {
+		comparator = "NOT LIKE"
+	}
+	return fmt.Sprintf("(%s) %s '%s'", pathExpression, comparator, escapedValue)
+}
+
+func buildJSONTextAccessor(column string, keys []string) string {
+	pathParts := make([]string, len(keys))
+	for i, key := range keys {
+		key = strings.ReplaceAll(key, `"`, `\"`)
+		pathParts[i] = fmt.Sprintf(`"%s"`, key)
+	}
+	return fmt.Sprintf("%s #>> '{%s}'", column, strings.Join(pathParts, ","))
 }
 
 // parseArray parses a string representation of an array into an actual array.

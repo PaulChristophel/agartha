@@ -300,12 +300,18 @@ func normalizeJSONPathFilters(filterList string) string {
 }
 
 func normalizeJSONPathFilter(filter string) string {
-	parts := strings.SplitN(filter, "::", 2)
-	if len(parts) != 2 {
+	parts := strings.Split(filter, "::")
+	if len(parts) < 2 {
 		return filter
 	}
 
 	pathAndValue := parts[0]
+	typePart := parts[1]
+	operatorPart := ""
+	if len(parts) > 2 {
+		operatorPart = strings.Join(parts[2:], "::")
+	}
+
 	lastColon := strings.LastIndex(pathAndValue, ":")
 	if lastColon <= 0 {
 		return filter
@@ -315,5 +321,10 @@ func normalizeJSONPathFilter(filter string) string {
 	valuePart := pathAndValue[lastColon+1:]
 	normalizedKey := normalizeJSONPath(keyPart)
 
-	return fmt.Sprintf("%s:%s::%s", normalizedKey, valuePart, parts[1])
+	result := fmt.Sprintf("%s:%s::%s", normalizedKey, valuePart, typePart)
+	if operatorPart != "" {
+		result = fmt.Sprintf("%s::%s", result, operatorPart)
+	}
+
+	return result
 }

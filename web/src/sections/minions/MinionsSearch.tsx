@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 
 import Box from '@mui/material/Box';
 import Chip from '@mui/material/Chip';
+import Button from '@mui/material/Button';
+import MenuItem from '@mui/material/MenuItem';
 import TextField from '@mui/material/TextField';
 import Autocomplete from '@mui/material/Autocomplete';
 
@@ -17,6 +19,8 @@ interface MinionsSearchProps {
   setUntil: (value: string) => void;
   grainKeys: string[];
   setGrainKeys: (value: string[]) => void;
+  grainFilters: string[];
+  setGrainFilters: React.Dispatch<React.SetStateAction<string[]>>;
   setOrderBy: (orderBy: string) => void;
 
   // grainValue: string;
@@ -32,6 +36,8 @@ const MinionsSearch: React.FC<MinionsSearchProps> = ({
   setUntil,
   grainKeys,
   setGrainKeys,
+  grainFilters,
+  setGrainFilters,
   setOrderBy,
   // grainValue,
   // setGrainValue,
@@ -41,6 +47,10 @@ const MinionsSearch: React.FC<MinionsSearchProps> = ({
   const [page, setPage] = useState(1);
   const [allGrainsKeys, setAllGrainsKeys] = useState<string[]>([]);
   const [hasMore, setHasMore] = useState(true);
+  const [filterPath, setFilterPath] = useState('');
+  const [filterValue, setFilterValue] = useState('');
+  const [filterType, setFilterType] = useState('string');
+  const [filterOperator, setFilterOperator] = useState<'eq' | 'not' | 'like' | 'not_like'>('eq');
   const debouncedInputValue = useDebounce(inputValue, 500);
 
   const { grainsKeys, loading, error } = useFetchGrainsKeys(authToken, debouncedInputValue, page);
@@ -53,6 +63,12 @@ const MinionsSearch: React.FC<MinionsSearchProps> = ({
     }
     setHasMore(grainsKeys.length > 0); // Assuming that if the current fetch returned no results, we have no more data to load
   }, [grainsKeys, page]);
+
+  useEffect(() => {
+    if ((filterOperator === 'like' || filterOperator === 'not_like') && filterType !== 'string') {
+      setFilterType('string');
+    }
+  }, [filterOperator, filterType]);
 
   const handleMinionIDChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setMinionID(e.target.value);
@@ -80,21 +96,48 @@ const MinionsSearch: React.FC<MinionsSearchProps> = ({
     }
   };
 
+  const handleAddFilter = () => {
+    if (!filterPath.trim() || !filterValue.trim()) {
+      return;
+    }
+
+    const normalizedPath = filterPath.trim();
+    const operatorSuffix = filterOperator === 'eq' ? '' : `::${filterOperator}`;
+    const newFilter = `${normalizedPath}:${filterValue.trim()}::${filterType}${operatorSuffix}`;
+    setGrainFilters((prev) => {
+      if (prev.includes(newFilter)) {
+        return prev;
+      }
+      return [...prev, newFilter];
+    });
+    setFilterValue('');
+    setFilterPath('');
+  };
+
+  const handleRemoveFilter = (targetFilter: string) => {
+    setGrainFilters((prev) => prev.filter((filter) => filter !== targetFilter));
+  };
+
+  const valuePlaceholder =
+    filterOperator === 'like' || filterOperator === 'not_like' ? 'Use % wildcards' : 'e.g. RedHat';
+
   return (
     <Box
       display="flex"
+      flexWrap="wrap"
       alignItems="center"
       padding={2}
       bgcolor="background.paper"
       borderRadius={1}
       boxShadow={1}
       mb={2}
+      sx={{ columnGap: 2, rowGap: 2 }}
     >
       <TextField
         label="Minion ID"
         value={minionID}
         onChange={handleMinionIDChange}
-        sx={{ marginRight: 2, width: '15%' }}
+        sx={{ flex: '1 1 200px' }}
       />
       <Autocomplete
         multiple
@@ -103,7 +146,7 @@ const MinionsSearch: React.FC<MinionsSearchProps> = ({
         loading={loading}
         value={grainKeys}
         inputValue={inputValue}
-        sx={{ marginRight: 2, width: '50%' }}
+        sx={{ flex: '2 1 320px' }}
         onInputChange={(_event, newInputValue) => {
           setInputValue(newInputValue);
           setAllGrainsKeys([]); // Reset the list of options
@@ -125,27 +168,102 @@ const MinionsSearch: React.FC<MinionsSearchProps> = ({
             InputLabelProps={{
               shrink: true,
             }}
-            sx={{ marginRight: 2, width: '100%' }}
             error={Boolean(error) && !hasMore}
             helperText={Boolean(error) && !hasMore ? 'Failed to load grains keys' : ''}
           />
         )}
       />
-      {/* <TextField
-        label="WHERE Grain Value"
-        value={grainValue}
-        onChange={(e) => setGrainValue(e.target.value)}
-        sx={{ marginRight: 2, width: '25%' }}
-        InputLabelProps={{
-          shrink: true,
-        }}
-      /> */}
+      <Box display="flex" flexDirection="column" sx={{ flex: '1 1 100%', minWidth: 320 }}>
+        <Box display="flex" gap={1} mb={1}>
+          <Autocomplete
+            freeSolo
+            options={allGrainsKeys}
+            value={filterPath}
+            inputValue={filterPath}
+            onInputChange={(_event, newInputValue) => {
+              setFilterPath(newInputValue);
+            }}
+            onChange={(_event, newValue) => {
+              setFilterPath(newValue || '');
+            }}
+            sx={{ flex: 1 }}
+            renderInput={(params) => (
+              <TextField
+                {...params}
+                label="WHERE Grain"
+                placeholder="e.g. system:os"
+                InputLabelProps={{
+                  shrink: true,
+                }}
+              />
+            )}
+          />
+          <TextField
+            select
+            label="Operator"
+            value={filterOperator}
+            onChange={(e) =>
+              setFilterOperator(e.target.value as 'eq' | 'not' | 'like' | 'not_like')
+            }
+            sx={{ width: 160 }}
+            InputLabelProps={{
+              shrink: true,
+            }}
+          >
+            <MenuItem value="eq">Equals</MenuItem>
+            <MenuItem value="not">Not Equals</MenuItem>
+            <MenuItem value="like">Like</MenuItem>
+            <MenuItem value="not_like">Not Like</MenuItem>
+          </TextField>
+          <TextField
+            label="Value"
+            value={filterValue}
+            onChange={(e) => setFilterValue(e.target.value)}
+            placeholder={valuePlaceholder}
+            InputLabelProps={{
+              shrink: true,
+            }}
+            sx={{ flex: 1 }}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') {
+                e.preventDefault();
+                handleAddFilter();
+              }
+            }}
+          />
+          <TextField
+            select
+            label="Type"
+            value={filterType}
+            onChange={(e) => setFilterType(e.target.value)}
+            sx={{ width: 120 }}
+            InputLabelProps={{
+              shrink: true,
+            }}
+          >
+            <MenuItem value="string">string</MenuItem>
+            <MenuItem value="int">int</MenuItem>
+            <MenuItem value="float">float</MenuItem>
+            <MenuItem value="bool">bool</MenuItem>
+            <MenuItem value="array">array</MenuItem>
+            <MenuItem value="null">null</MenuItem>
+          </TextField>
+          <Button variant="outlined" onClick={handleAddFilter} sx={{ whiteSpace: 'nowrap' }}>
+            Add
+          </Button>
+        </Box>
+        <Box display="flex" flexWrap="wrap" gap={1}>
+          {grainFilters.map((filter) => (
+            <Chip key={filter} label={filter} onDelete={() => handleRemoveFilter(filter)} />
+          ))}
+        </Box>
+      </Box>
       <TextField
         label="From"
         type="datetime-local"
         value={since}
         onChange={handleSinceChange}
-        sx={{ marginRight: 2, width: '15%' }}
+        sx={{ flex: '1 1 200px' }}
         InputLabelProps={{
           shrink: true,
         }}
@@ -155,7 +273,7 @@ const MinionsSearch: React.FC<MinionsSearchProps> = ({
         type="datetime-local"
         value={until}
         onChange={handleUntilChange}
-        sx={{ width: '15%' }}
+        sx={{ flex: '1 1 200px' }}
         InputLabelProps={{
           shrink: true,
         }}

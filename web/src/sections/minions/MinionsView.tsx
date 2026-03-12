@@ -39,6 +39,12 @@ const MinionsView: React.FC = () => {
   const [grainKeys, setGrainKeys] = useState<string[]>(
     grainKeysParam ? grainKeysParam.split(',').map((key) => toColonNotation(key)) : []
   );
+  const grainFiltersParam = query.get('grain_filters');
+  const [grainFilters, setGrainFilters] = useState<string[]>(
+    grainFiltersParam && grainFiltersParam.length > 0
+      ? grainFiltersParam.split(',').filter((filter) => filter.length > 0)
+      : []
+  );
   // const [grainValue, setGrainValue] = useState(query.get('grain_value') || '');
 
   const queryParams = useMemo(() => {
@@ -46,17 +52,46 @@ const MinionsView: React.FC = () => {
       .map((key) => toJSONPathNotation(key))
       .filter((key) => key.length > 0);
 
+    const normalizedGrainFilters = grainFilters
+      .map((filter) => {
+        const parts = filter.split('::');
+        if (parts.length < 2) {
+          return '';
+        }
+        const [pathAndValue, type, ...operatorParts] = parts;
+        if (!pathAndValue || !type) {
+          return '';
+        }
+        const operator = operatorParts.join('::');
+        const lastColon = pathAndValue.lastIndexOf(':');
+        if (lastColon === -1) {
+          return '';
+        }
+        const path = pathAndValue.slice(0, lastColon);
+        const value = pathAndValue.slice(lastColon + 1);
+        const normalizedPath = toJSONPathNotation(path);
+        if (!normalizedPath) {
+          return '';
+        }
+        let normalizedFilter = `${normalizedPath}:${value}::${type}`;
+        if (operator) {
+          normalizedFilter = `${normalizedFilter}::${operator}`;
+        }
+        return normalizedFilter;
+      })
+      .filter((filter) => filter.length > 0);
+
     return {
       minion_id: minionID,
       jsonpath_grains: normalizedGrainKeys.join(','),
-      // jsonpath_grains_filter: grainValue,
+      jsonpath_grains_filter: normalizedGrainFilters.join(','),
       since,
       until,
       limit,
       page,
       order_by: orderBy,
     };
-  }, [minionID, since, until, limit, page, orderBy, grainKeys]);
+  }, [minionID, since, until, limit, page, orderBy, grainKeys, grainFilters]);
 
   const handleSetLimit = useCallback((newLimit: number) => {
     setLimit(newLimit);
@@ -123,9 +158,10 @@ const MinionsView: React.FC = () => {
     if (page) params.set('page', page.toString());
     if (orderBy) params.set('order_by', orderBy);
     if (grainKeys.length) params.set('grain_keys', grainKeys.join(',')); // Updated to grain_keys
+    if (grainFilters.length) params.set('grain_filters', grainFilters.join(','));
     // if (grainValue) params.set('grain_value', grainValue);
     navigate({ search: params.toString() });
-  }, [minionID, since, until, limit, page, orderBy, grainKeys, navigate]);
+  }, [minionID, since, until, limit, page, orderBy, grainKeys, grainFilters, navigate]);
 
   return (
     <Box>
@@ -144,6 +180,8 @@ const MinionsView: React.FC = () => {
         setUntil={setUntil}
         grainKeys={grainKeys} // Updated to grainKeys
         setGrainKeys={setGrainKeys}
+        grainFilters={grainFilters}
+        setGrainFilters={setGrainFilters}
         // grainValue={grainValue}
         // setGrainValue={setGrainValue}
         setOrderBy={handleSetOrderBy}
