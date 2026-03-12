@@ -8,6 +8,8 @@ import Typography from '@mui/material/Typography';
 
 import useMinionsPaginated from 'src/hooks/saltMinion/useMinionPaginated.ts';
 
+import { toColonNotation, toJSONPathNotation } from 'src/utils/grainKeys.ts';
+
 import MinionsTable from './MinionsTable.tsx';
 import MinionsSearch from './MinionsSearch.tsx';
 
@@ -33,22 +35,28 @@ const MinionsView: React.FC = () => {
   const [limit, setLimit] = useState<number>(Number(query.get('limit')) || 50);
   const [page, setPage] = useState<number>(Number(query.get('page')) || 1);
   const [orderBy, setOrderBy] = useState<string>(query.get('order_by') || '');
-  const [grainKeys, setGrainKeys] = useState<string[]>(query.get('grain_keys')?.split(',') || []);
+  const grainKeysParam = query.get('grain_keys');
+  const [grainKeys, setGrainKeys] = useState<string[]>(
+    grainKeysParam ? grainKeysParam.split(',').map((key) => toColonNotation(key)) : []
+  );
   // const [grainValue, setGrainValue] = useState(query.get('grain_value') || '');
 
-  const queryParams = useMemo(
-    () => ({
+  const queryParams = useMemo(() => {
+    const normalizedGrainKeys = grainKeys
+      .map((key) => toJSONPathNotation(key))
+      .filter((key) => key.length > 0);
+
+    return {
       minion_id: minionID,
-      jsonpath_grains: grainKeys.join(','),
+      jsonpath_grains: normalizedGrainKeys.join(','),
       // jsonpath_grains_filter: grainValue,
       since,
       until,
       limit,
       page,
       order_by: orderBy,
-    }),
-    [minionID, since, until, limit, page, orderBy, grainKeys]
-  );
+    };
+  }, [minionID, since, until, limit, page, orderBy, grainKeys]);
 
   const handleSetLimit = useCallback((newLimit: number) => {
     setLimit(newLimit);

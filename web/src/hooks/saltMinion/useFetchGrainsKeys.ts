@@ -2,6 +2,8 @@
 import axios from 'axios';
 import { useState, useEffect } from 'react';
 
+import { toColonNotation } from 'src/utils/grainKeys.ts';
+
 interface PaginatedResponse {
   paging: {
     page: number;
@@ -29,11 +31,10 @@ const useFetchGrainsKeys = (authToken: string, likeIncludes: string, page: numbe
           params: {
             page,
             per_page: 50,
-            like_includes: likeIncludes.replace(/"/g, "'"),
+            like_includes: likeIncludes,
           },
         });
-        // const keys = response.data.results; // .map(x => x.replace(/'/g,""));
-        const keys = response.data.results.map((x) => x.replace(/'/g, '"'));
+        const keys = response.data.results.map((key) => toColonNotation(key));
         setGrainsKeys(keys);
       } catch (err) {
         if (axios.isAxiosError(err)) {

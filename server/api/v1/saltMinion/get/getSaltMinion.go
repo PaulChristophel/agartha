@@ -56,11 +56,11 @@ func GetSaltMinion(c *gin.Context) {
 	minionID := c.Query("minion_id")
 	key := c.Query("key")
 	loadGrains := c.Query("load_grains")
-	jsonpathGrains := c.Query("jsonpath_grains")
-	jsonpathGrainsFilter := c.Query("jsonpath_grains_filter")
+	jsonpathGrains := normalizeJSONPathList(c.Query("jsonpath_grains"))
+	jsonpathGrainsFilter := normalizeJSONPathFilters(c.Query("jsonpath_grains_filter"))
 	loadPillar := c.Query("load_pillar")
-	jsonpathPillar := c.Query("jsonpath_pillar")
-	jsonpathPillarFilter := c.Query("jsonpath_pillar_filter")
+	jsonpathPillar := normalizeJSONPathList(c.Query("jsonpath_pillar"))
+	jsonpathPillarFilter := normalizeJSONPathFilters(c.Query("jsonpath_pillar_filter"))
 	since := c.Query("since")
 	until := c.Query("until")
 	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
@@ -263,4 +263,57 @@ func GetSaltMinion(c *gin.Context) {
 	log.Debug("Returned salt minion data successfully")
 	// Return paginated results
 	c.JSON(http.StatusOK, response)
+}
+
+func normalizeJSONPathList(list string) string {
+	if list == "" {
+		return ""
+	}
+
+	paths := strings.Split(list, ",")
+	for i, path := range paths {
+		paths[i] = normalizeJSONPath(strings.TrimSpace(path))
+	}
+
+	return strings.Join(paths, ",")
+}
+
+func normalizeJSONPath(path string) string {
+	if path == "" {
+		return ""
+	}
+
+	return strings.ReplaceAll(path, ":", ".")
+}
+
+func normalizeJSONPathFilters(filterList string) string {
+	if filterList == "" {
+		return ""
+	}
+
+	filters := strings.Split(filterList, ",")
+	for i, filter := range filters {
+		filters[i] = normalizeJSONPathFilter(strings.TrimSpace(filter))
+	}
+
+	return strings.Join(filters, ",")
+}
+
+func normalizeJSONPathFilter(filter string) string {
+	parts := strings.SplitN(filter, "::", 2)
+	if len(parts) != 2 {
+		return filter
+	}
+
+	pathAndValue := parts[0]
+	lastColon := strings.LastIndex(pathAndValue, ":")
+	if lastColon <= 0 {
+		return filter
+	}
+
+	keyPart := pathAndValue[:lastColon]
+	valuePart := pathAndValue[lastColon+1:]
+	normalizedKey := normalizeJSONPath(keyPart)
+
+	return fmt.Sprintf("%s:%s::%s", normalizedKey, valuePart, parts[1])
 }

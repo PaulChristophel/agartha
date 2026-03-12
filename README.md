@@ -47,6 +47,10 @@ To get started with Agartha, follow these steps:
         ENV=debug make run
 ```
 
+## Database migrations
+
+Agartha now uses [golang-migrate](https://github.com/golang-migrate/migrate) to manage database objects such as views, triggers, and materialized views. Running `make migrate` (or starting the server) automatically applies any pending SQL files stored under `server/db/migrations`. To add a new migration, create a matching pair of files following the `NNNN_description.up.sql` / `NNNN_description.down.sql` naming pattern in that directory and commit them alongside your feature.
+
 ## Usage
 
 Once the application is running, open your web browser and navigate to http://localhost:8080 to access the Agartha interface. Log in with your credentials and start managing your Salt jobs and minions.

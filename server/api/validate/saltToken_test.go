@@ -1,6 +1,7 @@
 package validate
 
 import (
+	"strings"
 	"testing"
 )
 
@@ -33,8 +34,14 @@ func TestToken(t *testing.T) {
 			errMessage: "invalid token format",
 		},
 		{
-			name:       "Invalid token with length more than 40",
-			token:      "0123456789abcdef0123456789abcdef012345678",
+			name:    "Valid token with length 128",
+			token:   strings.Repeat("0123456789abcdef", 8),
+			want:    strings.Repeat("0123456789abcdef", 8),
+			wantErr: false,
+		},
+		{
+			name:       "Invalid token with length more than 128",
+			token:      "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef012345678",
 			want:       "",
 			wantErr:    true,
 			errMessage: "invalid token format",

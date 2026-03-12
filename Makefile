@@ -178,6 +178,9 @@ lint-go-all:
 
 lint: lint-web lint-go
 
+fix:
+	go fix ./...
+
 fmt-go:
 	go fmt -x ./...
 
