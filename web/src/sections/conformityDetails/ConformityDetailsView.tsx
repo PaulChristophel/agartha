@@ -220,7 +220,7 @@ const ConformityDetailsPage: React.FC = () => {
                       </Typography>
 
                       {typeof runNum === 'number' && (
-                        <Chip size="small" variant="outlined" label={`__run_num__: ${runNum}`} />
+                        <Chip size="small" variant="outlined" label={`Run: ${runNum}`} />
                       )}
 
                       <Chip

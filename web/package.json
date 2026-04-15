@@ -98,7 +98,7 @@
     "eslint-plugin-react-refresh": "^0.4.26",
     "eslint-plugin-unused-imports": "^4.4.1",
     "globals": "^17.5.0",
-    "prettier": "^3.8.2",
+    "prettier": "^3.8.3",
     "typescript": "^5.9.3",
     "typescript-eslint": "^8.58.2",
     "vite": "^7.3.2",
