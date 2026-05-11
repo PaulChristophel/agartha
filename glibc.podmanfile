@@ -11,7 +11,7 @@ RUN groupadd -g ${USER_ID} agartha
 RUN useradd -u ${USER_ID} -s /usr/sbin/nologin -d /opt/agartha -m -g agartha agartha
 
 COPY go.mod go.sum Makefile ./
-COPY web/package.json web/pnpm-lock.yaml ./web/
+COPY web/package.json web/pnpm-lock.yaml web/pnpm-workspace.yaml ./web/
 RUN ENV=${ENV} make configure
 COPY . .
 RUN ENV=${ENV} make build
