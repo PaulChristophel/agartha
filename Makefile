@@ -37,7 +37,6 @@ build-web: fmt-web lint-web-fix
 
 build-web-dev: fmt-web lint-web-fix
 	PNPMVERSION="$(VERSION)-$(DATE)-$(BUILD)" pnpm --dir $(src_dir)/web run set:version
-	pnpm version
 	DEBUG=vite:* NODE_ENV=development pnpm --dir $(src_dir)/web run build --mode=development
 	pnpm --dir $(src_dir)/web run re:version
 
