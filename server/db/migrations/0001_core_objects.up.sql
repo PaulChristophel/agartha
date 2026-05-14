@@ -101,9 +101,13 @@ WITH RECURSIVE json_tree AS (
 		jsonb_each.value AS value,
 		'''' || jsonb_each.key || '''' AS path,
 		jsonb_typeof(jsonb_each.value) AS value_type
-	FROM salt_cache,
+	FROM (
+		SELECT data
+		FROM salt_cache
+		WHERE POSITION($nul$\u0000$nul$ IN data::text) = 0
+			AND jsonb_typeof(data) = 'object'
+	) salt_cache,
 		LATERAL jsonb_each(data)
-	WHERE jsonb_typeof(data) = 'object'
 
 	UNION ALL
 
@@ -131,9 +135,13 @@ WITH RECURSIVE json_tree AS (
 		jsonb_each.value AS value,
 		jsonb_each.key AS path,
 		jsonb_typeof(jsonb_each.value) AS value_type
-	FROM salt_cache,
+	FROM (
+		SELECT data
+		FROM salt_cache
+		WHERE POSITION($nul$\u0000$nul$ IN data::text) = 0
+			AND jsonb_typeof(data->'grains') = 'object'
+	) salt_cache,
 		LATERAL jsonb_each(data->'grains')
-	WHERE jsonb_typeof(data->'grains') = 'object'
 
 	UNION ALL
 
@@ -161,9 +169,13 @@ WITH RECURSIVE json_tree AS (
 		jsonb_each.value AS value,
 		'''' || jsonb_each.key || '''' AS path,
 		jsonb_typeof(jsonb_each.value) AS value_type
-	FROM salt_cache,
+	FROM (
+		SELECT data
+		FROM salt_cache
+		WHERE POSITION($nul$\u0000$nul$ IN data::text) = 0
+			AND jsonb_typeof(data->'pillar') = 'object'
+	) salt_cache,
 		LATERAL jsonb_each(data->'pillar')
-	WHERE jsonb_typeof(data->'pillar') = 'object'
 
 	UNION ALL
 
