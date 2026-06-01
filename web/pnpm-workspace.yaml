@@ -1,7 +1,16 @@
 packages:
-  - "web"
+  - .
 
 allowBuilds:
-  "@swc/core": true
-  "esbuild": true
-  "unrs-resolver": true
+  '@swc/core': true
+  esbuild: true
+  unrs-resolver: true
+
+onlyBuiltDependencies:
+  - '@swc/core'
+  - esbuild
+  - unrs-resolver
+
+overrides:
+  eslint: 9.39.3
+  'axios@>=0.8.1 <0.28.0': '>=0.28.0'
