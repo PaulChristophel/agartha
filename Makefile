@@ -127,6 +127,9 @@ docker-compose-ci-tests:
 	docker-compose -f docker-compose-tests-glibc.yaml up --abort-on-container-exit --exit-code-from test
 	docker-compose -f docker-compose-tests-musl.yaml up --abort-on-container-exit --exit-code-from test
 
+podman-compose-base-test:
+	sh docker-compose/script/base-migration-test.sh
+
 test-go:
 	if [ ! -d "$(src_dir)/web/dist" ]; then DEBUG=vite:* NODE_ENV=development pnpm --dir $(src_dir)/web run build --mode=development; fi
 	go test -v ./...
@@ -217,6 +220,7 @@ podman-test: clean
 	podman build -f musl.podmanfile --build-arg=ENV=debug --build-arg=GITHUB_DATE=${DATE} --build-arg=GITHUB_PSEUDODATE=${PSEUDODATE} --build-arg=GITHUB_VERSION=${VERSION}-${DATE}-${BUILD} . -t oitacr.azurecr.io/pmartin47/${BINARY_NAME}:alpine-test --target alpine
 	podman build -f glibc.podmanfile --build-arg=ENV=debug --build-arg=GITHUB_DATE=${DATE} --build-arg=GITHUB_PSEUDODATE=${PSEUDODATE} --build-arg=GITHUB_VERSION=${VERSION}-${DATE}-${BUILD} . -t oitacr.azurecr.io/pmartin47/${BINARY_NAME}:slim-glibc-test --target slim-glibc
 	podman build -f glibc.podmanfile --build-arg=ENV=debug --build-arg=GITHUB_DATE=${DATE} --build-arg=GITHUB_PSEUDODATE=${PSEUDODATE} --build-arg=GITHUB_VERSION=${VERSION}-${DATE}-${BUILD} . -t oitacr.azurecr.io/pmartin47/${BINARY_NAME}:debian-test --target debian
+	$(MAKE) podman-compose-base-test
 
 podman-compose: podman-clean
 	podman compose -f docker-compose-tests-glibc.yaml up
