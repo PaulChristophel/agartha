@@ -15,8 +15,8 @@ import StartIcon from '@mui/icons-material/Start';
 import RefreshIcon from '@mui/icons-material/Refresh';
 import CircularProgress from '@mui/material/CircularProgress';
 
+import useSaltMinionID from 'src/hooks/saltMinion/useSaltMinionID.ts';
 import useCachePaginated from 'src/hooks/saltCache/useCachePaginated.ts';
-import useSaltCacheBankKey from 'src/hooks/saltCache/useSaltCacheBankKey.ts';
 
 import CodeView from './CodeView.tsx';
 import DataViewer from './DataViewer.tsx';
@@ -29,51 +29,74 @@ const MinionDetailsView: React.FC = () => {
   const navigate = useNavigate();
   const { id: minionID } = useParams<{ id: string }>();
   const [tabValue, setTabValue] = useState(0);
-  const [tabs, setTabs] = useState<{ label: string; key: string }[]>([]);
+  const [tabs, setTabs] = useState<{ label: string; key: string; bank?: string }[]>([]);
   const [refreshing, setRefreshing] = useState<boolean>(false);
   const [highstateRunning, setHighstateRunning] = useState<boolean>(false);
 
-  const queryParams = useMemo(
+  const oldBankQueryParams = useMemo(
     () => ({
-      bank: `minions/${minionID}` || '',
+      bank: minionID ? `minions/${minionID}` : '',
+    }),
+    [minionID]
+  );
+  const newBankQueryParams = useMemo(
+    () => ({
+      bank: minionID || '',
     }),
     [minionID]
   );
 
-  const { caches, isLoading: isLoadingCaches } = useCachePaginated(queryParams);
-  const { cacheData, isLoading: isLoadingCacheData } = useSaltCacheBankKey(
-    `minions/${minionID}`,
-    'data'
-  );
+  const { caches: oldBankCaches, isLoading: isLoadingOldBankCaches } =
+    useCachePaginated(oldBankQueryParams);
+  const { caches: newBankCaches, isLoading: isLoadingNewBankCaches } =
+    useCachePaginated(newBankQueryParams);
+  const { grains, pillar, isLoading: isLoadingMinionData } = useSaltMinionID(minionID || '');
+
+  const minionData = useMemo(() => ({ grains, pillar }), [grains, pillar]);
 
   useEffect(() => {
-    const uniqueKeys = Array.from(new Set(caches.map((cache) => cache.psql_key)));
+    const otherTabsByKey = new Map<string, { label: string; key: string; bank: string }>();
+    const builtInKeys = new Set(['data', 'grains', 'pillar', 'conformity']);
 
-    // Filter and map Grains and Pillar
-    const grainsAndPillarTabs = uniqueKeys
-      .filter((key) => key === 'data')
-      .flatMap(() => [
-        { label: 'Grains', key: 'grains' },
-        { label: 'Pillar', key: 'pillar' },
-      ]);
+    for (const cache of oldBankCaches) {
+      if (builtInKeys.has(cache.psql_key)) {
+        continue;
+      }
+      otherTabsByKey.set(cache.psql_key, {
+        label: cache.psql_key,
+        key: cache.psql_key,
+        bank: cache.bank,
+      });
+    }
 
-    // Filter out HighState/Conformity and other keys
-    const otherTabs = uniqueKeys
-      .filter((key) => key !== 'data' && key !== 'conformity')
-      .sort()
-      .map((key) => ({ label: key, key }));
+    for (const cache of newBankCaches) {
+      if (builtInKeys.has(cache.psql_key)) {
+        continue;
+      }
+      otherTabsByKey.set(cache.psql_key, {
+        label: cache.psql_key,
+        key: cache.psql_key,
+        bank: cache.bank,
+      });
+    }
+
+    // Grains and pillar come from /salt_minion so both old and Salt 3008 cache layouts work.
+    const otherTabs = Array.from(otherTabsByKey.values()).sort((a, b) =>
+      a.label.localeCompare(b.label)
+    );
 
     // Create the final tabs array with Grains and Pillar first, other keys next, and HighState last
     const newTabs = [
-      ...grainsAndPillarTabs,
+      { label: 'Grains', key: 'grains' },
+      { label: 'Pillar', key: 'pillar' },
       ...otherTabs,
       { label: 'HighState', key: 'conformity' },
     ];
 
     setTabs(newTabs);
-  }, [caches]);
+  }, [newBankCaches, oldBankCaches]);
 
-  if (isLoadingCaches || isLoadingCacheData) {
+  if (isLoadingOldBankCaches || isLoadingNewBankCaches || isLoadingMinionData) {
     return <CircularProgress color="success" />; // Render loading state if grainData is not available
   }
 
@@ -81,15 +104,16 @@ const MinionDetailsView: React.FC = () => {
     setTabValue(newValue);
   };
 
-  const renderTabContent = (key: string) => {
+  const renderTabContent = (tab: { key: string; bank?: string }) => {
+    const { key } = tab;
     if (key === 'grains' || key === 'pillar') {
-      const yamlData = yaml.dump(cacheData[key]);
+      const yamlData = yaml.dump(minionData[key]);
       return <DataViewer data={yamlData} />;
     }
     if (key === 'conformity') {
       return <ConformityDetailsView />; // Render ConformityDetailsView for the new tab
     }
-    return <CodeView bank={`minions/${minionID}`} cacheKey={`${key}`} />;
+    return <CodeView bank={tab.bank || `minions/${minionID}`} cacheKey={`${key}`} />;
   };
 
   const handleHighstate = async () => {
@@ -168,13 +192,13 @@ const MinionDetailsView: React.FC = () => {
         <Grid item xs={12} md={3}>
           <>
             <Paper sx={{ padding: 2, marginBottom: 2 }}>
-              <CommonDetails grainData={cacheData.grains as Record<string, unknown>} />
+              <CommonDetails grainData={grains} />
             </Paper>
             <Paper sx={{ padding: 2, marginBottom: 2 }}>
-              <NetworkDetails grainData={cacheData.grains as Record<string, unknown>} />
+              <NetworkDetails grainData={grains} />
             </Paper>
             <Paper sx={{ padding: 2 }}>
-              <HardwareDetails grainData={cacheData.grains as Record<string, unknown>} />
+              <HardwareDetails grainData={grains} />
             </Paper>
           </>
         </Grid>
@@ -190,7 +214,7 @@ const MinionDetailsView: React.FC = () => {
             (tab, index) =>
               tabValue === index && (
                 <Paper sx={{ padding: 2 }} key={tab.key}>
-                  {renderTabContent(tab.key)}
+                  {renderTabContent(tab)}
                 </Paper>
               )
           )}

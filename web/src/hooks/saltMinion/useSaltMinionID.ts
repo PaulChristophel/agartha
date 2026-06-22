@@ -19,7 +19,7 @@ interface UseMinion {
   error: Error | null;
 }
 
-const useCacheBankKey = (minionID: string): UseMinion => {
+const useSaltMinionID = (minionID: string): UseMinion => {
   const [alterTime, setAlterTime] = useState<string>('');
   const [grains, setGrains] = useState<Record<string, unknown>>({});
   const [pillar, setPillar] = useState<Record<string, unknown>>({});
@@ -34,7 +34,7 @@ const useCacheBankKey = (minionID: string): UseMinion => {
       setIsLoading(true);
       try {
         const encodedMinionID = encodeURIComponent(minionID);
-        const { data } = await axios.get<MinionData>(`/api/v1/salt_cache/${encodedMinionID}`, {
+        const { data } = await axios.get<MinionData>(`/api/v1/salt_minion/${encodedMinionID}`, {
           headers: {
             Authorization: `${authToken}`,
           },
@@ -65,4 +65,4 @@ const useCacheBankKey = (minionID: string): UseMinion => {
   };
 };
 
-export default useCacheBankKey;
+export default useSaltMinionID;
