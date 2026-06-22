@@ -7,4 +7,5 @@ type LDAPOptions struct {
 	BaseDN            string `mapstructure:"base_dn" yaml:"base_dn"`
 	Filter            string `mapstructure:"filter" yaml:"filter"`
 	LDAPDomainDefault string `mapstructure:"ldap_domain_default" yaml:"ldap_domain_default"`
+	StartTLS          bool   `mapstructure:"start_tls" yaml:"start_tls"`
 }

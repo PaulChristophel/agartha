@@ -1,9 +1,11 @@
 package auth
 
 import (
+	"crypto/tls"
 	"errors"
 	"fmt"
 	"net/http"
+	"net/url"
 	"strings"
 
 	"github.com/PaulChristophel/agartha/server/logger"
@@ -109,6 +111,22 @@ func authLDAP(username, password string) (userData, error) {
 	} else {
 		userData.UserPrincipalName = username
 		userData.SamAccountName = strings.Split(username, "@")[1]
+	}
+
+	if ldapOptions.StartTLS {
+		tlsConfig := &tls.Config{
+			MinVersion: tls.VersionTLS12,
+		}
+		if ldapURL, parseErr := url.Parse(ldap_server); parseErr == nil {
+			if ldapURL.Scheme == "ldaps" {
+				return userData, errors.New("ldap start_tls requires an ldap:// server URL, not ldaps://")
+			}
+			tlsConfig.ServerName = ldapURL.Hostname()
+		}
+
+		if err := l.StartTLS(tlsConfig); err != nil {
+			return userData, fmt.Errorf("failed to start TLS: %w", err)
+		}
 	}
 
 	// First bind with the user credentials to authenticate

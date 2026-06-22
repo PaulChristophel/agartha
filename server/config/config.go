@@ -38,6 +38,7 @@ func NewConfig() *Config {
 			BaseDN:            "dc=example,dc=com",
 			Filter:            "(objectClass=*)",
 			LDAPDomainDefault: "example.com",
+			StartTLS:          false,
 		},
 		DB: DBOptions{
 			Host:     "localhost",
@@ -108,6 +109,12 @@ func InitConfig() error {
 	v.AutomaticEnv()
 	v.SetEnvPrefix(envVarPrefix)
 	v.SetEnvKeyReplacer(strings.NewReplacer(".", "_"))
+
+	if startTLS := v.Get("ldap.start_tls"); startTLS == nil {
+		v.Set("ldap.start_tls", false)
+	} else if startTLSString, ok := startTLS.(string); ok && strings.TrimSpace(startTLSString) == "" {
+		v.Set("ldap.start_tls", false)
+	}
 
 	AgarthaConfig = &Config{}
 	return v.Unmarshal(AgarthaConfig)

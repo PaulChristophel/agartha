@@ -19,6 +19,7 @@ db:
 ldap:
   ldap_domain_default: AD.EXAMPLE.COM
   server: ldaps://ad.example.com:636
+  start_tls: false
   user: cn=svcacct,ou=USERS,dc=ad,dc=example,dc=com
   password: foobar
   base_dn: DC=ad,DC=example,DC=com
