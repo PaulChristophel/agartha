@@ -14,22 +14,52 @@ WITH old_minions AS (
 		AND bank LIKE 'minions/%'
 ),
 new_grains AS (
-	SELECT
-		bank::text AS minion_id,
-		data AS grains,
-		id,
-		alter_time
-	FROM salt_cache
-	WHERE psql_key = 'grains'
+	SELECT DISTINCT ON (normalized.minion_id)
+		normalized.minion_id,
+		normalized.grains,
+		normalized.id,
+		normalized.alter_time
+	FROM (
+		SELECT
+			CASE
+				WHEN bank LIKE 'minions/%' THEN substring(bank FROM 9)
+				ELSE bank::text
+			END AS minion_id,
+			data AS grains,
+			id,
+			alter_time,
+			CASE
+				WHEN bank LIKE 'minions/%' THEN 1
+				ELSE 0
+			END AS bank_priority
+		FROM salt_cache
+		WHERE psql_key = 'grains'
+	) normalized
+	ORDER BY normalized.minion_id, normalized.bank_priority, normalized.alter_time DESC NULLS LAST
 ),
 new_pillar AS (
-	SELECT
-		bank::text AS minion_id,
-		data AS pillar,
-		id,
-		alter_time
-	FROM salt_cache
-	WHERE psql_key = 'pillar'
+	SELECT DISTINCT ON (normalized.minion_id)
+		normalized.minion_id,
+		normalized.pillar,
+		normalized.id,
+		normalized.alter_time
+	FROM (
+		SELECT
+			CASE
+				WHEN bank LIKE 'minions/%' THEN substring(bank FROM 9)
+				ELSE bank::text
+			END AS minion_id,
+			data AS pillar,
+			id,
+			alter_time,
+			CASE
+				WHEN bank LIKE 'minions/%' THEN 1
+				ELSE 0
+			END AS bank_priority
+		FROM salt_cache
+		WHERE psql_key = 'pillar'
+	) normalized
+	ORDER BY normalized.minion_id, normalized.bank_priority, normalized.alter_time DESC NULLS LAST
 ),
 new_minions AS (
 	SELECT

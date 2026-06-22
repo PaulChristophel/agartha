@@ -21,9 +21,9 @@ func AddRoutes(rg *gin.RouterGroup) {
 
 	grp.GET("", get.GetSaltMinion)
 	grp.GET("/uuid/:uuid", get.GetSaltMinionUUID)
-	grp.GET("/:minion_id", get.GetSaltMinionID)
 	grp.GET("/grains_keys", get.ListSaltMinionGrainsKeys)
 	grp.GET("/pillar_keys", get.ListSaltMinionPillarKeys)
 	grp.GET("/keys/refresh", get.RefreshKeys)
+	grp.GET("/:minion_id", get.GetSaltMinionID)
 	grp.POST("/keys/refresh", post.RefreshKeys)
 }
