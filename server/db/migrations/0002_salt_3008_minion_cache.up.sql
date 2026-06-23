@@ -2,68 +2,19 @@ DROP MATERIALIZED VIEW IF EXISTS mat_salt_minions_pillar_keys;
 DROP MATERIALIZED VIEW IF EXISTS mat_salt_minions_grains_keys;
 
 CREATE OR REPLACE VIEW vw_salt_minions AS
-WITH old_minions AS (
+WITH new_grains AS (
 	SELECT
-		substring(bank FROM 9) AS minion_id,
-		data -> 'grains' AS grains,
-		data -> 'pillar' AS pillar,
+		psql_key::text AS minion_id,
+		data AS grains,
 		id,
 		alter_time
 	FROM salt_cache
-	WHERE psql_key = 'data'
-		AND bank LIKE 'minions/%'
-),
-new_grains AS (
-	SELECT DISTINCT ON (normalized.minion_id)
-		normalized.minion_id,
-		normalized.grains,
-		normalized.id,
-		normalized.alter_time
-	FROM (
-		SELECT
-			CASE
-				WHEN bank LIKE 'minions/%' THEN substring(bank FROM 9)
-				ELSE bank::text
-			END AS minion_id,
-			data AS grains,
-			id,
-			alter_time,
-			CASE
-				WHEN bank LIKE 'minions/%' THEN 1
-				ELSE 0
-			END AS bank_priority
-		FROM salt_cache
-		WHERE psql_key = 'grains'
-	) normalized
-	ORDER BY normalized.minion_id, normalized.bank_priority, normalized.alter_time DESC NULLS LAST
-),
-new_pillar AS (
-	SELECT DISTINCT ON (normalized.minion_id)
-		normalized.minion_id,
-		normalized.pillar,
-		normalized.id,
-		normalized.alter_time
-	FROM (
-		SELECT
-			CASE
-				WHEN bank LIKE 'minions/%' THEN substring(bank FROM 9)
-				ELSE bank::text
-			END AS minion_id,
-			data AS pillar,
-			id,
-			alter_time,
-			CASE
-				WHEN bank LIKE 'minions/%' THEN 1
-				ELSE 0
-			END AS bank_priority
-		FROM salt_cache
-		WHERE psql_key = 'pillar'
-	) normalized
-	ORDER BY normalized.minion_id, normalized.bank_priority, normalized.alter_time DESC NULLS LAST
+	WHERE bank = 'grains'
+		AND NULLIF(psql_key, '') IS NOT NULL
 ),
 new_minions AS (
 	SELECT
-		COALESCE(new_grains.minion_id, new_pillar.minion_id) AS minion_id,
+		new_grains.minion_id,
 		new_grains.grains,
 		new_pillar.pillar,
 		COALESCE(new_grains.id, new_pillar.id) AS id,
@@ -73,7 +24,48 @@ new_minions AS (
 			ELSE COALESCE(new_grains.alter_time, new_pillar.alter_time)
 		END AS alter_time
 	FROM new_grains
-		FULL OUTER JOIN new_pillar ON new_grains.minion_id = new_pillar.minion_id
+		LEFT JOIN LATERAL (
+			SELECT
+				pillar.data AS pillar,
+				pillar.id,
+				pillar.alter_time
+			FROM salt_cache pillar
+			WHERE pillar.bank = 'pillar'
+				AND NULLIF(pillar.psql_key, '') IS NOT NULL
+				AND (
+					pillar.psql_key::text = new_grains.minion_id
+					OR split_part(pillar.psql_key::text, ':', 1) = split_part(new_grains.minion_id, ':', 1)
+				)
+			ORDER BY
+				CASE
+					WHEN pillar.psql_key::text = new_grains.minion_id THEN 0
+					ELSE 1
+				END,
+				pillar.alter_time DESC NULLS LAST
+			LIMIT 1
+		) new_pillar ON true
+),
+old_minions_raw AS (
+	SELECT
+		NULLIF(substring(bank FROM 9), '') AS minion_id,
+		data -> 'grains' AS grains,
+		data -> 'pillar' AS pillar,
+		id,
+		alter_time
+	FROM salt_cache
+	WHERE bank LIKE 'minions/%'
+		AND psql_key = 'data'
+),
+old_minions AS (
+	SELECT DISTINCT ON (minion_id)
+		minion_id,
+		grains,
+		pillar,
+		id,
+		alter_time
+	FROM old_minions_raw
+	WHERE minion_id IS NOT NULL
+	ORDER BY minion_id, alter_time DESC NULLS LAST
 )
 SELECT
 	COALESCE(new_minions.minion_id, old_minions.minion_id) AS minion_id,
