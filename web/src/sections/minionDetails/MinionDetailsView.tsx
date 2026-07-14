@@ -39,17 +39,17 @@ const MinionDetailsView: React.FC = () => {
     }),
     [minionID]
   );
-  const newBankQueryParams = useMemo(
+  const newCacheQueryParams = useMemo(
     () => ({
-      bank: minionID || '',
+      key: minionID ? `${minionID}*` : '',
     }),
     [minionID]
   );
 
   const { caches: oldBankCaches, isLoading: isLoadingOldBankCaches } =
     useCachePaginated(oldBankQueryParams);
-  const { caches: newBankCaches, isLoading: isLoadingNewBankCaches } =
-    useCachePaginated(newBankQueryParams);
+  const { caches: newCacheCaches, isLoading: isLoadingNewCacheCaches } =
+    useCachePaginated(newCacheQueryParams);
   const { grains, pillar, isLoading: isLoadingMinionData } = useSaltMinionID(minionID || '');
 
   const minionData = useMemo(() => ({ grains, pillar }), [grains, pillar]);
@@ -69,7 +69,7 @@ const MinionDetailsView: React.FC = () => {
       });
     }
 
-    for (const cache of newBankCaches) {
+    for (const cache of newCacheCaches) {
       if (builtInKeys.has(cache.psql_key)) {
         continue;
       }
@@ -94,9 +94,9 @@ const MinionDetailsView: React.FC = () => {
     ];
 
     setTabs(newTabs);
-  }, [newBankCaches, oldBankCaches]);
+  }, [newCacheCaches, oldBankCaches]);
 
-  if (isLoadingOldBankCaches || isLoadingNewBankCaches || isLoadingMinionData) {
+  if (isLoadingOldBankCaches || isLoadingNewCacheCaches || isLoadingMinionData) {
     return <CircularProgress color="success" />; // Render loading state if grainData is not available
   }
 
