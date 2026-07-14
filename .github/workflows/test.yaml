@@ -13,14 +13,14 @@ on:
 
 jobs:
   # run-musl-tests:
-  #   runs-on: ubuntu-22.04
+  #   runs-on: ubuntu-24.04
   #   env:
   #     ACR_URL: ${{ secrets.ACR_URL }}
   #     ACR_USERNAME: ${{ secrets.ACR_USERNAME }}
   #     ACR_PASSWORD: ${{ secrets.ACR_PASSWORD }}
   #     ENV: "debug"
   #   steps:
-  #   - uses: actions/checkout@v4
+  #   - uses: actions/checkout@v7
   #   - name: Get Build Version
   #     run: |
   #       echo "BUILD=${GITHUB_REF:10}" | tee -a $GITHUB_ENV
@@ -36,14 +36,14 @@ jobs:
 
 ### RESTORE THIS LATER
   # run-glibc-tests:
-  #   runs-on: ubuntu-22.04
+  #   runs-on: ubuntu-24.04
   #   env:
   #     ACR_URL: ${{ secrets.ACR_URL }}
   #     ACR_USERNAME: ${{ secrets.ACR_USERNAME }}
   #     ACR_PASSWORD: ${{ secrets.ACR_PASSWORD }}
   #     ENV: "debug"
   #   steps:
-  #   - uses: actions/checkout@v4
+  #   - uses: actions/checkout@v7
   #   - name: Get Build Version
   #     run: |
   #       echo "BUILD=${GITHUB_REF:10}" | tee -a $GITHUB_ENV
@@ -58,7 +58,7 @@ jobs:
   #       docker compose -f docker-compose-tests-glibc.yaml up --exit-code-from test
 
   # build-alpine-test:
-  #   runs-on: ubuntu-22.04
+  #   runs-on: ubuntu-24.04
   #   needs: [run-musl-tests]
   #   env:
   #     ACR_URL: ${{ secrets.ACR_URL }}
@@ -66,7 +66,7 @@ jobs:
   #     ACR_PASSWORD: ${{ secrets.ACR_PASSWORD }}
   #     ENV: "debug"
   #   steps:
-  #   - uses: actions/checkout@v4
+  #   - uses: actions/checkout@v7
   #   - name: Get Build Version
   #     run: |
   #       echo "BUILD=${GITHUB_REF:10}" | tee -a $GITHUB_ENV
@@ -102,7 +102,7 @@ jobs:
   #       podman system prune --force --all
 
   # build-slim-musl-test:
-  #   runs-on: ubuntu-22.04
+  #   runs-on: ubuntu-24.04
   #   needs: [run-musl-tests]
   #   env:
   #     ACR_URL: ${{ secrets.ACR_URL }}
@@ -110,7 +110,7 @@ jobs:
   #     ACR_PASSWORD: ${{ secrets.ACR_PASSWORD }}
   #     ENV: "debug"
   #   steps:
-  #   - uses: actions/checkout@v4
+  #   - uses: actions/checkout@v7
   #   - name: Get Build Version
   #     run: |
   #       echo "BUILD=${GITHUB_REF:10}" | tee -a $GITHUB_ENV
@@ -150,7 +150,7 @@ jobs:
   #       podman system prune --force --all
 
   # build-debian-test:
-  #   runs-on: ubuntu-22.04
+  #   runs-on: ubuntu-24.04
   #   needs: [run-glibc-tests]
   #   env:
   #     ACR_URL: ${{ secrets.ACR_URL }}
@@ -158,7 +158,7 @@ jobs:
   #     ACR_PASSWORD: ${{ secrets.ACR_PASSWORD }}
   #     ENV: "debug"
   #   steps:
-  #   - uses: actions/checkout@v4
+  #   - uses: actions/checkout@v7
   #   - name: Get Build Version
   #     run: |
   #       echo "BUILD=${GITHUB_REF:10}" | tee -a $GITHUB_ENV
@@ -205,7 +205,7 @@ jobs:
       
       ENV: "debug"
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v7
     - name: Get Build Version
       run: |
         echo "BUILD=${GITHUB_REF:10}" | tee -a $GITHUB_ENV
@@ -255,7 +255,7 @@ jobs:
       
       ENV: "debug"
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v7
     - name: Get Build Version
       run: |
         echo "BUILD=${GITHUB_REF:10}" | tee -a $GITHUB_ENV
@@ -303,7 +303,7 @@ jobs:
       
       ENV: "debug"
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v7
     - name: Get Build Version
       run: |
         echo "BUILD=${GITHUB_REF:10}" | tee -a $GITHUB_ENV
@@ -350,7 +350,7 @@ jobs:
       
       ENV: "debug"
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v7
     - name: Get Build Version
       run: |
         echo "BUILD=${GITHUB_REF:10}" | tee -a $GITHUB_ENV
