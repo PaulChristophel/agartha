@@ -57,24 +57,40 @@ const MinionDetailsView: React.FC = () => {
   useEffect(() => {
     const otherTabsByKey = new Map<string, { label: string; key: string; bank: string }>();
     const builtInKeys = new Set(['data', 'grains', 'pillar', 'conformity']);
+    const isBuiltInCache = (cache: { bank: string; psql_key: string }) =>
+      builtInKeys.has(cache.psql_key) ||
+      Boolean(
+        minionID &&
+        (cache.bank === 'grains' || cache.bank === 'pillar') &&
+        cache.psql_key === minionID
+      );
+    const tabLabel = (cache: { bank: string; psql_key: string }) => {
+      const pillarEnvPrefix = `${minionID}:`;
+
+      if (cache.bank === 'pillar' && minionID && cache.psql_key.startsWith(pillarEnvPrefix)) {
+        return `Pillar:${cache.psql_key.slice(pillarEnvPrefix.length)}`;
+      }
+
+      return cache.psql_key;
+    };
 
     for (const cache of oldBankCaches) {
-      if (builtInKeys.has(cache.psql_key)) {
+      if (isBuiltInCache(cache)) {
         continue;
       }
       otherTabsByKey.set(cache.psql_key, {
-        label: cache.psql_key,
+        label: tabLabel(cache),
         key: cache.psql_key,
         bank: cache.bank,
       });
     }
 
     for (const cache of newCacheCaches) {
-      if (builtInKeys.has(cache.psql_key)) {
+      if (isBuiltInCache(cache)) {
         continue;
       }
       otherTabsByKey.set(cache.psql_key, {
-        label: cache.psql_key,
+        label: tabLabel(cache),
         key: cache.psql_key,
         bank: cache.bank,
       });
@@ -94,7 +110,7 @@ const MinionDetailsView: React.FC = () => {
     ];
 
     setTabs(newTabs);
-  }, [newCacheCaches, oldBankCaches]);
+  }, [minionID, newCacheCaches, oldBankCaches]);
 
   if (isLoadingOldBankCaches || isLoadingNewCacheCaches || isLoadingMinionData) {
     return <CircularProgress color="success" />; // Render loading state if grainData is not available
