@@ -14,6 +14,7 @@ type DBOptions struct {
 type SaltDBTables struct {
 	JIDs        string `mapstructure:"jids" yaml:"jids"`
 	SaltCache   string `mapstructure:"salt_cache" yaml:"salt_cache"`
+	SaltKeys    string `mapstructure:"salt_keys" yaml:"salt_keys"`
 	SaltReturns string `mapstructure:"salt_returns" yaml:"salt_returns"`
 	SaltEvents  string `mapstructure:"salt_events" yaml:"salt_events"`
 	UseJSONB    bool   `mapstructure:"use_jsonb" yaml:"use_jsonb"`

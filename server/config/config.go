@@ -51,6 +51,7 @@ func NewConfig() *Config {
 			Tables: SaltDBTables{
 				JIDs:        "jids",
 				SaltCache:   "salt_cache",
+				SaltKeys:    "salt_keys",
 				SaltReturns: "salt_returns",
 				SaltEvents:  "salt_events",
 				UseJSONB:    false,

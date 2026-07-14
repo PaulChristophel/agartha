@@ -14,6 +14,7 @@ db:
   tables:
     jids: "jids"
     salt_cache: "salt_cache"
+    salt_keys: "salt_keys"
     salt_returns: "salt_returns"
     salt_events: "salt_events"
 ldap:

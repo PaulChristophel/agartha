@@ -1,3 +1,4 @@
+import axios from 'axios';
 import { useState, useEffect } from 'react';
 
 import { WheelClient } from '../api/clients/wheel.ts';
@@ -33,6 +34,23 @@ const useKeys = (): UseKeys => {
         const password = localStorage.getItem('authToken');
         if (!password) {
           throw new Error('Missing authToken in local storage');
+        }
+
+        try {
+          const { data } = await axios.get<IListResponse>('/api/v1/salt_keys/minion_keys', {
+            headers: {
+              Authorization: `${password}`,
+            },
+          });
+
+          setMinions(data.minions);
+          setMinionsDenied(data.minions_denied);
+          setMinionsPre(data.minions_pre);
+          setMinionsRejected(data.minions_rejected);
+          setError(null);
+          return;
+        } catch (dbErr) {
+          console.warn('Failed to load minion keys from salt_keys, falling back to Salt', dbErr);
         }
 
         const parsedAuthSalt = JSON.parse(authSaltString);

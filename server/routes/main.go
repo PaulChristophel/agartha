@@ -21,6 +21,7 @@ import (
 	"github.com/PaulChristophel/agartha/server/api/v1/netapi"
 	"github.com/PaulChristophel/agartha/server/api/v1/saltCache"
 	"github.com/PaulChristophel/agartha/server/api/v1/saltEvent"
+	"github.com/PaulChristophel/agartha/server/api/v1/saltKeys"
 	"github.com/PaulChristophel/agartha/server/api/v1/saltMinion"
 	"github.com/PaulChristophel/agartha/server/api/v1/saltReturn"
 	"github.com/PaulChristophel/agartha/server/api/v1/secure/authUser"
@@ -159,6 +160,8 @@ func addServerRoutes(router *gin.Engine) {
 	jid.AddRoutes(grpV1)
 	saltCache.SetOptions(saltDBTables)
 	saltCache.AddRoutes(grpV1)
+	saltKeys.SetOptions(saltDBTables)
+	saltKeys.AddRoutes(grpV1)
 	saltMinion.AddRoutes(grpV1)
 	saltEvent.SetOptions(saltDBTables)
 	saltEvent.AddRoutes(grpV1)

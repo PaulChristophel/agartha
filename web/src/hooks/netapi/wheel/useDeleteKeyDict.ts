@@ -1,3 +1,4 @@
+import axios from 'axios';
 import { useState } from 'react';
 
 import { WheelClient } from '../api/clients/wheel.ts';
@@ -36,6 +37,24 @@ const useKeyDict = (): UseKeyDict => {
       const password = localStorage.getItem('authToken');
       if (!password) {
         throw new Error('Missing authToken in local storage');
+      }
+
+      try {
+        const { data } = await axios.post<IResponse>(
+          '/api/v1/salt_keys/minion_keys/delete',
+          keyDict,
+          {
+            headers: {
+              Authorization: `${password}`,
+            },
+          }
+        );
+
+        setAcceptedMinions(data.minions);
+        setError(null);
+        return;
+      } catch (dbErr) {
+        console.warn('Failed to delete minion keys in salt_keys, falling back to Salt', dbErr);
       }
 
       const parsedAuthSalt = JSON.parse(authSaltString);
