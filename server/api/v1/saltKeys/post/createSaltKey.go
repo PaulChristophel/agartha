@@ -12,12 +12,29 @@ import (
 	"gorm.io/gorm"
 )
 
+// SaltKey is the request body for creating or updating a salt_keys row.
 type SaltKey struct {
 	Bank    string      `json:"bank" example:"pki/master/keys"`
 	PSQLKey string      `json:"psql_key" example:"server.example.com"`
 	Data    custom.JSON `json:"data"`
 }
 
+// CreateSaltKey creates or updates one salt_keys item.
+//
+//	@Summary		Create or update a salt_keys item.
+//	@Description	Create or update one salt_keys row identified by bank and psql_key.
+//	@Tags			SaltKeys
+//	@Accept			json
+//	@Produce		json
+//	@Success		200	{object}	model.SaltKey
+//	@Success		201	{object}	model.SaltKey
+//	@Failure		400	{object}	httputil.HTTPError400
+//	@Failure		401	{object}	httputil.HTTPError401
+//	@Failure		404	{object}	httputil.HTTPError404
+//	@Failure		500	{object}	httputil.HTTPError500
+//	@router			/api/v1/salt_keys [post]
+//	@Param			req	body	SaltKey	true	"SaltKey item to create or update."
+//	@Security		Bearer
 func CreateSaltKey(c *gin.Context) {
 	dbConn := db.DB.Table(table)
 	var input SaltKey

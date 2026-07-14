@@ -13,6 +13,7 @@ import (
 
 var errSaltKeysUnavailable = errors.New("salt_keys table is unavailable")
 
+// ensureSaltKeysTable verifies that the configured salt_keys table exists.
 func ensureSaltKeysTable(conn *gorm.DB) error {
 	if !conn.Migrator().HasTable(table) {
 		return errSaltKeysUnavailable
@@ -20,6 +21,7 @@ func ensureSaltKeysTable(conn *gorm.DB) error {
 	return nil
 }
 
+// writeSaltKeysError writes a consistent HTTP error for salt_keys failures.
 func writeSaltKeysError(c *gin.Context, err error) {
 	if errors.Is(err, errSaltKeysUnavailable) {
 		httputil.NewError(c, http.StatusNotFound, "salt_keys table is unavailable")
@@ -28,6 +30,7 @@ func writeSaltKeysError(c *gin.Context, err error) {
 	httputil.NewError(c, http.StatusInternalServerError, err.Error())
 }
 
+// splitBankAndKey splits a catch-all Gin route into a Salt bank and key.
 func splitBankAndKey(rawBank, rawRest string) (string, string, error) {
 	rawRest = strings.TrimPrefix(rawRest, "/")
 

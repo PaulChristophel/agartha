@@ -19,6 +19,28 @@ import (
 	"gorm.io/gorm"
 )
 
+// GetSaltKeys retrieves a paginated list of salt_keys rows.
+//
+//	@Summary		Retrieve a list of salt_keys items (paginated).
+//	@Description	Retrieve salt_keys rows filtered by bank and key with pagination support.
+//	@Tags			SaltKeys
+//	@Accept			json
+//	@Produce		json
+//	@Success		200	{object}	dto.SaltKeyPageResponse
+//	@Failure		400	{object}	httputil.HTTPError400
+//	@Failure		401	{object}	httputil.HTTPError401
+//	@Failure		404	{object}	httputil.HTTPError404
+//	@Failure		500	{object}	httputil.HTTPError500
+//	@router			/api/v1/salt_keys [get]
+//	@Param			bank		query	string	false	"Bank of the salt key item to search (supports wildcards * and ?)."
+//	@Param			key			query	string	false	"Key of the salt key item to search (supports wildcards * and ?)."
+//	@Param			load_data	query	bool	false	"Load the data field. This defaults to false for performance reasons."
+//	@Param			since		query	string	false	"Filter items from this date (RFC3339 format)."
+//	@Param			until		query	string	false	"Filter items up to this date (RFC3339 format)."
+//	@Param			page		query	int		false	"Page number of results to retrieve."
+//	@Param			per_page	query	int		false	"Number of items per page."
+//	@Param			order_by	query	string	false	"Order by columns (e.g. bank,psql_key desc,alter_time asc)."
+//	@Security		Bearer
 func GetSaltKeys(c *gin.Context) {
 	dbConn := db.DB.Table(table)
 	log := logger.GetLogger()
@@ -127,6 +149,7 @@ func GetSaltKeys(c *gin.Context) {
 	})
 }
 
+// applyLikeFilter applies exact or wildcard filtering to a GORM query.
 func applyLikeFilter(query *gorm.DB, column, value string) *gorm.DB {
 	if strings.Contains(value, "*") {
 		return query.Where(column+" LIKE ?", strings.ReplaceAll(value, "*", "%"))
@@ -137,6 +160,7 @@ func applyLikeFilter(query *gorm.DB, column, value string) *gorm.DB {
 	return query.Where(column+" = ?", value)
 }
 
+// requestScheme returns the request scheme used to construct pagination links.
 func requestScheme(c *gin.Context) string {
 	if c.Request.TLS != nil {
 		return "https"

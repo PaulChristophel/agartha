@@ -8,6 +8,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+// AddRoutes registers v1 salt_keys API routes.
 func AddRoutes(rg *gin.RouterGroup) {
 	grp := rg.Group("/salt_keys")
 
@@ -22,6 +23,7 @@ func AddRoutes(rg *gin.RouterGroup) {
 	grp.DELETE("/:bank/*key", delete.DeleteSaltKeysBankKey)
 }
 
+// SetOptions configures the database table used by the salt_keys API.
 func SetOptions(saltTables config.SaltDBTables) {
 	get.SetOptions(saltTables)
 	post.SetOptions(saltTables)

@@ -10,6 +10,21 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+// DeleteSaltKeysBank deletes all salt_keys items in a bank.
+//
+//	@Summary		Delete a salt_keys bank.
+//	@Description	Delete all salt_keys rows associated with a bank.
+//	@Tags			SaltKeys
+//	@Accept			json
+//	@Produce		json
+//	@Success		200	{object}	httputil.HTTPError200
+//	@Failure		400	{object}	httputil.HTTPError400
+//	@Failure		401	{object}	httputil.HTTPError401
+//	@Failure		404	{object}	httputil.HTTPError404
+//	@Failure		500	{object}	httputil.HTTPError500
+//	@router			/api/v1/salt_keys/bank/{bank} [delete]
+//	@Param			bank	path	string	true	"Bank of the salt_keys items to delete."
+//	@Security		Bearer
 func DeleteSaltKeysBank(c *gin.Context) {
 	dbConn := db.DB.Table(table)
 

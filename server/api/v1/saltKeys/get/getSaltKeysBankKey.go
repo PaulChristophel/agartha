@@ -11,6 +11,22 @@ import (
 	"go.uber.org/zap"
 )
 
+// GetSaltKeysBankKey retrieves one salt_keys item by bank and key.
+//
+//	@Summary		Get one salt_keys item by bank and key.
+//	@Description	Get one salt_keys item by bank and key.
+//	@Tags			SaltKeys
+//	@Accept			json
+//	@Produce		json
+//	@Success		200	{object}	model.SaltKey
+//	@Failure		400	{object}	httputil.HTTPError400
+//	@Failure		401	{object}	httputil.HTTPError401
+//	@Failure		404	{object}	httputil.HTTPError404
+//	@Failure		500	{object}	httputil.HTTPError500
+//	@router			/api/v1/salt_keys/{bank}/{key} [get]
+//	@Param			bank	path	string	true	"Bank of the salt key item to retrieve."
+//	@Param			key		path	string	true	"Key of the salt key item to retrieve."
+//	@Security		Bearer
 func GetSaltKeysBankKey(c *gin.Context) {
 	dbConn := db.DB.Table(table)
 	log := logger.GetLogger()
