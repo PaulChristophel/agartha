@@ -30,13 +30,22 @@ import useAcceptKeyDict from 'src/hooks/netapi/wheel/useAcceptKeyDict.ts';
 import useDeleteKeyDict from 'src/hooks/netapi/wheel/useDeleteKeyDict.ts';
 import useRejectKeyDict from 'src/hooks/netapi/wheel/useRejectKeyDict.ts';
 
+type KeyState = 'accepted' | 'denied' | 'pending' | 'rejected';
+
 interface Data {
   id: number;
   name: string;
-  state: string;
+  state: KeyState;
 }
 
-function createData(id: number, name: string, state: string): Data {
+interface SaltKeyMatch {
+  minions?: string[];
+  minions_denied?: string[];
+  minions_pre?: string[];
+  minions_rejected?: string[];
+}
+
+function createData(id: number, name: string, state: KeyState): Data {
   return {
     id,
     name,
@@ -44,17 +53,24 @@ function createData(id: number, name: string, state: string): Data {
   };
 }
 
-const stateOrder: { [key: string]: number } = {
+const stateOrder: Record<KeyState, number> = {
   pending: 4,
   denied: 3,
   rejected: 2,
   accepted: 1,
 };
 
+const saltKeyBucketByState: Record<KeyState, keyof SaltKeyMatch> = {
+  accepted: 'minions',
+  denied: 'minions_denied',
+  pending: 'minions_pre',
+  rejected: 'minions_rejected',
+};
+
 function descendingComparator<T>(a: T, b: T, orderBy: keyof T) {
   if (orderBy === 'state') {
     return (
-      stateOrder[a[orderBy] as unknown as string] - stateOrder[b[orderBy] as unknown as string]
+      stateOrder[a[orderBy] as unknown as KeyState] - stateOrder[b[orderBy] as unknown as KeyState]
     );
   }
   if (b[orderBy] < a[orderBy]) {
@@ -296,10 +312,20 @@ export default function KeysView() {
     setFilterText(event.target.value);
   };
 
+  const getSelectedRows = () =>
+    selected
+      .map((id) => minionsData.find((row) => row.id === id))
+      .filter((row): row is Data => Boolean(row));
+
+  const getSelectedKeyMatch = () =>
+    getSelectedRows().reduce<SaltKeyMatch>((match, row) => {
+      const bucket = saltKeyBucketByState[row.state];
+      match[bucket] = [...(match[bucket] ?? []), row.name];
+      return match;
+    }, {});
+
   const handleAcceptKeys = async () => {
-    const selectedMinions = selected.map(
-      (id) => minionsData.find((row) => row.id === id)?.name || ''
-    );
+    const selectedMinions = getSelectedRows().map((row) => row.name);
     const keyDict = {
       match: { minions: selectedMinions },
       include_rejected: true,
@@ -310,20 +336,14 @@ export default function KeysView() {
   };
 
   const handleDeleteKeys = async () => {
-    const selectedMinions = selected.map(
-      (id) => minionsData.find((row) => row.id === id)?.name || ''
-    );
-    const keyDict = { match: { minions: selectedMinions } };
+    const keyDict = { match: getSelectedKeyMatch() };
     await deleteKeys(keyDict);
     window.location.reload();
   };
 
   const handleRejectKeys = async () => {
-    const selectedMinions = selected.map(
-      (id) => minionsData.find((row) => row.id === id)?.name || ''
-    );
     const keyDict = {
-      match: { minions: selectedMinions },
+      match: getSelectedKeyMatch(),
       include_accepted: true,
       include_denied: true,
     };

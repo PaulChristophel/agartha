@@ -23,7 +23,9 @@ export interface IResponse {
 
 export interface Match {
   minions?: string[];
+  minions_denied?: string[];
   minions_pre?: string[];
+  minions_rejected?: string[];
 }
 
 // key.accept

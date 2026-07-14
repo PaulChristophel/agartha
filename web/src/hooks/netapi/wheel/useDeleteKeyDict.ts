@@ -6,10 +6,11 @@ import { IResponse, IDictRequest } from '../api/modules/wheel/key.ts';
 
 interface KeyDict {
   match: {
-    minions: string[];
+    minions?: string[];
+    minions_denied?: string[];
+    minions_pre?: string[];
+    minions_rejected?: string[];
   };
-  include_rejected?: boolean;
-  include_denied?: boolean;
 }
 
 interface UseKeyDict {
@@ -53,8 +54,6 @@ const useKeyDict = (): UseKeyDict => {
       const response = await wheelClient.exec<IDictRequest, IResponse>({
         fun: 'key.delete_dict',
         match: keyDict.match,
-        include_rejected: keyDict.include_rejected,
-        include_denied: keyDict.include_denied,
       });
 
       setAcceptedMinions(response.minions);

@@ -6,7 +6,10 @@ import { IResponse, IDictRequest } from '../api/modules/wheel/key.ts';
 
 interface KeyDict {
   match: {
-    minions: string[];
+    minions?: string[];
+    minions_denied?: string[];
+    minions_pre?: string[];
+    minions_rejected?: string[];
   };
   include_accepted?: boolean;
   include_denied?: boolean;
