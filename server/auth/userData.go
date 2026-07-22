@@ -31,6 +31,12 @@ type userData struct {
 func auth(creds credentials, c *gin.Context) (userData, error) {
 	var userData userData
 	var err error
+	if creds.Method != "local" && creds.Method != "ldap" && creds.Method != "cas" {
+		return userData, fmt.Errorf("unsupported authentication method %q", creds.Method)
+	}
+	if _, enabled := enabledMethods[creds.Method]; !enabled {
+		return userData, fmt.Errorf("authentication method %q is not enabled", creds.Method)
+	}
 	switch creds.Method {
 	case "ldap":
 		userData, err = authLDAP(creds.Username, creds.Password)
@@ -38,8 +44,6 @@ func auth(creds credentials, c *gin.Context) (userData, error) {
 		userData, err = authCAS(creds.Username, c)
 	case "local":
 		userData, err = authLocal(creds.Username, creds.Password)
-	default:
-		err = fmt.Errorf("unsupported authentication method %q", creds.Method)
 	}
 
 	return userData, err
@@ -145,16 +149,12 @@ func authLDAP(username, password string) (userData, error) {
 		}
 	}()
 
-	ldapDomain := strings.TrimSpace(ldapOptions.LDAPDomainDefault)
-	accountName, _, hasDomain := strings.Cut(username, "@")
-	if accountName == "" {
-		return userData, errors.New("LDAP username is empty")
+	accountName, userPrincipalName, err := normalizeLDAPUsername(username, ldapOptions.LDAPDomainDefault)
+	if err != nil {
+		return userData, err
 	}
 	userData.SamAccountName = accountName
-	userData.UserPrincipalName = username
-	if !hasDomain {
-		userData.UserPrincipalName = accountName + "@" + ldapDomain
-	}
+	userData.UserPrincipalName = userPrincipalName
 
 	if ldapOptions.StartTLS {
 		tlsConfig := &tls.Config{
@@ -215,4 +215,33 @@ func authLDAP(username, password string) (userData, error) {
 	userData.LastName = entry.GetAttributeValue("sn")
 	userData.Email = entry.GetAttributeValue("mail")
 	return userData, nil
+}
+
+func normalizeLDAPUsername(username, defaultDomain string) (string, string, error) {
+	username = strings.TrimSpace(username)
+	if username == "" {
+		return "", "", errors.New("LDAP username is empty")
+	}
+	if strings.Count(username, "@") > 1 {
+		return "", "", errors.New("LDAP username contains multiple @ separators")
+	}
+
+	accountName, domain, hasDomain := strings.Cut(username, "@")
+	accountName = strings.TrimSpace(accountName)
+	if accountName == "" {
+		return "", "", errors.New("LDAP account name is empty")
+	}
+	if hasDomain {
+		domain = strings.TrimSpace(domain)
+		if domain == "" {
+			return "", "", errors.New("LDAP username domain is empty")
+		}
+		return accountName, accountName + "@" + domain, nil
+	}
+
+	defaultDomain = strings.TrimSpace(defaultDomain)
+	if defaultDomain == "" {
+		return "", "", errors.New("LDAP default domain is empty")
+	}
+	return accountName, accountName + "@" + defaultDomain, nil
 }

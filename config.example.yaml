@@ -1,16 +1,31 @@
 http:
   host: ""
   port: 8080
-  secret: mysecret
+  # Set through AGARTHA_HTTP_SECRET in production. Must be at least 32 characters.
+  secret: REPLACE_WITH_AT_LEAST_32_RANDOM_CHARACTERS
+  # Empty means do not trust forwarded client IP/protocol headers from any proxy.
+  trusted_proxies: []
+  read_timeout: 15s
+  read_header_timeout: 5s
+  write_timeout: 30s
+  idle_timeout: 60s
+  shutdown_timeout: 15s
   get_started_url: "https://example.com"
   forgot_password_url: "https://example.com"
+auth:
+  # Only listed providers are accepted by /auth/token.
+  methods: [local, ldap, cas]
 db:
   port: 5432
   host: psql.example.com
   db_name: example
   user: example
-  password: foobar
+  password: REPLACE_WITH_DATABASE_PASSWORD
   sslmode: require
+  retry_attempts: 5
+  retry_initial_backoff: 1s
+  retry_max_backoff: 10s
+  retry_multiplier: 2
   tables:
     jids: "jids"
     salt_cache: "salt_cache"
@@ -22,7 +37,7 @@ ldap:
   server: ldaps://ad.example.com:636
   start_tls: false
   user: cn=svcacct,ou=USERS,dc=ad,dc=example,dc=com
-  password: foobar
+  password: REPLACE_WITH_LDAP_SERVICE_PASSWORD
   base_dn: DC=ad,DC=example,DC=com
   filter: (&(ObjectClass=person)(sAMAccountName=%s))
 cas:
