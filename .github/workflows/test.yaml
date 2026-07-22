@@ -12,6 +12,9 @@ on:
       - '!v[0-9]+.[0-9]+-[0-9]+'
 
 jobs:
+  quality:
+    uses: ./.github/workflows/quality.yaml
+
   # run-musl-tests:
   #   runs-on: ubuntu-24.04
   #   env:
@@ -195,7 +198,7 @@ jobs:
 
   build-glibc-test:
     runs-on: ubuntu-24.04
-    # needs: [run-glibc-tests]
+    needs: quality
     env:
       # ACR_URL: ${{ secrets.ACR_URL }}
       # ACR_USERNAME: ${{ secrets.ACR_USERNAME }}
@@ -245,7 +248,7 @@ jobs:
 
   build-slim-glibc-test:
     runs-on: ubuntu-24.04
-    # needs: [run-glibc-tests]
+    needs: quality
     env:
       # ACR_URL: ${{ secrets.ACR_URL }}
       # ACR_USERNAME: ${{ secrets.ACR_USERNAME }}
@@ -293,7 +296,7 @@ jobs:
 
   build-musl-test:
     runs-on: ubuntu-24.04
-    # needs: [run-musl-tests]
+    needs: quality
     env:
       # ACR_URL: ${{ secrets.ACR_URL }}
       # ACR_USERNAME: ${{ secrets.ACR_USERNAME }}
@@ -340,7 +343,7 @@ jobs:
 
   build-slim-musl-test:
     runs-on: ubuntu-24.04
-    # needs: [run-musl-tests]
+    needs: quality
     env:
       # ACR_URL: ${{ secrets.ACR_URL }}
       # ACR_USERNAME: ${{ secrets.ACR_USERNAME }}
@@ -384,4 +387,3 @@ jobs:
     - name: Docker System Prune
       run: |
         podman system prune --force --all
-
