@@ -1,0 +1,81 @@
+{
+  "image": "docker.io/pcm0/agartha",
+  "platform": "linux/amd64",
+  "variants": [
+    {
+      "name": "release slim glibc",
+      "dockerfile": "glibc.podmanfile",
+      "target": "slim-glibc",
+      "environment": "release",
+      "rolling_tags": [
+        "latest",
+        "latest-glibc",
+        "latest-slim-glibc",
+        "latest-slim"
+      ],
+      "version_suffixes": [
+        "-slim-glibc",
+        "-glibc",
+        ""
+      ],
+      "floating_version_tags": true
+    },
+    {
+      "name": "test debian glibc",
+      "dockerfile": "glibc.podmanfile",
+      "target": "debian",
+      "environment": "debug",
+      "rolling_tags": [
+        "latest-test",
+        "latest-glibc-test",
+        "latest-debian-glibc-test"
+      ],
+      "version_suffixes": [
+        "-debian-glibc-test",
+        "-glibc-test"
+      ],
+      "floating_version_tags": false
+    },
+    {
+      "name": "test slim glibc",
+      "dockerfile": "glibc.podmanfile",
+      "target": "slim-glibc",
+      "environment": "debug",
+      "rolling_tags": [
+        "latest-slim-glibc-test"
+      ],
+      "version_suffixes": [
+        "-slim-glibc-test"
+      ],
+      "floating_version_tags": false
+    },
+    {
+      "name": "test alpine musl",
+      "dockerfile": "musl.podmanfile",
+      "target": "alpine",
+      "environment": "debug",
+      "rolling_tags": [
+        "latest-musl-test",
+        "latest-alpine-musl-test"
+      ],
+      "version_suffixes": [
+        "-alpine-musl-test",
+        "-musl-test"
+      ],
+      "floating_version_tags": false
+    },
+    {
+      "name": "test slim musl",
+      "dockerfile": "musl.podmanfile",
+      "target": "slim-musl",
+      "environment": "debug",
+      "rolling_tags": [
+        "latest-slim-musl-test"
+      ],
+      "version_suffixes": [
+        "-slim-musl-test"
+      ],
+      "floating_version_tags": false
+    }
+  ]
+}
