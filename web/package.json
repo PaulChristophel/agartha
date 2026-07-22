@@ -2,7 +2,7 @@
   "type": "module",
   "name": "agartha",
   "author": "Paul Christophel",
-  "licence": "AGPL-3.0-or-later",
+  "license": "AGPL-3.0-or-later",
   "version": "0.0.0",
   "private": false,
   "scripts": {

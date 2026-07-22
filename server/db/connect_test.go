@@ -1,12 +1,12 @@
 package db
 
 import (
-	"log"
 	"testing"
+	"time"
 
 	"github.com/DATA-DOG/go-sqlmock"
 	"github.com/PaulChristophel/agartha/server/config"
-	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
@@ -22,25 +22,32 @@ func TestConnectToDatabase(t *testing.T) {
 	}
 
 	// Create a new mock database
-	db, mock, err := sqlmock.New()
-	assert.NoError(t, err)
-	defer func() {
-		if derr := db.Close(); derr != nil {
-			// Optionally log the error
-			log.Printf("failed to close db connection: %v", derr)
-		}
-	}()
+	sqlDB, mock, err := sqlmock.New()
+	require.NoError(t, err)
+	t.Cleanup(func() {
+		mock.ExpectClose()
+		require.NoError(t, sqlDB.Close())
+	})
 
 	// Set the global DB variable to the mock database
-	DB, err = gorm.Open(postgres.New(postgres.Config{
-		Conn: db,
+	mockDB, err := gorm.Open(postgres.New(postgres.Config{
+		Conn: sqlDB,
 	}), &gorm.Config{})
-	assert.NoError(t, err)
+	require.NoError(t, err)
+
+	originalOpenDatabase := openDatabase
+	originalRetryDelay := retryDelay
+	openDatabase = func(string) (*gorm.DB, error) { return mockDB, nil }
+	retryDelay = func(time.Duration) {}
+	t.Cleanup(func() {
+		openDatabase = originalOpenDatabase
+		retryDelay = originalRetryDelay
+	})
 
 	// Test the function
 	ConnectToDatabase(options)
 
 	// Ensure all expectations are met
-	err = mock.ExpectationsWereMet()
-	assert.NoError(t, err)
+	require.Same(t, mockDB, DB)
+	require.NoError(t, mock.ExpectationsWereMet())
 }

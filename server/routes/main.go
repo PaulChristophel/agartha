@@ -10,6 +10,7 @@ import (
 	"net/http"
 	"os"
 	"strings"
+	"time"
 
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
@@ -104,8 +105,10 @@ func Router(frontend embed.FS, agarthaOptions config.Config) error {
 
 	addr := fmt.Sprintf("%s:%d", options.Host, options.Port)
 	srv := &http.Server{
-		Addr:    addr,
-		Handler: router,
+		Addr:              addr,
+		Handler:           router,
+		ReadHeaderTimeout: 10 * time.Second,
+		IdleTimeout:       60 * time.Second,
 	}
 
 	// TLS support (server cert/key). Put full chain (server + intermediates) in the cert PEM file.

@@ -11,9 +11,8 @@ Agartha is a web interface for [salt](https://github.com/saltstack/salt). The pr
 - Detailed Job View: Expandable rows to view detailed job information, including job status, execution time, and result summary.
 - Pagination: Efficient pagination to navigate through data.
 - Minion Management: View and manage minions, including their status and assigned jobs.
-- Real-time Updates: Receive real-time updates on job status and results.
 - Salt Command Execution: Execute salt commands directly from the interface with a user-friendly input form.
-- Authentication & Authorization: Secure the interface with user authentication and role-based access control.
+- Authentication: Authenticate users through the configured local, LDAP, or CAS provider.
 - Responsive Design: Fully responsive design, ensuring usability on various devices and screen sizes.
 
 ## Table of Contents
@@ -28,23 +27,37 @@ Agartha is a web interface for [salt](https://github.com/saltstack/salt). The pr
 To get started with Agartha, follow these steps:
 
 1. Clone the repository:
+
 ```bash
-    git clone https://github.com/PaulChristophel/agartha.git
-    cd agartha
+git clone https://github.com/PaulChristophel/agartha.git
+cd agartha
 ```
 
 2. Install dependencies:
+
 ```bash
-    make configure
+make configure
 ```
 
 3. Configure environment variables:
-    Copy [config.example.yaml](./config.example.yaml) into the root directory of the application as `config.yaml` and update the necessary variables.
+
+   Copy [config.example.yaml](./config.example.yaml) into the root directory of the application as `config.yaml` and update the necessary values.
 
 4. Run the application:
+
 ```bash
-        ENV=debug make migrate
-        ENV=debug make run
+ENV=debug make migrate
+ENV=debug make run
+```
+
+## Validation
+
+Run the backend tests and frontend validation before submitting changes:
+
+```bash
+env GOCACHE=/tmp/agartha-gocache go test ./...
+pnpm --dir web lint
+pnpm --dir web build
 ```
 
 ## Database migrations
@@ -60,13 +73,10 @@ Once the application is running, open your web browser and navigate to http://lo
 We welcome contributions to Agartha! If you'd like to contribute, please follow these steps:
 
 1. Fork the repository.
-2. Create a new branch:
-    git checkout -b feature/your-feature-name
+2. Create a new branch: `git checkout -b feature/your-feature-name`.
 3. Make your changes.
-4. Commit your changes:
-    git commit -m "Add your commit message"
-5. Push to the branch:
-    git push origin feature/your-feature-name
+4. Commit your changes.
+5. Push the branch.
 6. Open a pull request.
 
 ## License

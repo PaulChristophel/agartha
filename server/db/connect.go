@@ -13,6 +13,12 @@ import (
 // Declare the variable for the database
 var DB *gorm.DB
 
+var openDatabase = func(dsn string) (*gorm.DB, error) {
+	return gorm.Open(postgres.Open(dsn))
+}
+
+var retryDelay = time.Sleep
+
 func ConnectToDatabase(options config.DBOptions) {
 	var err error
 	// Connection URL to connect to Postgres Database
@@ -21,13 +27,13 @@ func ConnectToDatabase(options config.DBOptions) {
 	// Retry logic
 	for i := range 3 {
 		// Connect to the DB and initialize the DB variable
-		DB, err = gorm.Open(postgres.Open(dsn))
+		DB, err = openDatabase(dsn)
 		if err == nil {
 			log.Printf("Connection Opened to Database postgres://%s:***@%s:%d/%s?sslmode=%s", options.User, options.Host, options.Port, options.DBName, options.SSLMode)
 			return
 		}
 		log.Printf("Failed to connect to database. Attempt %d/3. Retrying in 5 seconds...", i+1)
-		time.Sleep(5 * time.Second)
+		retryDelay(5 * time.Second)
 	}
 
 	// If still unable to connect after 3 attempts, panic

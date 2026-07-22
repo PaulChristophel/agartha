@@ -7,8 +7,8 @@ We love your input! We want to make contributing to this project as easy and tra
 - Proposing new features
 - Becoming a maintainer
 
-## We Develop with Github
-We use github to host code, to track issues and feature requests, as well as accept pull requests.
+## We Develop with GitHub
+We use GitHub to host code, track issues and feature requests, and accept pull requests.
 
 ## We Use [Github Flow](https://guides.github.com/introduction/flow/index.html), So All Code Changes Happen Through Pull Requests
 Pull requests are the best way to propose changes to the codebase (we use [Github Flow](https://guides.github.com/introduction/flow/index.html)). We actively welcome your pull requests:
@@ -23,8 +23,8 @@ Pull requests are the best way to propose changes to the codebase (we use [Githu
 ## Any contributions you make will be under the GNU Affero General Public Software License
 In short, when you submit code changes, your submissions are understood to be under the same [AGPL 3.0 License](http://choosealicense.com/licenses/agpl-3.0) that covers the project. Feel free to contact the maintainers if that's a concern.
 
-## Report bugs using Github's [issues](https://github.com/paulchristophel/agartha/issues)
-We use GitHub issues to track public bugs. Report a bug by [opening a new issue](); it's that easy!
+## Report bugs using GitHub [issues](https://github.com/PaulChristophel/agartha/issues)
+We use GitHub issues to track public bugs. Report a bug by [opening a new issue](https://github.com/PaulChristophel/agartha/issues/new).
 
 ## Write bug reports with detail, background, and sample code
 [This is an example](http://stackoverflow.com/q/12488905/180626) of a bug report someone wrote, and I think it's not a bad model. Here's [another example from Craig Hockenberry](http://www.openradar.me/11905408), an app developer whom I greatly respect.

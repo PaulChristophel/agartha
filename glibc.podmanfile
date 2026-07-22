@@ -14,7 +14,7 @@ COPY go.mod go.sum Makefile ./
 COPY web/package.json web/pnpm-lock.yaml web/pnpm-workspace.yaml ./web/
 RUN ENV=${ENV} make configure
 COPY . .
-RUN ENV=${ENV} make build
+RUN ENV=${ENV} make build && go test ./...
 
 # Export it to debian
 FROM debian:bookworm-slim AS debian
