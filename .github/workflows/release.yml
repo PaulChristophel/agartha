@@ -1,4 +1,4 @@
-name: Build and publish Agartha images
+name: Prepare and publish Agartha releases
 
 on:
   push:
@@ -7,20 +7,42 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
+  pull-requests: write
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
 
 jobs:
+  release_please:
+    name: Prepare release
+    runs-on: ubuntu-24.04
+    outputs:
+      release_created: ${{ steps.release.outputs.release_created }}
+      tag_name: ${{ steps.release.outputs.tag_name }}
+    steps:
+      - name: Create or update release pull request
+        id: release
+        uses: googleapis/release-please-action@v4
+        with:
+          token: ${{ secrets.RELEASE_PLEASE_TOKEN || github.token }}
+          config-file: release-please-config.json
+          manifest-file: .release-please-manifest.json
+
   quality:
+    if: needs.release_please.outputs.release_created == 'true'
+    needs: release_please
     uses: ./.github/workflows/quality.yaml
 
-  build:
-    needs: quality
+  publish:
+    if: needs.release_please.outputs.release_created == 'true'
+    needs:
+      - release_please
+      - quality
     uses: ./.github/workflows/image-build.yml
     with:
       publish: true
+      version: ${{ needs.release_please.outputs.tag_name }}
     secrets:
       DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}

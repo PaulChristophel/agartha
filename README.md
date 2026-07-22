@@ -1,5 +1,5 @@
-[![Test Release](https://github.com/PaulChristophel/agartha/actions/workflows/test.yaml/badge.svg?branch=master)](https://github.com/PaulChristophel/agartha/actions/workflows/test.yaml)
-[![Production Release](https://github.com/PaulChristophel/agartha/actions/workflows/prod.yaml/badge.svg?branch=master)](https://github.com/PaulChristophel/agartha/actions/workflows/prod.yaml)
+[![Pull Request Quality Gate](https://github.com/PaulChristophel/agartha/actions/workflows/ci.yaml/badge.svg)](https://github.com/PaulChristophel/agartha/actions/workflows/ci.yaml)
+[![Prepare and Publish Releases](https://github.com/PaulChristophel/agartha/actions/workflows/release.yml/badge.svg?branch=master)](https://github.com/PaulChristophel/agartha/actions/workflows/release.yml)
 
 # Agartha
 
@@ -19,6 +19,7 @@ Agartha is a web interface for [salt](https://github.com/saltstack/salt). The pr
 
 - Installation
 - Usage
+- Releases
 - Contributing
 - License
 
@@ -67,6 +68,28 @@ Agartha now uses [golang-migrate](https://github.com/golang-migrate/migrate) to 
 ## Usage
 
 Once the application is running, open your web browser and navigate to http://localhost:8080 to access the Agartha interface. Log in with your credentials and start managing your Salt jobs and minions.
+
+## Releases
+
+Git tags are the source of truth for Agartha versions. Pull requests run the
+quality gate and build every configured image without publishing anything.
+
+[Release Please](https://github.com/googleapis/release-please) maintains a
+release pull request from conventional commit messages. A `fix:` commit proposes
+a patch release, `feat:` proposes a minor release, and a commit marked as a
+breaking change proposes a major release. Merging the release pull request
+creates the semantic version tag and GitHub Release, then publishes the images
+with that version.
+
+The `.release-please-manifest.json` file bootstraps the previous `0.11.3`
+version and is maintained by Release Please. Builds do not read it. Development
+builds use `0.0.0-dev.<commit>` and release builds receive their version from the
+GitHub release tag.
+
+The release workflow uses `RELEASE_PLEASE_TOKEN` when that secret is available
+and otherwise falls back to the workflow token. Supplying a fine-grained token
+allows GitHub to run the normal pull-request checks on bot-created release pull
+requests.
 
 ## Contributing
 
