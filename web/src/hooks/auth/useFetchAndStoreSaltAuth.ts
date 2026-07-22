@@ -1,7 +1,7 @@
-import axios from 'axios';
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 
-import { SaltAuth } from '../netapi/api/auth.ts';
+import { apiClient as axios } from 'src/api/client.ts';
+import { sessionStore, SaltAuthSession } from 'src/api/session.ts';
 
 export interface UseFetchAndStoreSaltAuth {
   eauth: string;
@@ -13,7 +13,7 @@ export interface UseFetchAndStoreSaltAuth {
   isLoading: boolean;
   status: number | null;
   error: Error | null;
-  postSaltAuth: (password: string) => Promise<void>;
+  postSaltAuth: () => Promise<void>;
 }
 
 const useFetchAndStoreSaltAuth = (): UseFetchAndStoreSaltAuth => {
@@ -28,17 +28,11 @@ const useFetchAndStoreSaltAuth = (): UseFetchAndStoreSaltAuth => {
   const [status, setStatus] = useState<number | null>(null);
   const [error, setError] = useState<Error | null>(null);
 
-  const postSaltAuth = async (password: string) => {
+  const postSaltAuth = useCallback(async () => {
     setIsLoading(true);
     try {
-      const config = {
-        endpoint: '/api/v1/netapi',
-        password,
-        logger: console,
-      };
-
-      const authClient = new SaltAuth(config);
-      const authData = await authClient.login();
+      const { data } = await axios.post<{ return: SaltAuthSession[] }>('/api/v1/netapi/login', {});
+      const authData = data.return[0];
 
       setEauth(authData.eauth);
       setExpire(authData.expire);
@@ -47,7 +41,7 @@ const useFetchAndStoreSaltAuth = (): UseFetchAndStoreSaltAuth => {
       setToken(authData.token);
       setUser(authData.user);
 
-      localStorage.setItem('authSalt', JSON.stringify(authData));
+      sessionStore.setAuthSalt(authData);
 
       setStatus(200);
       setError(null);
@@ -58,10 +52,11 @@ const useFetchAndStoreSaltAuth = (): UseFetchAndStoreSaltAuth => {
       } else {
         setStatus(null);
       }
+      throw err;
     } finally {
       setIsLoading(false);
     }
-  };
+  }, []);
 
   return {
     eauth,

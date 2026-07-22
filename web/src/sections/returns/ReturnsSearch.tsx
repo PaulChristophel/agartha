@@ -38,20 +38,13 @@ const ReturnsSearch: React.FC<ReturnsSearchProps> = ({
   until,
   setUntil,
 }) => {
-  const authToken = localStorage.getItem('authToken') || '';
   const [inputValue, setInputValue] = useState('');
   const [page, setPage] = useState(1);
   const [allFunKeys, setAllFunKeys] = useState<string[]>([]);
   const [hasMore, setHasMore] = useState(true);
   const debouncedInputValue = useDebounce(inputValue, 500);
 
-  const { funKeys, loading, error } = useFetchFunKeys(
-    authToken,
-    debouncedInputValue,
-    page,
-    since,
-    until
-  );
+  const { funKeys, loading, error } = useFetchFunKeys(debouncedInputValue, page, since, until);
 
   useEffect(() => {
     if (page === 1) {

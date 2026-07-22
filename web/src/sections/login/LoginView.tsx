@@ -1,4 +1,3 @@
-import axios from 'axios';
 import { useState, useEffect } from 'react';
 
 import Box from '@mui/material/Box';
@@ -21,6 +20,8 @@ import { fetchAndStoreAuthUser } from 'src/hooks/auth/fetchAndStoreAuthUser.ts';
 import useFetchAndStoreSaltAuth from 'src/hooks/auth/useFetchAndStoreSaltAuth.ts';
 
 import { bgGradient } from 'src/theme/css';
+import { sessionStore } from 'src/api/session.ts';
+import { apiClient as axios } from 'src/api/client.ts';
 import { Version, GetStartedURL, ForgotPasswordURL } from 'src/config.ts';
 
 import Logo from 'src/components/logo';
@@ -66,15 +67,13 @@ const LoginView: React.FC = () => {
       });
       const { token } = response.data;
 
-      localStorage.removeItem('authUser');
-      localStorage.removeItem('authSalt');
-      localStorage.setItem('authToken', token);
+      sessionStore.setAuthToken(token);
 
       const authUser = await fetchAndStoreAuthUser(token);
       if (!authUser) {
         throw new Error('Failed to load the authenticated user');
       }
-      await postSaltAuth(token);
+      await postSaltAuth();
 
       // Redirect to the home page
       router.push('/');

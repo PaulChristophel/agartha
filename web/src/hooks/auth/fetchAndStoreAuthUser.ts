@@ -1,7 +1,9 @@
-import axios from 'axios';
 import { jwtDecode } from 'jwt-decode';
 
-import { AuthUser, AUTH_USER_KEY } from './authUser.ts';
+import { sessionStore } from 'src/api/session.ts';
+import { apiClient as axios } from 'src/api/client.ts';
+
+import { AuthUser } from './authUser.ts';
 
 interface DecodedToken {
   user_id: string;
@@ -12,23 +14,17 @@ export const fetchAndStoreAuthUser = async (token: string): Promise<AuthUser | n
     const decodedToken = jwtDecode<DecodedToken>(token);
     const userId = decodedToken.user_id;
 
-    // Check if the user settings are already stored in localStorage
-    const cachedSettings = localStorage.getItem(AUTH_USER_KEY);
+    const cachedSettings = sessionStore.getSnapshot().authUser;
     if (cachedSettings) {
-      return JSON.parse(cachedSettings);
+      return cachedSettings;
     }
 
     // Fetch user settings from the server
-    const response = await axios.get<AuthUser>(`/api/v1/secure/auth_user/${userId}`, {
-      headers: {
-        Authorization: `${token}`,
-      },
-    });
+    const response = await axios.get<AuthUser>(`/api/v1/secure/auth_user/${userId}`);
 
     const authUser = response.data;
 
-    // Store user settings in localStorage
-    localStorage.setItem(AUTH_USER_KEY, JSON.stringify(authUser));
+    sessionStore.setAuthUser(authUser);
 
     return authUser;
   } catch (error) {

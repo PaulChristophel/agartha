@@ -1,8 +1,8 @@
-import axios from 'axios';
 import { useState } from 'react';
 
-import { WheelClient } from '../api/clients/wheel.ts';
-import { ISaltConfigOptions } from '../api/client.ts';
+import { executeWheel } from 'src/api/salt.ts';
+import { apiClient as axios } from 'src/api/client.ts';
+
 import { IResponse, IDictRequest } from '../api/modules/wheel/key.ts';
 
 interface KeyDict {
@@ -29,25 +29,10 @@ const useKeyDict = (): UseKeyDict => {
   const deleteKeys = async (keyDict: KeyDict) => {
     setIsLoading(true);
     try {
-      const authSaltString = localStorage.getItem('authSalt');
-      if (!authSaltString) {
-        throw new Error('Missing authSalt in local storage');
-      }
-
-      const password = localStorage.getItem('authToken');
-      if (!password) {
-        throw new Error('Missing authToken in local storage');
-      }
-
       try {
         const { data } = await axios.post<IResponse>(
           '/api/v1/salt_keys/minion_keys/delete',
-          keyDict,
-          {
-            headers: {
-              Authorization: `${password}`,
-            },
-          }
+          keyDict
         );
 
         setAcceptedMinions(data.minions);
@@ -57,20 +42,7 @@ const useKeyDict = (): UseKeyDict => {
         console.warn('Failed to delete minion keys in salt_keys, falling back to Salt', dbErr);
       }
 
-      const parsedAuthSalt = JSON.parse(authSaltString);
-      const { token, expire } = parsedAuthSalt;
-
-      const config: ISaltConfigOptions = {
-        endpoint: 'api/v1/netapi',
-        token,
-        password,
-        expire,
-        logger: console, // Assuming console implements Logger interface
-      };
-
-      const wheelClient = new WheelClient(config);
-
-      const response = await wheelClient.exec<IDictRequest, IResponse>({
+      const response = await executeWheel<IDictRequest, IResponse>({
         fun: 'key.delete_dict',
         match: keyDict.match,
       });

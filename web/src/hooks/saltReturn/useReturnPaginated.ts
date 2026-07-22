@@ -1,5 +1,6 @@
-import axios from 'axios';
 import { useMemo, useState, useEffect } from 'react';
+
+import { apiClient as axios } from 'src/api/client.ts';
 
 interface Return {
   alter_time: string;
@@ -80,12 +81,7 @@ const useReturnPaginated = (
         params.append('page', String(currentPage));
         params.append('per_page', String(rowsPerPage));
 
-        const authToken = localStorage.getItem('authToken');
-        const response = await axios.get<ApiResponse>(`/api/v1/salt_return?${params.toString()}`, {
-          headers: {
-            Authorization: `${authToken}`,
-          },
-        });
+        const response = await axios.get<ApiResponse>(`/api/v1/salt_return?${params.toString()}`);
 
         setReturns(response.data.results);
         setTotalPages(response.data.paging.num_pages);

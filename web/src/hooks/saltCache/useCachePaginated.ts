@@ -1,5 +1,6 @@
-import axios from 'axios';
 import { useMemo, useState, useEffect } from 'react';
+
+import { apiClient as axios } from 'src/api/client.ts';
 
 interface Cache {
   alter_time: string;
@@ -88,12 +89,7 @@ const useCachePaginated = (
         params.append('page', String(currentPage));
         params.append('per_page', String(rowsPerPage));
 
-        const authToken = localStorage.getItem('authToken');
-        const response = await axios.get<ApiResponse>(`/api/v1/salt_cache?${params.toString()}`, {
-          headers: {
-            Authorization: `${authToken}`,
-          },
-        });
+        const response = await axios.get<ApiResponse>(`/api/v1/salt_cache?${params.toString()}`);
 
         // Decode the base64 data field
         const decodedCaches = response.data.results.map((cache) => ({

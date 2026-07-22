@@ -94,12 +94,8 @@ const FormattedView: React.FC<{
 
   const onRunClick = async () => {
     showInfoMessage('Command sent.');
-    const authToken = localStorage.getItem('authToken') || '';
-    const authSaltString = localStorage.getItem('authSalt') || '';
     try {
       const output = await handleRun(
-        authToken,
-        authSaltString,
         clientTypeState,
         asyncState,
         batchState,
@@ -128,12 +124,8 @@ const FormattedView: React.FC<{
 
   const onRunTestClick = async () => {
     showInfoMessage('Test command sent.');
-    const authToken = localStorage.getItem('authToken') || '';
-    const authSaltString = localStorage.getItem('authSalt') || '';
     try {
       const output = await handleRun(
-        authToken,
-        authSaltString,
         clientTypeState,
         asyncState,
         batchState,

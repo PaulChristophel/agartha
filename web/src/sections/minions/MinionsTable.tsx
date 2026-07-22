@@ -1,4 +1,3 @@
-import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import React, { useState, useEffect, useCallback } from 'react';
 
@@ -22,6 +21,8 @@ import CircularProgress from '@mui/material/CircularProgress';
 
 import useDeleteKeyDict from 'src/hooks/netapi/wheel/useDeleteKeyDict.ts';
 import useMinionsPaginated from 'src/hooks/saltMinion/useMinionPaginated.ts';
+
+import { apiClient as axios } from 'src/api/client.ts';
 
 import Row from './Row.tsx';
 
@@ -142,40 +143,26 @@ const MinionsTable: React.FC<MinionsTableProps> = ({
 
   const handleRefresh = async () => {
     setRefreshing(true);
-    const authToken = localStorage.getItem('authToken');
-    const authSaltString = localStorage.getItem('authSalt');
-
-    const parsedAuthSalt = JSON.parse(authSaltString as string);
-    const { token } = parsedAuthSalt;
 
     const minionIds = selectedIds.map(
       (id) => minions.find((row) => row.id === id)?.minion_id || ''
     );
 
     try {
-      await axios.post(
-        `/api/v1/netapi/`,
-        [
-          {
-            client: 'local_async',
-            fun: 'saltutil.refresh_grains',
-            tgt: minionIds,
-            tgt_type: 'list',
-          },
-          {
-            client: 'local_async',
-            fun: 'saltutil.refresh_pillar',
-            tgt: minionIds,
-            tgt_type: 'list',
-          },
-        ],
+      await axios.post(`/api/v1/netapi/`, [
         {
-          headers: {
-            Authorization: authToken,
-            'X-Auth-Token': token,
-          },
-        }
-      );
+          client: 'local_async',
+          fun: 'saltutil.refresh_grains',
+          tgt: minionIds,
+          tgt_type: 'list',
+        },
+        {
+          client: 'local_async',
+          fun: 'saltutil.refresh_pillar',
+          tgt: minionIds,
+          tgt_type: 'list',
+        },
+      ]);
     } catch (err) {
       console.error(`Failed to update cache for minion ids ${minionIds.join(', ')}: `, err);
     } finally {
@@ -190,15 +177,10 @@ const MinionsTable: React.FC<MinionsTableProps> = ({
 
   const handleDelete = async () => {
     setDeleting(true);
-    const authToken = localStorage.getItem('authToken');
 
     const deleteCache = async (id: string) => {
       try {
-        await axios.delete(`/api/v1/salt_cache/uuid/${id}`, {
-          headers: {
-            Authorization: `${authToken}`,
-          },
-        });
+        await axios.delete(`/api/v1/salt_cache/uuid/${id}`);
       } catch (err) {
         console.error(`Failed to delete cache with id ${id}: `, err);
       }

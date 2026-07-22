@@ -1,30 +1,19 @@
-// useStatus.ts
-import axios from 'axios';
 import { useState, useEffect } from 'react';
 
-const useStatus = (authToken: string, authSaltString: string) => {
+import { useSession } from 'src/api/session.ts';
+// useStatus.ts
+import { apiClient as axios } from 'src/api/client.ts';
+
+const useStatus = () => {
   const [status, setStatus] = useState<string>('Loading...');
   const [isStatusLoading, setIsStatusLoading] = useState<boolean>(true);
-
-  let token = '';
-  if (authSaltString) {
-    try {
-      token = JSON.parse(authSaltString).token || '';
-    } catch (_error) {
-      token = '';
-    }
-  }
+  const { authToken, authSalt } = useSession();
 
   useEffect(() => {
     const fetchStatus = async () => {
       setIsStatusLoading(true);
       try {
-        const response = await axios.get('/api/v1/netapi', {
-          headers: {
-            Authorization: authToken,
-            'X-Auth-Token': token,
-          },
-        });
+        const response = await axios.get('/api/v1/netapi');
         if (response.data && response.data.return === 'Welcome') {
           setStatus('OK');
         } else {
@@ -38,13 +27,13 @@ const useStatus = (authToken: string, authSaltString: string) => {
       }
     };
 
-    if (authToken && token) {
+    if (authToken && authSalt) {
       fetchStatus();
     } else {
       setStatus('Restricted');
       setIsStatusLoading(false);
     }
-  }, [authToken, token]);
+  }, [authToken, authSalt]);
 
   return { status, isStatusLoading };
 };

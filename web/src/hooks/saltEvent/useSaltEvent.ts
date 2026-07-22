@@ -1,5 +1,6 @@
-import axios from 'axios';
 import { useState, useEffect } from 'react';
+
+import { apiClient as axios } from 'src/api/client.ts';
 
 interface EventData {
   alter_time: string;
@@ -28,16 +29,10 @@ const useEvent = (id: number): UseEvent => {
   const [error, setError] = useState<Error | null>(null);
 
   useEffect(() => {
-    const authToken = localStorage.getItem('authToken');
-
     const fetchEventData = async () => {
       setIsLoading(true);
       try {
-        const { data } = await axios.get<EventData>(`/api/v1/salt_event/${id}`, {
-          headers: {
-            Authorization: `${authToken}`,
-          },
-        });
+        const { data } = await axios.get<EventData>(`/api/v1/salt_event/${id}`);
         setAlterTime(data.alter_time);
         setEventData(data.data);
         setMasterID(data.master_id);

@@ -42,7 +42,6 @@ const MinionsSearch: React.FC<MinionsSearchProps> = ({
   // grainValue,
   // setGrainValue,
 }) => {
-  const authToken = localStorage.getItem('authToken') || '';
   const [inputValue, setInputValue] = useState('');
   const [page, setPage] = useState(1);
   const [allGrainsKeys, setAllGrainsKeys] = useState<string[]>([]);
@@ -53,7 +52,7 @@ const MinionsSearch: React.FC<MinionsSearchProps> = ({
   const [filterOperator, setFilterOperator] = useState<'eq' | 'not' | 'like' | 'not_like'>('eq');
   const debouncedInputValue = useDebounce(inputValue, 500);
 
-  const { grainsKeys, loading, error } = useFetchGrainsKeys(authToken, debouncedInputValue, page);
+  const { grainsKeys, loading, error } = useFetchGrainsKeys(debouncedInputValue, page);
 
   useEffect(() => {
     if (page === 1) {
