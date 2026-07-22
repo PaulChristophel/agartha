@@ -78,8 +78,12 @@ Local authentication validates passwords stored in `auth_user`; the former demon
 
 ## Releases
 
-Git tags are the source of truth for Agartha versions. Pull requests run the
-quality gate and build every configured image without publishing anything.
+Git tags are the source of truth for Agartha release versions. Pull requests
+run the quality gate and build the debug image variants with symbols retained.
+Pull requests from branches in this repository also publish development images
+with immutable version/date/commit tags and movable `pr-<number>` tags. Forked
+pull requests build the same images without receiving registry credentials or
+publishing them.
 
 [Release Please](https://github.com/googleapis/release-please) maintains a
 release pull request from conventional commit messages. A `fix:` commit proposes
@@ -88,10 +92,11 @@ breaking change proposes a major release. Merging the release pull request
 creates the semantic version tag and GitHub Release, then publishes the images
 with that version.
 
-The `.release-please-manifest.json` file bootstraps the previous `0.11.3`
-version and is maintained by Release Please. Builds do not read it. Development
-builds use `0.0.0-dev.<commit>` and release builds receive their version from the
-GitHub release tag.
+The `.release-please-manifest.json` file tracks the most recent release version
+and is maintained by Release Please. Development builds use that base version
+and identify the exact source as
+`<version>-<commit timestamp>-<commit>`. Release builds receive their clean
+semantic version from the GitHub release tag.
 
 The release workflow uses `RELEASE_PLEASE_TOKEN` when that secret is available
 and otherwise falls back to the workflow token. Supplying a fine-grained token

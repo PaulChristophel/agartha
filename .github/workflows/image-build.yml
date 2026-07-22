@@ -8,6 +8,16 @@ on:
         required: false
         type: boolean
         default: false
+      development:
+        description: Build and tag only development variants
+        required: false
+        type: boolean
+        default: false
+      pr_number:
+        description: Pull request number for a movable development tag
+        required: false
+        type: number
+        default: 0
       version:
         description: Semantic version from the GitHub release tag
         required: false
@@ -36,11 +46,13 @@ jobs:
       - name: Read image configuration
         id: matrix
         env:
+          DEVELOPMENT: ${{ inputs.development }}
           PUBLISH: ${{ inputs.publish }}
+          PR_NUMBER: ${{ inputs.pr_number }}
           REQUESTED_VERSION: ${{ inputs.version }}
         run: |
           version="${REQUESTED_VERSION#v}"
-          if [[ "$PUBLISH" == "true" && -z "$version" ]]; then
+          if [[ "$PUBLISH" == "true" && "$DEVELOPMENT" != "true" && -z "$version" ]]; then
             echo "A release version is required when publishing images" >&2
             exit 1
           fi
@@ -48,14 +60,32 @@ jobs:
             echo "Invalid semantic version: $REQUESTED_VERSION" >&2
             exit 1
           fi
-          if [[ -z "$version" ]]; then
-            version="0.0.0-dev.${GITHUB_SHA:0:12}"
+          if [[ "$DEVELOPMENT" == "true" ]]; then
+            if [[ "$PUBLISH" == "true" && "$PR_NUMBER" == "0" ]]; then
+              echo "A pull request number is required when publishing development images" >&2
+              exit 1
+            fi
+
+            base_version="$(jq -er '.["."]' .release-please-manifest.json)"
+            commit_date="$(TZ=UTC git show --no-show-signature -s --format=%cd --date=format-local:%Y%m%d%H%M%S "$GITHUB_SHA")"
+            version="${base_version}-${commit_date}-${GITHUB_SHA:0:12}"
+            variants="$(jq -c '[.variants[] | select(.environment == "debug")]' images.json)"
+          else
+            if [[ -z "$version" ]]; then
+              version="0.0.0-dev.${GITHUB_SHA:0:12}"
+            fi
+            variants="$(jq -c '.variants' images.json)"
+          fi
+
+          if [[ ! "$version" =~ ^[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.-]+)?$ ]]; then
+            echo "Invalid generated version: $version" >&2
+            exit 1
           fi
 
           echo "image=$(jq -r '.image' images.json)" >> "$GITHUB_OUTPUT"
           echo "platform=$(jq -r '.platform' images.json)" >> "$GITHUB_OUTPUT"
           echo "version=$version" >> "$GITHUB_OUTPUT"
-          echo "variants=$(jq -c '.variants' images.json)" >> "$GITHUB_OUTPUT"
+          echo "variants=$variants" >> "$GITHUB_OUTPUT"
 
   build:
     name: ${{ matrix.variant.name }}
@@ -75,6 +105,8 @@ jobs:
       ROLLING_TAGS: ${{ toJSON(matrix.variant.rolling_tags) }}
       VERSION_SUFFIXES: ${{ toJSON(matrix.variant.version_suffixes) }}
       FLOATING_VERSION_TAGS: ${{ matrix.variant.floating_version_tags }}
+      DEVELOPMENT: ${{ inputs.development }}
+      PR_NUMBER: ${{ inputs.pr_number }}
     steps:
       - name: Check out repository
         uses: actions/checkout@v7
@@ -85,13 +117,18 @@ jobs:
           tag_file="$RUNNER_TEMP/image-tags"
           : > "$tag_file"
 
-          while IFS= read -r tag; do
-            echo "$tag" >> "$tag_file"
-          done < <(jq -r '.[]' <<< "$ROLLING_TAGS")
+          if [[ "$DEVELOPMENT" != "true" ]]; then
+            while IFS= read -r tag; do
+              echo "$tag" >> "$tag_file"
+            done < <(jq -r '.[]' <<< "$ROLLING_TAGS")
+          fi
 
           while IFS= read -r suffix; do
             echo "${IMAGE_VERSION}${suffix}" >> "$tag_file"
             echo "sha-${short_sha}${suffix}" >> "$tag_file"
+            if [[ "$DEVELOPMENT" == "true" && "$PR_NUMBER" != "0" ]]; then
+              echo "pr-${PR_NUMBER}${suffix}" >> "$tag_file"
+            fi
           done < <(jq -r '.[]' <<< "$VERSION_SUFFIXES")
 
           if [[ "$FLOATING_VERSION_TAGS" == "true" && "$IMAGE_VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then

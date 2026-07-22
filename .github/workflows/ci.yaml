@@ -15,3 +15,12 @@ jobs:
   build:
     needs: quality
     uses: ./.github/workflows/image-build.yml
+    with:
+      development: true
+      pr_number: ${{ github.event.pull_request.number || 0 }}
+      publish: >-
+        ${{ github.event_name == 'pull_request' &&
+            github.event.pull_request.head.repo.full_name == github.repository &&
+            github.actor != 'dependabot[bot]' }}
+    secrets:
+      DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
