@@ -30,8 +30,8 @@ type Token struct {
 }
 
 type CASServiceResponse struct {
-	XMLName               xml.Name              `xml:"serviceResponse"`
-	AuthenticationSuccess AuthenticationSuccess `xml:"authenticationSuccess"`
+	XMLName               xml.Name               `xml:"serviceResponse"`
+	AuthenticationSuccess *AuthenticationSuccess `xml:"authenticationSuccess"`
 }
 
 type AuthenticationSuccess struct {
@@ -102,14 +102,20 @@ func RetrieveToken(c *gin.Context) {
 		httputil.NewError(c, http.StatusUnauthorized, "Invalid credentials.")
 		return
 	}
+	authenticatedUsername := userData.Username
+	if authenticatedUsername == "" {
+		sugar.Errorf("Authentication provider returned an empty username for %s", creds.Username)
+		httputil.NewError(c, http.StatusUnauthorized, "Invalid credentials.")
+		return
+	}
 
 	// Check if user exists and handle accordingly
 	var user model.AuthUser
-	result := db.Where("username = ?", creds.Username).First(&user)
+	result := db.Where("username = ?", authenticatedUsername).First(&user)
 	if errors.Is(result.Error, gorm.ErrRecordNotFound) {
 		// Create new user if not exist
 		user = model.AuthUser{
-			Username:    creds.Username,
+			Username:    authenticatedUsername,
 			Password:    "", // Store a hashed password or omit if password shouldn't be stored
 			FirstName:   userData.FirstName,
 			LastName:    userData.LastName,
@@ -119,23 +125,35 @@ func RetrieveToken(c *gin.Context) {
 			IsActive:    true,
 			DateJoined:  time.Now(),
 		}
-		db.Create(&user)
+		if err := db.Create(&user).Error; err != nil {
+			sugar.Errorf("Failed to create authenticated user %s: %v", authenticatedUsername, err)
+			httputil.NewError(c, http.StatusInternalServerError, "Failed to create user.")
+			return
+		}
 	} else if result.Error != nil {
 		sugar.Errorf("Database error: %v", result.Error)
 		httputil.NewError(c, http.StatusInternalServerError, "Database error.")
 		return
 	} else {
 		// Optionally update user data or last login time here if necessary
-		currentTime := time.Now()     // Get the current time
-		user.LastLogin = &currentTime // Update the last login time
-		db.Save(&user)
+		if !user.IsActive {
+			httputil.NewError(c, http.StatusUnauthorized, "User account is inactive.")
+			return
+		}
+		currentTime := time.Now()
+		user.LastLogin = &currentTime
+		if err := db.Save(&user).Error; err != nil {
+			sugar.Errorf("Failed to update authenticated user %s: %v", authenticatedUsername, err)
+			httputil.NewError(c, http.StatusInternalServerError, "Failed to update user.")
+			return
+		}
 	}
 
 	// Create JWT token
 	maxAge := (time.Hour * 8)
 	utime := time.Now().Add(maxAge).Unix()
 	claims := jwt.MapClaims{
-		"username": creds.Username,
+		"username": authenticatedUsername,
 		"user_id":  user.ID,
 		"exp":      utime,
 		// "expires_at": utime,
@@ -151,7 +169,7 @@ func RetrieveToken(c *gin.Context) {
 	// Create session and save session data to session_user_map
 	session = sessions.Default(c)
 	session.Options(sessions.Options{MaxAge: int(maxAge.Seconds())})
-	session.Set("username", creds.Username)
+	session.Set("username", authenticatedUsername)
 	session.Set("user_id", user.ID)
 	session.Set("exp", strconv.FormatInt(utime, 10))
 	// session.Set("expires_at", strconv.FormatInt(utime, 10))
@@ -190,7 +208,7 @@ func RetrieveToken(c *gin.Context) {
 		settings = model.UserSettings{
 			UserID:          user.ID,
 			Created:         time.Now(),
-			SaltPermissions: "['.*', '@jobs', '@runner', '@wheel']",
+			SaltPermissions: `[".*", "@jobs", "@runner", "@wheel"]`,
 		}
 		err := settings.SetSettingsFromJSON("")
 		if err != nil {
@@ -214,8 +232,6 @@ func RetrieveToken(c *gin.Context) {
 		httputil.NewError(c, http.StatusInternalServerError, "Database error.")
 		return
 	} else {
-		// Update existing user settings
-		// Using a raw SQL to update the token with crypt function
 		sql := `UPDATE user_settings SET token = crypt(?, gen_salt('bf', 8)) WHERE user_id = ?`
 		err := db.Exec(sql, "Bearer "+tokenString, user.ID).Error
 		if err != nil {
