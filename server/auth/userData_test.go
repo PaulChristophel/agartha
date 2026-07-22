@@ -30,6 +30,71 @@ func TestAuthRejectsUnsupportedMethod(t *testing.T) {
 	require.ErrorContains(t, err, "unsupported authentication method")
 }
 
+func TestAuthRejectsDisabledMethod(t *testing.T) {
+	originalMethods := enabledMethods
+	enabledMethods = map[string]struct{}{"local": {}}
+	t.Cleanup(func() { enabledMethods = originalMethods })
+
+	_, err := auth(credentials{Method: "ldap"}, nil)
+	require.ErrorContains(t, err, "not enabled")
+}
+
+func TestGetMethodReturnsOnlyEnabledMethods(t *testing.T) {
+	originalMethods := enabledMethods
+	enabledMethods = map[string]struct{}{"local": {}, "cas": {}}
+	t.Cleanup(func() { enabledMethods = originalMethods })
+
+	recorder := httptest.NewRecorder()
+	context, _ := gin.CreateTestContext(recorder)
+	GetMethod(context)
+
+	require.Equal(t, http.StatusOK, recorder.Code)
+	require.JSONEq(t, `{"auth_methods":["local","cas"]}`, recorder.Body.String())
+}
+
+func TestNormalizeLDAPUsername(t *testing.T) {
+	tests := []struct {
+		name          string
+		username      string
+		defaultDomain string
+		wantAccount   string
+		wantUPN       string
+		wantError     bool
+	}{
+		{
+			name:          "qualified username keeps account before at sign",
+			username:      "user@example.com",
+			defaultDomain: "fallback.example.com",
+			wantAccount:   "user",
+			wantUPN:       "user@example.com",
+		},
+		{
+			name:          "unqualified username uses default domain",
+			username:      "user",
+			defaultDomain: "example.com",
+			wantAccount:   "user",
+			wantUPN:       "user@example.com",
+		},
+		{name: "rejects empty account", username: "@example.com", defaultDomain: "example.com", wantError: true},
+		{name: "rejects empty explicit domain", username: "user@", defaultDomain: "example.com", wantError: true},
+		{name: "rejects missing default domain", username: "user", wantError: true},
+		{name: "rejects multiple separators", username: "user@example.com@invalid", defaultDomain: "example.com", wantError: true},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			account, upn, err := normalizeLDAPUsername(tt.username, tt.defaultDomain)
+			if tt.wantError {
+				require.Error(t, err)
+				return
+			}
+			require.NoError(t, err)
+			require.Equal(t, tt.wantAccount, account)
+			require.Equal(t, tt.wantUPN, upn)
+		})
+	}
+}
+
 func TestAuthLocalUsesStoredPassword(t *testing.T) {
 	sqlDB, mock, err := sqlmock.New()
 	require.NoError(t, err)

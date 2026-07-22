@@ -56,14 +56,11 @@ type AuthMethods struct {
 //	@Failure		500	{object}	httputil.HTTPError500
 //	@router			/auth/method [get]
 func GetMethod(c *gin.Context) {
-	authMethods := []string{"local"}
-
-	if ldapOptions.Server != "ldap.example.com" {
-		authMethods = append(authMethods, "ldap")
-	}
-
-	if casOptions.Server != "https://cas.example.com" {
-		authMethods = append(authMethods, "cas")
+	authMethods := make([]string, 0, len(enabledMethods))
+	for _, method := range []string{"local", "ldap", "cas"} {
+		if _, enabled := enabledMethods[method]; enabled {
+			authMethods = append(authMethods, method)
+		}
 	}
 
 	c.JSON(http.StatusOK, gin.H{

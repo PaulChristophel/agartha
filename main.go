@@ -57,7 +57,12 @@ func main() {
 	// Handle commands
 	switch {
 	case migrateCmd.Happened():
-		db.ConnectToDatabase(config.AgarthaConfig.DB)
+		if err := config.AgarthaConfig.ValidateDatabase(); err != nil {
+			log.Fatalf("Invalid configuration: %v", err)
+		}
+		if err := db.ConnectToDatabase(config.AgarthaConfig.DB); err != nil {
+			log.Fatalf("Database connection failed: %v", err)
+		}
 		if config.AgarthaConfig.DB.Tables.UseJSONB {
 			err = db.MigrateJSONB(config.AgarthaConfig.DB.Tables)
 		} else {
@@ -68,7 +73,12 @@ func main() {
 		}
 		log.Println("Migration completed successfully.")
 	case serveCmd.Happened():
-		db.ConnectToDatabase(config.AgarthaConfig.DB)
+		if err := config.AgarthaConfig.ValidateForServe(); err != nil {
+			log.Fatalf("Invalid configuration: %v", err)
+		}
+		if err := db.ConnectToDatabase(config.AgarthaConfig.DB); err != nil {
+			log.Fatalf("Database connection failed: %v", err)
+		}
 		err = routes.Router(dist, *config.AgarthaConfig)
 		if err != nil {
 			log.Fatalf("Server failed: %v", err)

@@ -1,16 +1,20 @@
 package routes
 
 import (
+	"context"
 	"crypto/tls"
 	"crypto/x509"
 	"embed"
+	"errors"
 	"fmt"
 	"html/template"
 	"io/fs"
+	"net"
 	"net/http"
 	"os"
+	"os/signal"
 	"strings"
-	"time"
+	"syscall"
 
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
@@ -44,12 +48,13 @@ import (
 )
 
 var (
-	router       *gin.Engine = gin.New()
+	router       *gin.Engine
 	saltDBTables config.SaltDBTables
 	options      config.HTTPOptions
 	ldapOptions  config.LDAPOptions
 	casOptions   config.CASOptions
 	saltOptions  config.SaltOptions
+	authMethods  []string
 	log          *zap.Logger
 )
 
@@ -59,6 +64,11 @@ func Router(frontend embed.FS, agarthaOptions config.Config) error {
 	casOptions = agarthaOptions.CAS
 	saltOptions = agarthaOptions.Salt
 	saltDBTables = agarthaOptions.DB.Tables
+	var err error
+	authMethods, err = agarthaOptions.EffectiveAuthMethods()
+	if err != nil {
+		return err
+	}
 
 	docsV1.SwaggerInfo.BasePath = "/"
 
@@ -70,7 +80,8 @@ func Router(frontend embed.FS, agarthaOptions config.Config) error {
 	}
 
 	gin.SetMode(mode)
-	log, err := logger.InitLogger(mode)
+	router = gin.New()
+	log, err = logger.InitLogger(mode)
 	if err != nil {
 		return err
 	}
@@ -80,7 +91,15 @@ func Router(frontend embed.FS, agarthaOptions config.Config) error {
 		}
 	}()
 
-	router.Use(gin.LoggerWithConfig(gin.LoggerConfig{
+	trustedProxies := options.TrustedProxies
+	if len(trustedProxies) == 0 {
+		trustedProxies = nil
+	}
+	if err := router.SetTrustedProxies(trustedProxies); err != nil {
+		return fmt.Errorf("configure trusted proxies: %w", err)
+	}
+
+	router.Use(securityHeaders(), gin.LoggerWithConfig(gin.LoggerConfig{
 		Formatter: func(param gin.LogFormatterParams) string {
 			log.Info("request",
 				zap.String("client_ip", param.ClientIP),
@@ -104,18 +123,9 @@ func Router(frontend embed.FS, agarthaOptions config.Config) error {
 	addStaticRoutes(router, frontend)
 
 	addr := fmt.Sprintf("%s:%d", options.Host, options.Port)
-	srv := &http.Server{
-		Addr:              addr,
-		Handler:           router,
-		ReadHeaderTimeout: 10 * time.Second,
-		IdleTimeout:       60 * time.Second,
-	}
+	srv := newHTTPServer(addr, router, options)
 
 	// TLS support (server cert/key). Put full chain (server + intermediates) in the cert PEM file.
-	// Expected config fields (add to config.HTTPOptions as needed):
-	//   options.TLSCertFile string
-	//   options.TLSKeyFile  string
-	//   options.TLSClientCAFile string (optional)
 	if options.TLSCertFile != "" && options.TLSKeyFile != "" {
 		tlsCfg := &tls.Config{
 			MinVersion: tls.VersionTLS12,
@@ -137,14 +147,63 @@ func Router(frontend embed.FS, agarthaOptions config.Config) error {
 		}
 
 		srv.TLSConfig = tlsCfg
-		err = srv.ListenAndServeTLS(options.TLSCertFile, options.TLSKeyFile)
-	} else {
-		err = srv.ListenAndServe()
 	}
+
+	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
+	defer stop()
+	return serveHTTP(ctx, srv, options)
+}
+
+func newHTTPServer(addr string, handler http.Handler, options config.HTTPOptions) *http.Server {
+	return &http.Server{
+		Addr:              addr,
+		Handler:           handler,
+		ReadTimeout:       options.ReadTimeout,
+		ReadHeaderTimeout: options.ReadHeaderTimeout,
+		WriteTimeout:      options.WriteTimeout,
+		IdleTimeout:       options.IdleTimeout,
+	}
+}
+
+func serveHTTP(ctx context.Context, srv *http.Server, options config.HTTPOptions) error {
+	listener, err := net.Listen("tcp", srv.Addr)
 	if err != nil {
-		log.Error("Failed to start server", zap.Error(err))
+		return fmt.Errorf("listen on %s: %w", srv.Addr, err)
 	}
-	return err
+	defer func() { _ = listener.Close() }()
+	return serveHTTPListener(ctx, srv, listener, options)
+}
+
+func serveHTTPListener(ctx context.Context, srv *http.Server, listener net.Listener, options config.HTTPOptions) error {
+	serveErr := make(chan error, 1)
+	go func() {
+		if options.TLSCertFile != "" && options.TLSKeyFile != "" {
+			serveErr <- srv.ServeTLS(listener, options.TLSCertFile, options.TLSKeyFile)
+			return
+		}
+		serveErr <- srv.Serve(listener)
+	}()
+
+	select {
+	case err := <-serveErr:
+		if errors.Is(err, http.ErrServerClosed) {
+			return nil
+		}
+		return fmt.Errorf("serve HTTP: %w", err)
+	case <-ctx.Done():
+		log.Info("Shutdown signal received")
+	}
+
+	shutdownCtx, cancel := context.WithTimeout(context.Background(), options.ShutdownTimeout)
+	defer cancel()
+	if err := srv.Shutdown(shutdownCtx); err != nil {
+		return fmt.Errorf("gracefully shut down HTTP server: %w", err)
+	}
+	if err := <-serveErr; err != nil && !errors.Is(err, http.ErrServerClosed) {
+		return fmt.Errorf("serve HTTP during shutdown: %w", err)
+	}
+	log.Info("HTTP server stopped")
+	return nil
 }
 
 func addServerRoutes(router *gin.Engine) {
@@ -153,7 +212,7 @@ func addServerRoutes(router *gin.Engine) {
 	AddVersionRoutes(rootRoute)
 
 	authRoute := router.Group("/auth")
-	auth.SetOptions([]byte(options.Secret), ldapOptions, casOptions)
+	auth.SetOptions([]byte(options.Secret), authMethods, ldapOptions, casOptions)
 	auth.AddRoutes(authRoute)
 
 	grpV1 := router.Group(
