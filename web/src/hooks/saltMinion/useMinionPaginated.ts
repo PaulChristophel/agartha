@@ -1,5 +1,6 @@
-import axios from 'axios';
 import { useMemo, useState, useEffect, useCallback } from 'react';
+
+import { apiClient as axios } from 'src/api/client.ts';
 
 // Define the interfaces
 interface Minion {
@@ -103,12 +104,7 @@ const useMinionPaginated = (
       params.append('page', String(page));
       params.append('per_page', String(limit));
 
-      const authToken = localStorage.getItem('authToken');
-      const response = await axios.get<ApiResponse>(`/api/v1/salt_minion?${params.toString()}`, {
-        headers: {
-          Authorization: `${authToken}`,
-        },
-      });
+      const response = await axios.get<ApiResponse>(`/api/v1/salt_minion?${params.toString()}`);
 
       // Process the response to decode base64 strings and update grains and pillar
       const decodedMinions = response.data.results.map((minion) => ({

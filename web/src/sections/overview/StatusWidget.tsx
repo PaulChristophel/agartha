@@ -21,6 +21,7 @@ import useReturnPaginated from 'src/hooks/saltReturn/useReturnPaginated.ts';
 import { fShortenNumber } from 'src/utils/formatNumber.ts';
 
 import { Version } from 'src/config.ts';
+import { useSession } from 'src/api/session.ts';
 
 import useStatus from './useStatus.ts';
 import saltVersion from './saltVersion.ts';
@@ -34,10 +35,9 @@ const StatusWidget: React.FC<StatusWidgetProps> = ({ sx, ...other }) => {
   const [saltVersionData, setSaltVersionData] = useState<string | null>(null);
   const [isSaltVersionLoading, setIsSaltVersionLoading] = useState<boolean>(true);
   const [saltVersionError, setSaltVersionError] = useState<string | null>(null);
-  const authToken = localStorage.getItem('authToken') || '';
-  const authSaltString = localStorage.getItem('authSalt') || '';
+  const { authToken, authSalt } = useSession();
 
-  const { status, isStatusLoading } = useStatus(authToken, authSaltString);
+  const { status, isStatusLoading } = useStatus();
 
   const queryParams = React.useMemo(() => ({}), []);
 
@@ -57,7 +57,7 @@ const StatusWidget: React.FC<StatusWidgetProps> = ({ sx, ...other }) => {
     const fetchSaltVersion = async () => {
       setIsSaltVersionLoading(true);
       try {
-        const output = await saltVersion(authToken, authSaltString);
+        const output = await saltVersion();
         setSaltVersionData(output);
       } catch (error) {
         console.error(`Failed to get salt version: `, error);
@@ -67,13 +67,13 @@ const StatusWidget: React.FC<StatusWidgetProps> = ({ sx, ...other }) => {
       }
     };
 
-    if (authToken && authSaltString) {
+    if (authToken && authSalt) {
       fetchSaltVersion();
     } else {
       setSaltVersionError('Missing auth token');
       setIsSaltVersionLoading(false);
     }
-  }, [authToken, authSaltString]);
+  }, [authToken, authSalt]);
 
   return (
     <Card

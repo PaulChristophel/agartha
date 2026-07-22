@@ -1,8 +1,9 @@
 // src/hooks/saltMinion/useFetchGrainsKeys.ts
-import axios from 'axios';
 import { useState, useEffect } from 'react';
 
 import { toColonNotation } from 'src/utils/grainKeys.ts';
+
+import { apiClient as axios } from 'src/api/client.ts';
 
 interface PaginatedResponse {
   paging: {
@@ -13,7 +14,7 @@ interface PaginatedResponse {
   results: string[];
 }
 
-const useFetchGrainsKeys = (authToken: string, likeIncludes: string, page: number) => {
+const useFetchGrainsKeys = (likeIncludes: string, page: number) => {
   const [grainsKeys, setGrainsKeys] = useState<string[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
@@ -25,9 +26,6 @@ const useFetchGrainsKeys = (authToken: string, likeIncludes: string, page: numbe
 
       try {
         const response = await axios.get<PaginatedResponse>('/api/v1/salt_minion/grains_keys', {
-          headers: {
-            Authorization: `${authToken}`,
-          },
           params: {
             page,
             per_page: 50,
@@ -48,7 +46,7 @@ const useFetchGrainsKeys = (authToken: string, likeIncludes: string, page: numbe
     };
 
     fetchGrainsKeys();
-  }, [authToken, likeIncludes, page]);
+  }, [likeIncludes, page]);
 
   return { grainsKeys, loading, error };
 };

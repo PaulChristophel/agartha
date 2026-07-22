@@ -1,5 +1,6 @@
-import axios from 'axios';
 import { useState, useEffect } from 'react';
+
+import { apiClient as axios } from 'src/api/client.ts';
 
 interface MinionData {
   alter_time: string;
@@ -28,17 +29,11 @@ const useSaltMinionID = (minionID: string): UseMinion => {
   const [error, setError] = useState<Error | null>(null);
 
   useEffect(() => {
-    const authToken = localStorage.getItem('authToken');
-
     const fetchCacheData = async () => {
       setIsLoading(true);
       try {
         const encodedMinionID = encodeURIComponent(minionID);
-        const { data } = await axios.get<MinionData>(`/api/v1/salt_minion/${encodedMinionID}`, {
-          headers: {
-            Authorization: `${authToken}`,
-          },
-        });
+        const { data } = await axios.get<MinionData>(`/api/v1/salt_minion/${encodedMinionID}`);
         setAlterTime(data.alter_time);
         setGrains(data.grains);
         setPillar(data.pillar);

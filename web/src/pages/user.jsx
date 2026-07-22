@@ -2,13 +2,15 @@ import PropTypes from 'prop-types'; // Make sure to import PropTypes
 import { Navigate } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 
+import { useSession } from 'src/api/session.ts';
+
 import { UserView } from 'src/sections/user/view';
 
 // ----------------------------------------------------------------------
 
 // Authentication wrapper component
 const AuthWrapper = ({ children }) => {
-  const token = localStorage.getItem('authToken');
+  const { authToken: token } = useSession();
 
   // Redirect if no token
   if (!token) {

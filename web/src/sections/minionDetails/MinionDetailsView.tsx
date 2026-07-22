@@ -1,4 +1,3 @@
-import axios from 'axios';
 import yaml from 'js-yaml';
 import { useParams, useNavigate } from 'react-router-dom';
 import React, { useMemo, useState, useEffect } from 'react';
@@ -17,6 +16,8 @@ import CircularProgress from '@mui/material/CircularProgress';
 
 import useSaltMinionID from 'src/hooks/saltMinion/useSaltMinionID.ts';
 import useCachePaginated from 'src/hooks/saltCache/useCachePaginated.ts';
+
+import { apiClient as axios } from 'src/api/client.ts';
 
 import CodeView from './CodeView.tsx';
 import DataViewer from './DataViewer.tsx';
@@ -134,28 +135,14 @@ const MinionDetailsView: React.FC = () => {
 
   const handleHighstate = async () => {
     setHighstateRunning(true);
-    const authToken = localStorage.getItem('authToken');
-    const authSaltString = localStorage.getItem('authSalt');
-
-    const parsedAuthSalt = JSON.parse(authSaltString as string);
-    const { token } = parsedAuthSalt;
 
     try {
-      await axios.post(
-        `/api/v1/netapi/`,
-        {
-          client: 'local',
-          fun: 'state.apply',
-          tgt: minionID,
-          tgt_type: 'glob',
-        },
-        {
-          headers: {
-            Authorization: authToken,
-            'X-Auth-Token': token,
-          },
-        }
-      );
+      await axios.post(`/api/v1/netapi/`, {
+        client: 'local',
+        fun: 'state.apply',
+        tgt: minionID,
+        tgt_type: 'glob',
+      });
     } catch (err) {
       console.error(`Failed to run highstate on minion ${minionID}: `, err);
     } finally {
@@ -165,36 +152,22 @@ const MinionDetailsView: React.FC = () => {
 
   const handleRefresh = async () => {
     setRefreshing(true);
-    const authToken = localStorage.getItem('authToken');
-    const authSaltString = localStorage.getItem('authSalt');
-
-    const parsedAuthSalt = JSON.parse(authSaltString as string);
-    const { token } = parsedAuthSalt;
 
     try {
-      await axios.post(
-        `/api/v1/netapi/`,
-        [
-          {
-            client: 'local',
-            fun: 'saltutil.refresh_grains',
-            tgt: minionID,
-            tgt_type: 'glob',
-          },
-          {
-            client: 'local',
-            fun: 'saltutil.refresh_pillar',
-            tgt: minionID,
-            tgt_type: 'glob',
-          },
-        ],
+      await axios.post(`/api/v1/netapi/`, [
         {
-          headers: {
-            Authorization: authToken,
-            'X-Auth-Token': token,
-          },
-        }
-      );
+          client: 'local',
+          fun: 'saltutil.refresh_grains',
+          tgt: minionID,
+          tgt_type: 'glob',
+        },
+        {
+          client: 'local',
+          fun: 'saltutil.refresh_pillar',
+          tgt: minionID,
+          tgt_type: 'glob',
+        },
+      ]);
     } catch (err) {
       console.error(`Failed to update cache for minion ${minionID}: `, err);
     } finally {
@@ -236,6 +209,7 @@ const MinionDetailsView: React.FC = () => {
           )}
           <Grid>
             <Fab
+              aria-label="Refresh minion details"
               style={{ float: 'right' }}
               color="success"
               sx={{ marginLeft: 1 }}
@@ -247,6 +221,7 @@ const MinionDetailsView: React.FC = () => {
               </Tooltip>
             </Fab>
             <Fab
+              aria-label="Run highstate on minion"
               style={{ float: 'right' }}
               color="secondary"
               sx={{ marginLeft: 1 }}
@@ -258,6 +233,7 @@ const MinionDetailsView: React.FC = () => {
               </Tooltip>
             </Fab>
             <Fab
+              aria-label="Run command on minion"
               style={{ float: 'right' }}
               color="primary"
               sx={{ marginLeft: 1 }}

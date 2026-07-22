@@ -1,8 +1,8 @@
-import axios from 'axios';
 import { useState, useEffect } from 'react';
 
-import { WheelClient } from '../api/clients/wheel.ts';
-import { ISaltConfigOptions } from '../api/client.ts';
+import { executeWheel } from 'src/api/salt.ts';
+import { apiClient as axios } from 'src/api/client.ts';
+
 import { IListRequest, IListResponse } from '../api/modules/wheel/key.ts';
 
 interface UseKeys {
@@ -26,22 +26,8 @@ const useKeys = (): UseKeys => {
     const fetchKeysData = async () => {
       setIsLoading(true);
       try {
-        const authSaltString = localStorage.getItem('authSalt');
-        if (!authSaltString) {
-          throw new Error('Missing authSalt in local storage');
-        }
-
-        const password = localStorage.getItem('authToken');
-        if (!password) {
-          throw new Error('Missing authToken in local storage');
-        }
-
         try {
-          const { data } = await axios.get<IListResponse>('/api/v1/salt_keys/minion_keys', {
-            headers: {
-              Authorization: `${password}`,
-            },
-          });
+          const { data } = await axios.get<IListResponse>('/api/v1/salt_keys/minion_keys');
 
           setMinions(data.minions);
           setMinionsDenied(data.minions_denied);
@@ -53,20 +39,7 @@ const useKeys = (): UseKeys => {
           console.warn('Failed to load minion keys from salt_keys, falling back to Salt', dbErr);
         }
 
-        const parsedAuthSalt = JSON.parse(authSaltString);
-        const { token, expire } = parsedAuthSalt;
-
-        const config: ISaltConfigOptions = {
-          endpoint: 'api/v1/netapi',
-          token,
-          password,
-          expire,
-          logger: console,
-        };
-
-        const wheelClient = new WheelClient(config);
-
-        const response = await wheelClient.exec<IListRequest, IListResponse>({
+        const response = await executeWheel<IListRequest, IListResponse>({
           fun: 'key.list_all',
         });
 

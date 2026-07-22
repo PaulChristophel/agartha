@@ -1,10 +1,9 @@
 // handleRun.ts
-import axios from 'axios';
 import yaml from 'js-yaml';
 
+import { apiClient as axios } from 'src/api/client.ts';
+
 export const handleRun = async (
-  authToken: string,
-  authSaltString: string,
   clientTypeState: string,
   asyncState: boolean,
   batchState: string,
@@ -18,9 +17,6 @@ export const handleRun = async (
   pillarVisible: boolean,
   test?: boolean
 ): Promise<string> => {
-  const parsedAuthSalt = JSON.parse(authSaltString);
-  const { token } = parsedAuthSalt;
-
   let client = clientTypeState;
   if (asyncState) {
     client = `${client}_async`;
@@ -90,12 +86,7 @@ export const handleRun = async (
   }
 
   try {
-    const response = await axios.post(`/api/v1/netapi/`, [payload], {
-      headers: {
-        Authorization: authToken,
-        'X-Auth-Token': token,
-      },
-    });
+    const response = await axios.post(`/api/v1/netapi/`, [payload]);
 
     if (Object.keys(response.data.return).length === 1) {
       return JSON.stringify(response.data.return[0], null, 2);

@@ -1,5 +1,6 @@
-import axios from 'axios';
 import { useState, useEffect } from 'react';
+
+import { apiClient as axios } from 'src/api/client.ts';
 
 interface CacheData {
   alter_time: string;
@@ -28,16 +29,10 @@ const useCacheID = (id: string): UseCache => {
   const [error, setError] = useState<Error | null>(null);
 
   useEffect(() => {
-    const authToken = localStorage.getItem('authToken');
-
     const fetchCacheData = async () => {
       setIsLoading(true);
       try {
-        const { data } = await axios.get<CacheData>(`/api/v1/salt_cache/uuid/${id}`, {
-          headers: {
-            Authorization: `${authToken}`,
-          },
-        });
+        const { data } = await axios.get<CacheData>(`/api/v1/salt_cache/uuid/${id}`);
         setAlterTime(data.alter_time);
         setCacheData(data.data);
         setPsqlKey(data.psql_key);

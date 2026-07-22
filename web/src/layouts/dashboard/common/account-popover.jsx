@@ -10,7 +10,9 @@ import MenuItem from '@mui/material/MenuItem';
 import Typography from '@mui/material/Typography';
 import IconButton from '@mui/material/IconButton';
 
-import { getAuthUserFromLocalStorage } from 'src/hooks/auth/getAuthUserFromLocalStorage.ts';
+import { getAuthUser } from 'src/hooks/auth/getAuthUser.ts';
+
+import { sessionStore } from 'src/api/session.ts';
 
 const MENU_OPTIONS = [
   // {
@@ -33,7 +35,7 @@ export default function AccountPopover() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    const cachedSettings = getAuthUserFromLocalStorage();
+    const cachedSettings = getAuthUser();
     if (cachedSettings) {
       setUserInfo(cachedSettings);
     }
@@ -48,14 +50,7 @@ export default function AccountPopover() {
   };
 
   const handleLogout = () => {
-    // Clear the user's token from local storage (or other storage)
-    localStorage.removeItem('authToken');
-
-    // Clear the user settings from local storage
-    localStorage.removeItem('authUser');
-
-    // Clear the salt data from local storage
-    localStorage.removeItem('authSalt');
+    sessionStore.clear();
 
     // Redirect to the login page
     navigate('/login');

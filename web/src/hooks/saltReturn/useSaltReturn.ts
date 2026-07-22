@@ -1,5 +1,6 @@
-import axios from 'axios';
 import { useState, useEffect } from 'react';
+
+import { apiClient as axios } from 'src/api/client.ts';
 
 interface ReturnData {
   alter_time: string;
@@ -40,18 +41,11 @@ const useSaltReturn = (
   const [error, setError] = useState<Error | null>(null);
 
   useEffect(() => {
-    const authToken = localStorage.getItem('authToken');
-
     const fetchReturnData = async () => {
       setIsLoading(true);
       try {
         const { data } = await axios.get<ReturnData>(
-          `/api/v1/salt_return/${jid}/${id}?load_return=${load_return}&load_full_ret=${load_full_ret}`,
-          {
-            headers: {
-              Authorization: `${authToken}`,
-            },
-          }
+          `/api/v1/salt_return/${jid}/${id}?load_return=${load_return}&load_full_ret=${load_full_ret}`
         );
         setAlterTime(data.alter_time);
         setFullRet(data.full_ret);

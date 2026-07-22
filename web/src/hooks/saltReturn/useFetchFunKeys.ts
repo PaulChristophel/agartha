@@ -1,6 +1,7 @@
 // src/hooks/saltReturn/useFetchFunKeys.ts
-import axios from 'axios';
 import { useState, useEffect } from 'react';
+
+import { apiClient as axios } from 'src/api/client.ts';
 
 interface PaginatedResponse {
   paging: {
@@ -11,13 +12,7 @@ interface PaginatedResponse {
   results: string[];
 }
 
-const useFetchFunKeys = (
-  authToken: string,
-  likeIncludes: string,
-  page: number,
-  since?: string,
-  until?: string
-) => {
+const useFetchFunKeys = (likeIncludes: string, page: number, since?: string, until?: string) => {
   const [funKeys, setFunKeys] = useState<string[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
@@ -36,9 +31,6 @@ const useFetchFunKeys = (
         if (until) params.append('until', new Date(until).toISOString());
 
         const response = await axios.get<PaginatedResponse>('/api/v1/salt_return/fun', {
-          headers: {
-            Authorization: `${authToken}`,
-          },
           params,
         });
 
@@ -56,7 +48,7 @@ const useFetchFunKeys = (
     };
 
     fetchFunKeys();
-  }, [authToken, likeIncludes, page, since, until]);
+  }, [likeIncludes, page, since, until]);
 
   return { funKeys, loading, error };
 };

@@ -1,4 +1,4 @@
-import axios from 'axios';
+import { apiClient as axios } from 'src/api/client.ts';
 
 interface VersionData {
   build: string;

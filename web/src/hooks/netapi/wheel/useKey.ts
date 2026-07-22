@@ -1,5 +1,7 @@
-import axios from 'axios';
 import { useState, useEffect } from 'react';
+
+import { sessionStore } from 'src/api/session.ts';
+import { apiClient as axios } from 'src/api/client.ts';
 
 interface KeysResponse {
   [key: string]: string;
@@ -19,23 +21,14 @@ const useKeys = (id: string): UseKeys => {
   const [error, setError] = useState<Error | null>(null);
 
   useEffect(() => {
-    const authToken = localStorage.getItem('authToken');
-    const authSaltString = localStorage.getItem('authSalt');
-
     const fetchKeyData = async () => {
       setIsLoading(true);
       try {
-        if (!authToken || !authSaltString) {
-          throw new Error('Missing authToken or authSalt in local storage');
-        }
+        const token = sessionStore.getSnapshot().authSalt?.token;
+        if (!token) throw new Error('Missing Salt authentication');
 
-        const parsedAuthSalt = JSON.parse(authSaltString);
-        const { token } = parsedAuthSalt;
-
-        const { data } = await axios.get<KeysResponse>(`/api/v1/netapi/key/${id}?token=${token}`, {
-          headers: {
-            Authorization: `${authToken}`,
-          },
+        const { data } = await axios.get<KeysResponse>(`/api/v1/netapi/key/${id}`, {
+          params: { token },
         });
 
         const [minionKey, minionHash] = Object.entries(data)[0];

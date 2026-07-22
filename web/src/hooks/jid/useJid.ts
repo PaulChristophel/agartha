@@ -1,5 +1,6 @@
-import axios from 'axios';
 import { useState, useEffect } from 'react';
+
+import { apiClient as axios } from 'src/api/client.ts';
 
 interface JidData {
   alter_time: string;
@@ -22,16 +23,10 @@ const useJid = (jid: string): UseJid => {
   const [error, setError] = useState<Error | null>(null);
 
   useEffect(() => {
-    const authToken = localStorage.getItem('authToken');
-
     const fetchJidData = async () => {
       setIsLoading(true);
       try {
-        const { data } = await axios.get<JidData>(`/api/v1/jid/${jid}`, {
-          headers: {
-            Authorization: `${authToken}`,
-          },
-        });
+        const { data } = await axios.get<JidData>(`/api/v1/jid/${jid}`);
         setAlterTime(data.alter_time);
         setLoad(data.load);
       } catch (err) {

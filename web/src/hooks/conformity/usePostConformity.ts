@@ -1,5 +1,6 @@
-import axios from 'axios';
 import { useState } from 'react';
+
+import { apiClient as axios } from 'src/api/client.ts';
 
 interface UsePostConformity {
   isLoading: boolean;
@@ -23,16 +24,7 @@ const usePostConformity = (): UsePostConformity => {
   const postConformity = async () => {
     setIsLoading(true);
     try {
-      const authToken = localStorage.getItem('authToken');
-      const response = await axios.post<RefreshStatus>(
-        '/api/v1/conformity/refresh',
-        {},
-        {
-          headers: {
-            Authorization: `${authToken}`,
-          },
-        }
-      );
+      const response = await axios.post<RefreshStatus>('/api/v1/conformity/refresh', {});
       setStatus(response.status);
       setMessage(response.data.message);
       setError(null);
@@ -41,8 +33,9 @@ const usePostConformity = (): UsePostConformity => {
       setMessage(null);
       if (axios.isAxiosError(err) && err.response) {
         setStatus(err.response.status);
-        if (err.response.data && typeof err.response.data.message === 'string') {
-          setMessage(err.response.data.message);
+        const responseData = err.response.data as Partial<RefreshStatus>;
+        if (typeof responseData.message === 'string') {
+          setMessage(responseData.message);
         }
       } else {
         setStatus(null);

@@ -11,12 +11,21 @@ export default defineConfig(async ({ mode }) => {
     plugins: [
       react(),
       tsconfigPaths(),
-      checker({
-        eslint: {
-          lintCommand: 'eslint "./src/**/*.{js,jsx,ts,tsx}"',
-        },
-      }),
+      ...(mode === 'test'
+        ? []
+        : [
+            checker({
+              eslint: {
+                lintCommand: 'eslint "./src/**/*.{js,jsx,ts,tsx}"',
+              },
+            }),
+          ]),
     ],
+    test: {
+      environment: 'jsdom',
+      setupFiles: './src/test/setup.ts',
+      clearMocks: true,
+    },
     resolve: {
       alias: [
         {

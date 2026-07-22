@@ -253,7 +253,11 @@ function KeysToolbar(props: KeysToolbarProps) {
   );
 }
 
-export default function KeysView() {
+interface KeysViewProps {
+  reload?: () => void;
+}
+
+export default function KeysView({ reload = () => window.location.reload() }: KeysViewProps = {}) {
   const [order, setOrder] = React.useState<Order>('asc');
   const [orderBy, setOrderBy] = React.useState<keyof Data>('state');
   const [selected, setSelected] = React.useState<readonly number[]>([]);
@@ -332,13 +336,13 @@ export default function KeysView() {
       include_denied: true,
     };
     await acceptKeys(keyDict);
-    window.location.reload();
+    reload();
   };
 
   const handleDeleteKeys = async () => {
     const keyDict = { match: getSelectedKeyMatch() };
     await deleteKeys(keyDict);
-    window.location.reload();
+    reload();
   };
 
   const handleRejectKeys = async () => {
@@ -348,7 +352,7 @@ export default function KeysView() {
       include_denied: true,
     };
     await rejectKeys(keyDict);
-    window.location.reload();
+    reload();
   };
 
   const isSelected = (id: number) => selected.indexOf(id) !== -1;

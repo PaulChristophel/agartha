@@ -1,5 +1,6 @@
-import axios from 'axios';
 import { useState, useEffect } from 'react';
+
+import { apiClient as axios } from 'src/api/client.ts';
 
 interface ConformityData {
   alter_time: string;
@@ -35,16 +36,10 @@ const useSaltConformity = (id: string): UseSaltConformity => {
   const [error, setError] = useState<Error | null>(null);
 
   useEffect(() => {
-    const authToken = localStorage.getItem('authToken');
-
     const fetchConformityData = async () => {
       setIsLoading(true);
       try {
-        const { data } = await axios.get<ConformityData>(`/api/v1/conformity/${id}`, {
-          headers: {
-            Authorization: `${authToken}`,
-          },
-        });
+        const { data } = await axios.get<ConformityData>(`/api/v1/conformity/${id}`);
         setAlterTime(data.alter_time);
         setTrueCount(data.true_count);
         setFalseCount(data.false_count);

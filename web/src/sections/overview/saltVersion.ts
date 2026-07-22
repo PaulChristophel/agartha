@@ -1,26 +1,14 @@
 // saltVersion.ts
-import axios from 'axios';
+import { apiClient as axios } from 'src/api/client.ts';
 
-const saltVersion = async (authToken: string, authSaltString: string): Promise<string> => {
-  const parsedAuthSalt = JSON.parse(authSaltString);
-  const { token } = parsedAuthSalt;
-
+const saltVersion = async (): Promise<string> => {
   try {
-    const response = await axios.post(
-      `/api/v1/netapi`,
-      [
-        {
-          client: 'runner',
-          fun: 'salt_version.version',
-        },
-      ],
+    const response = await axios.post(`/api/v1/netapi`, [
       {
-        headers: {
-          Authorization: authToken,
-          'X-Auth-Token': token,
-        },
-      }
-    );
+        client: 'runner',
+        fun: 'salt_version.version',
+      },
+    ]);
 
     return response.data.return;
   } catch (err) {

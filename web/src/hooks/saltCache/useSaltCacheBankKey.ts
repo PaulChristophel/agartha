@@ -1,5 +1,6 @@
-import axios from 'axios';
 import { useState, useEffect } from 'react';
+
+import { apiClient as axios } from 'src/api/client.ts';
 
 interface CacheData {
   alter_time: string;
@@ -38,20 +39,13 @@ const useCacheBankKey = (bank: string, psqlKey: string): UseCache => {
   const [error, setError] = useState<Error | null>(null);
 
   useEffect(() => {
-    const authToken = localStorage.getItem('authToken');
-
     const fetchCacheData = async () => {
       setIsLoading(true);
       try {
         const encodedBank = encodeURIComponent(bank);
         const encodedPsqlKey = encodeURIComponent(psqlKey);
         const { data } = await axios.get<CacheData>(
-          `/api/v1/salt_cache/${encodedBank}/${encodedPsqlKey}`,
-          {
-            headers: {
-              Authorization: `${authToken}`,
-            },
-          }
+          `/api/v1/salt_cache/${encodedBank}/${encodedPsqlKey}`
         );
         setAlterTime(data.alter_time);
         setCacheData(data.data);

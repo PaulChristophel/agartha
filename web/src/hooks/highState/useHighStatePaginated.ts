@@ -1,5 +1,6 @@
-import axios from 'axios';
 import { useMemo, useState, useEffect } from 'react';
+
+import { apiClient as axios } from 'src/api/client.ts';
 
 interface HighState {
   alter_time: string;
@@ -77,12 +78,7 @@ const useHighStatePaginated = (
         params.append('page', String(currentPage));
         params.append('per_page', String(rowsPerPage));
 
-        const authToken = localStorage.getItem('authToken');
-        const response = await axios.get<ApiResponse>(`/api/v1/high_state?${params.toString()}`, {
-          headers: {
-            Authorization: `${authToken}`,
-          },
-        });
+        const response = await axios.get<ApiResponse>(`/api/v1/high_state?${params.toString()}`);
 
         setHighStates(response.data.results);
         setTotalPages(response.data.paging.num_pages);

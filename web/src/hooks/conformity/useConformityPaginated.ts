@@ -1,5 +1,6 @@
-import axios from 'axios';
 import { useMemo, useState, useEffect, useCallback } from 'react';
+
+import { apiClient as axios } from 'src/api/client.ts';
 
 interface Conformity {
   alter_time: string;
@@ -70,12 +71,7 @@ const useConformityPaginated = (
       params.append('page', String(page));
       params.append('limit', String(limit));
 
-      const authToken = localStorage.getItem('authToken');
-      const response = await axios.get<ApiResponse>(`/api/v1/conformity?${params.toString()}`, {
-        headers: {
-          Authorization: `${authToken}`,
-        },
-      });
+      const response = await axios.get<ApiResponse>(`/api/v1/conformity?${params.toString()}`);
 
       return response.data;
     },
