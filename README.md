@@ -19,6 +19,7 @@ Agartha is a web interface for [salt](https://github.com/saltstack/salt). The pr
 
 - Installation
 - Usage
+- Authorization
 - Releases
 - Contributing
 - License
@@ -68,6 +69,12 @@ Agartha now uses [golang-migrate](https://github.com/golang-migrate/migrate) to 
 ## Usage
 
 Once the application is running, open your web browser and navigate to http://localhost:8080 to access the Agartha interface. Log in with your credentials and start managing your Salt jobs and minions.
+
+## Authorization
+
+Authenticated, active users can request a Salt eauth token. Salt authorizes commands from the user's LDAP group memberships and the generated `external_auth` configuration; the unused `is_staff` column is not an authorization boundary. Superusers continue to bypass LDAP group validation.
+
+Local authentication validates passwords stored in `auth_user`; the former demonstration credentials are not accepted. LDAP identities are taken from the authenticated directory entry, and CAS identities are taken from a successful CAS service-validation assertion.
 
 ## Releases
 

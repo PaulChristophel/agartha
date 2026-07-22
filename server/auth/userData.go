@@ -2,13 +2,17 @@ package auth
 
 import (
 	"crypto/tls"
+	"encoding/xml"
 	"errors"
 	"fmt"
+	"io"
 	"net/http"
 	"net/url"
 	"strings"
 
+	"github.com/PaulChristophel/agartha/server/db"
 	"github.com/PaulChristophel/agartha/server/logger"
+	model "github.com/PaulChristophel/agartha/server/model/agartha"
 
 	"github.com/gin-gonic/gin"
 	"github.com/go-ldap/ldap/v3"
@@ -16,6 +20,7 @@ import (
 )
 
 type userData struct {
+	Username          string
 	FirstName         string
 	LastName          string
 	Email             string
@@ -31,25 +36,37 @@ func auth(creds credentials, c *gin.Context) (userData, error) {
 		userData, err = authLDAP(creds.Username, creds.Password)
 	case "cas":
 		userData, err = authCAS(creds.Username, c)
-	default:
+	case "local":
 		userData, err = authLocal(creds.Username, creds.Password)
+	default:
+		err = fmt.Errorf("unsupported authentication method %q", creds.Method)
 	}
 
 	return userData, err
 }
 
 func authLocal(username, password string) (userData, error) {
-	// demonstration. Update this to actually check the database
-	if username == "localuser" && password == "localpassword" {
-		return userData{
-			FirstName:         "Local",
-			LastName:          "User",
-			Email:             "local.user@example.com",
-			SamAccountName:    username,
-			UserPrincipalName: username,
-		}, nil
+	var user model.AuthUser
+	result := db.DB.Raw(`
+		SELECT id, username, first_name, last_name, email, is_active
+		FROM auth_user
+		WHERE username = ?
+		  AND is_active = TRUE
+		  AND password = crypt(?, password)
+		LIMIT 1
+	`, username, password).Scan(&user)
+	if result.Error != nil || result.RowsAffected != 1 {
+		return userData{}, errors.New("invalid local credentials")
 	}
-	return userData{}, errors.New("invalid local credentials")
+
+	return userData{
+		Username:          user.Username,
+		FirstName:         user.FirstName,
+		LastName:          user.LastName,
+		Email:             user.Email,
+		SamAccountName:    user.Username,
+		UserPrincipalName: user.Username,
+	}, nil
 }
 
 func authCAS(username string, c *gin.Context) (userData, error) {
@@ -58,13 +75,23 @@ func authCAS(username string, c *gin.Context) (userData, error) {
 
 	ticket := c.Query("ticket")
 	if ticket == "" {
-		redirectURL := fmt.Sprintf("%s/login?service=%s", casOptions.Server, casOptions.ServiceURL)
-		c.Redirect(http.StatusFound, redirectURL)
 		return userData, errors.New("no CAS ticket provided")
 	}
 
-	validateURL := fmt.Sprintf("%s/serviceValidate?ticket=%s&service=%s", casOptions.Server, ticket, casOptions.ServiceURL)
-	resp, err := http.Get(validateURL)
+	validateURL, err := url.Parse(casOptions.Server)
+	if err != nil {
+		return userData, fmt.Errorf("invalid CAS server URL: %w", err)
+	}
+	validateURL.Path, err = url.JoinPath(validateURL.Path, casOptions.ValidatePath)
+	if err != nil {
+		return userData, fmt.Errorf("invalid CAS validation path: %w", err)
+	}
+	query := validateURL.Query()
+	query.Set("ticket", ticket)
+	query.Set("service", casOptions.ServiceURL)
+	validateURL.RawQuery = query.Encode()
+
+	resp, err := casHTTPClient.Get(validateURL.String())
 	if err != nil {
 		return userData, fmt.Errorf("failed to validate CAS ticket: %w", err)
 	}
@@ -79,11 +106,25 @@ func authCAS(username string, c *gin.Context) (userData, error) {
 		return userData, errors.New("CAS ticket validation failed")
 	}
 
-	userData.FirstName = "First"
-	userData.LastName = "Last"
-	userData.Email = "email@example.com"
-	userData.SamAccountName = username
-	userData.UserPrincipalName = username
+	var serviceResponse CASServiceResponse
+	decoder := xml.NewDecoder(io.LimitReader(resp.Body, 1<<20))
+	if err := decoder.Decode(&serviceResponse); err != nil {
+		return userData, fmt.Errorf("failed to parse CAS validation response: %w", err)
+	}
+	if serviceResponse.AuthenticationSuccess == nil {
+		return userData, errors.New("CAS ticket was not authenticated")
+	}
+	assertedUsername := strings.TrimSpace(serviceResponse.AuthenticationSuccess.User)
+	if assertedUsername == "" {
+		return userData, errors.New("CAS response did not include an authenticated user")
+	}
+	if username != "" && !strings.EqualFold(username, assertedUsername) {
+		log.Warn("CAS asserted a different username than the login request", zap.String("requested_username", username), zap.String("asserted_username", assertedUsername))
+	}
+
+	userData.Username = assertedUsername
+	userData.SamAccountName = assertedUsername
+	userData.UserPrincipalName = assertedUsername
 
 	return userData, nil
 }
@@ -104,13 +145,15 @@ func authLDAP(username, password string) (userData, error) {
 		}
 	}()
 
-	ldapDomain := ldapOptions.LDAPDomainDefault
-	if !strings.HasSuffix(username, ldapDomain) {
-		userData.SamAccountName = username
-		userData.UserPrincipalName = username + "@" + ldapDomain
-	} else {
-		userData.UserPrincipalName = username
-		userData.SamAccountName = strings.Split(username, "@")[1]
+	ldapDomain := strings.TrimSpace(ldapOptions.LDAPDomainDefault)
+	accountName, _, hasDomain := strings.Cut(username, "@")
+	if accountName == "" {
+		return userData, errors.New("LDAP username is empty")
+	}
+	userData.SamAccountName = accountName
+	userData.UserPrincipalName = username
+	if !hasDomain {
+		userData.UserPrincipalName = accountName + "@" + ldapDomain
 	}
 
 	if ldapOptions.StartTLS {
@@ -145,7 +188,7 @@ func authLDAP(username, password string) (userData, error) {
 	}
 
 	// Authorization: check that the user satisfies the LDAP filter
-	filter := fmt.Sprintf(ldapOptions.Filter, userData.SamAccountName)
+	filter := fmt.Sprintf(ldapOptions.Filter, ldap.EscapeFilter(userData.SamAccountName))
 	searchRequest := ldap.NewSearchRequest(
 		ldapOptions.BaseDN,
 		ldap.ScopeWholeSubtree, ldap.NeverDerefAliases, 0, 0, false,
@@ -162,6 +205,12 @@ func authLDAP(username, password string) (userData, error) {
 	}
 
 	entry := sr.Entries[0]
+	authenticatedUsername := strings.TrimSpace(entry.GetAttributeValue("sAMAccountName"))
+	if authenticatedUsername == "" {
+		return userData, errors.New("LDAP entry did not include sAMAccountName")
+	}
+	userData.Username = authenticatedUsername
+	userData.SamAccountName = authenticatedUsername
 	userData.FirstName = entry.GetAttributeValue("givenName")
 	userData.LastName = entry.GetAttributeValue("sn")
 	userData.Email = entry.GetAttributeValue("mail")

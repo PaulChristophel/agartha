@@ -13,7 +13,7 @@ export interface UseFetchAndStoreSaltAuth {
   isLoading: boolean;
   status: number | null;
   error: Error | null;
-  postSaltAuth: (password: string) => void;
+  postSaltAuth: (password: string) => Promise<void>;
 }
 
 const useFetchAndStoreSaltAuth = (): UseFetchAndStoreSaltAuth => {
