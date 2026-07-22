@@ -31,7 +31,6 @@ import salt.utils.stringutils
 
 from salt.exceptions import CommandExecutionError, SaltInvocationError, SaltMasterError
 
-
 log = logging.getLogger(__name__)
 
 try:
@@ -787,6 +786,7 @@ def auth(username, password):
                         "User is_active and is_superuser. Skipping ldap authorization."
                     )
                     return True
-        log.debug("Attempting ldap authorization.")
-        return _ldap_user(username)
+                log.debug("Attempting ldap authorization.")
+                return _ldap_user(username)
+            log.debug("Agartha authentication failed.")
     return False

@@ -156,7 +156,11 @@ func addServerRoutes(router *gin.Engine) {
 	auth.SetOptions([]byte(options.Secret), ldapOptions, casOptions)
 	auth.AddRoutes(authRoute)
 
-	grpV1 := router.Group("/api/v1", middleware.AuthRequired([]byte(options.Secret)))
+	grpV1 := router.Group(
+		"/api/v1",
+		middleware.AuthRequired([]byte(options.Secret)),
+		middleware.ActiveUserRequired(db.DB),
+	)
 	netapi.Handler(grpV1, saltOptions.URL)
 	conformity.AddRoutes(grpV1)
 	jid.SetOptions(saltDBTables)
@@ -173,11 +177,15 @@ func addServerRoutes(router *gin.Engine) {
 	saltReturn.AddRoutes(grpV1)
 	validate.AddRoutes(grpV1)
 
-	grpV1secure := router.Group("/api/v1/secure", middleware.AuthRequired([]byte(options.Secret)), middleware.UniqueAuthRequired(db.DB))
+	grpV1secure := grpV1.Group("/secure", middleware.UniqueAuthRequired())
 	authUser.AddRoutes(grpV1secure)
 	userSettings.AddRoutes(grpV1secure)
 
-	grpV2 := router.Group("/api/v2", middleware.AuthRequired([]byte(options.Secret)))
+	grpV2 := router.Group(
+		"/api/v2",
+		middleware.AuthRequired([]byte(options.Secret)),
+		middleware.ActiveUserRequired(db.DB),
+	)
 	v2SaltCache.SetOptions(saltDBTables)
 	v2SaltCache.AddRoutes(grpV2)
 

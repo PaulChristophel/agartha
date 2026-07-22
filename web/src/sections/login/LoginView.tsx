@@ -65,13 +65,15 @@ const LoginView: React.FC = () => {
         method: selectedAuthMethod,
       });
       const { token } = response.data;
-      // console.log('Token:', token);
 
-      // Store the token in localStorage
+      localStorage.removeItem('authUser');
+      localStorage.removeItem('authSalt');
       localStorage.setItem('authToken', token);
 
-      // Fetch and store user settings
-      await fetchAndStoreAuthUser(token);
+      const authUser = await fetchAndStoreAuthUser(token);
+      if (!authUser) {
+        throw new Error('Failed to load the authenticated user');
+      }
       await postSaltAuth(token);
 
       // Redirect to the home page

@@ -6,8 +6,14 @@ const useStatus = (authToken: string, authSaltString: string) => {
   const [status, setStatus] = useState<string>('Loading...');
   const [isStatusLoading, setIsStatusLoading] = useState<boolean>(true);
 
-  const parsedAuthSalt = JSON.parse(authSaltString);
-  const { token } = parsedAuthSalt;
+  let token = '';
+  if (authSaltString) {
+    try {
+      token = JSON.parse(authSaltString).token || '';
+    } catch (_error) {
+      token = '';
+    }
+  }
 
   useEffect(() => {
     const fetchStatus = async () => {
@@ -35,7 +41,7 @@ const useStatus = (authToken: string, authSaltString: string) => {
     if (authToken && token) {
       fetchStatus();
     } else {
-      setStatus('Error');
+      setStatus('Restricted');
       setIsStatusLoading(false);
     }
   }, [authToken, token]);

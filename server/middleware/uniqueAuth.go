@@ -1,13 +1,10 @@
 package middleware
 
 import (
-	"errors"
 	"net/http"
 	"strconv"
 
-	model "github.com/PaulChristophel/agartha/server/model/agartha"
 	"github.com/gin-gonic/gin"
-	"gorm.io/gorm"
 )
 
 type ResourceAccessRequest struct {
@@ -15,18 +12,11 @@ type ResourceAccessRequest struct {
 }
 
 // Ensures that the user authing has permissions to perform the specific action
-func UniqueAuthRequired(db *gorm.DB) gin.HandlerFunc {
+func UniqueAuthRequired() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		// Extract the user ID from the context, set by AuthRequired middleware
-		usernameInterface, exists := c.Get("username")
-		if !exists {
-			c.JSON(http.StatusUnauthorized, gin.H{"error": "User not found"})
-			c.Abort()
-			return
-		}
-		username, ok := usernameInterface.(string)
+		currentUser, ok := AuthenticatedUser(c)
 		if !ok {
-			c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid username type"})
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "User authorization context is missing"})
 			c.Abort()
 			return
 		}
@@ -52,25 +42,12 @@ func UniqueAuthRequired(db *gorm.DB) gin.HandlerFunc {
 			return
 		}
 
-		// Retrieve the resource's owner from the database
-		var authUser model.AuthUser
-		if err := db.Where("id = ?", id).First(&authUser).Error; err != nil {
-			if errors.Is(err, gorm.ErrRecordNotFound) {
-				c.JSON(http.StatusNotFound, gin.H{"error": "Resource not found"})
-			} else {
-				c.JSON(http.StatusInternalServerError, gin.H{"error": "Database error"})
-			}
-			c.Abort()
-			return
-		}
-
-		// Check if the authenticated user is the owner of the resource
-		if authUser.IsSuperuser {
+		if currentUser.IsSuperuser {
 			c.Next()
 			return
 		}
 
-		if username != authUser.Username {
+		if uint(id) != currentUser.ID {
 			c.JSON(http.StatusForbidden, gin.H{"error": "Unauthorized access to resource"})
 			c.Abort()
 			return

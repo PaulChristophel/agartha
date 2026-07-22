@@ -5,13 +5,11 @@ import (
 	"encoding/json"
 	"io"
 	"net/http"
-	"strings"
 
 	_ "github.com/PaulChristophel/agartha/server/httputil"
 
 	"github.com/PaulChristophel/agartha/server/logger"
 	"github.com/gin-gonic/gin"
-	"github.com/golang-jwt/jwt/v5"
 )
 
 // AuthDetails defines the details of the authentication response
@@ -79,28 +77,13 @@ func DecodeTokenAndCreateCredentials() gin.HandlerFunc {
 		}
 
 		authHeader := c.GetHeader("Authorization")
-		if authHeader == "" {
-			c.JSON(http.StatusBadRequest, gin.H{"error": "missing Authorization header"})
+		usernameValue, exists := c.Get("username")
+		username, ok := usernameValue.(string)
+		if authHeader == "" || !exists || !ok || username == "" {
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "missing validated authentication context"})
 			c.Abort()
 			return
 		}
-
-		tokenString := strings.TrimPrefix(authHeader, "Bearer ")
-		token, _, err := new(jwt.Parser).ParseUnverified(tokenString, jwt.MapClaims{})
-		if err != nil {
-			c.JSON(http.StatusUnauthorized, gin.H{"error": "invalid token"})
-			c.Abort()
-			return
-		}
-
-		claims, ok := token.Claims.(jwt.MapClaims)
-		if !ok || claims["username"] == nil {
-			c.JSON(http.StatusBadRequest, gin.H{"error": "invalid token claims"})
-			c.Abort()
-			return
-		}
-
-		username := claims["username"].(string)
 
 		creds := Credentials{
 			Username: username,

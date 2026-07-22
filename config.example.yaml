@@ -25,6 +25,12 @@ ldap:
   password: foobar
   base_dn: DC=ad,DC=example,DC=com
   filter: (&(ObjectClass=person)(sAMAccountName=%s))
+cas:
+  server: https://cas.example.com
+  service_url: https://agartha.example.com/cas
+  validate_path: /serviceValidate
+  login_path: /login
+  logout_path: /logout
 salt:
   auth: agartha
   url: http://salt-api.example.svc.cluster.local:8080
