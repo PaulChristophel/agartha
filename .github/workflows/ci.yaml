@@ -11,3 +11,7 @@ permissions:
 jobs:
   quality:
     uses: ./.github/workflows/quality.yaml
+
+  build:
+    needs: quality
+    uses: ./.github/workflows/image-build.yml

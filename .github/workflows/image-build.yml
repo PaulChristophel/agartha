@@ -1,0 +1,142 @@
+name: Reusable Image Build
+
+on:
+  workflow_call:
+    inputs:
+      publish:
+        description: Push successfully built images to Docker Hub
+        required: false
+        type: boolean
+        default: false
+      version:
+        description: Semantic version from the GitHub release tag
+        required: false
+        type: string
+        default: ""
+    secrets:
+      DOCKER_PASSWORD:
+        required: false
+
+permissions:
+  contents: read
+
+jobs:
+  prepare:
+    name: Load build matrix
+    runs-on: ubuntu-24.04
+    outputs:
+      image: ${{ steps.matrix.outputs.image }}
+      platform: ${{ steps.matrix.outputs.platform }}
+      version: ${{ steps.matrix.outputs.version }}
+      variants: ${{ steps.matrix.outputs.variants }}
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v7
+
+      - name: Read image configuration
+        id: matrix
+        env:
+          PUBLISH: ${{ inputs.publish }}
+          REQUESTED_VERSION: ${{ inputs.version }}
+        run: |
+          version="${REQUESTED_VERSION#v}"
+          if [[ "$PUBLISH" == "true" && -z "$version" ]]; then
+            echo "A release version is required when publishing images" >&2
+            exit 1
+          fi
+          if [[ -n "$version" && ! "$version" =~ ^[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.-]+)?$ ]]; then
+            echo "Invalid semantic version: $REQUESTED_VERSION" >&2
+            exit 1
+          fi
+          if [[ -z "$version" ]]; then
+            version="0.0.0-dev.${GITHUB_SHA:0:12}"
+          fi
+
+          echo "image=$(jq -r '.image' images.json)" >> "$GITHUB_OUTPUT"
+          echo "platform=$(jq -r '.platform' images.json)" >> "$GITHUB_OUTPUT"
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          echo "variants=$(jq -c '.variants' images.json)" >> "$GITHUB_OUTPUT"
+
+  build:
+    name: ${{ matrix.variant.name }}
+    needs: prepare
+    runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+      matrix:
+        variant: ${{ fromJSON(needs.prepare.outputs.variants) }}
+    env:
+      IMAGE_NAME: ${{ needs.prepare.outputs.image }}
+      PLATFORM: ${{ needs.prepare.outputs.platform }}
+      IMAGE_VERSION: ${{ needs.prepare.outputs.version }}
+      DOCKERFILE: ${{ matrix.variant.dockerfile }}
+      TARGET: ${{ matrix.variant.target }}
+      BUILD_ENV: ${{ matrix.variant.environment }}
+      ROLLING_TAGS: ${{ toJSON(matrix.variant.rolling_tags) }}
+      VERSION_SUFFIXES: ${{ toJSON(matrix.variant.version_suffixes) }}
+      FLOATING_VERSION_TAGS: ${{ matrix.variant.floating_version_tags }}
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v7
+
+      - name: Prepare build metadata and tags
+        run: |
+          short_sha="${GITHUB_SHA:0:12}"
+          tag_file="$RUNNER_TEMP/image-tags"
+          : > "$tag_file"
+
+          while IFS= read -r tag; do
+            echo "$tag" >> "$tag_file"
+          done < <(jq -r '.[]' <<< "$ROLLING_TAGS")
+
+          while IFS= read -r suffix; do
+            echo "${IMAGE_VERSION}${suffix}" >> "$tag_file"
+            echo "sha-${short_sha}${suffix}" >> "$tag_file"
+          done < <(jq -r '.[]' <<< "$VERSION_SUFFIXES")
+
+          if [[ "$FLOATING_VERSION_TAGS" == "true" && "$IMAGE_VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "${IMAGE_VERSION%.*}" >> "$tag_file"
+          fi
+
+          sort -u -o "$tag_file" "$tag_file"
+          echo "SHORT_SHA=$short_sha" >> "$GITHUB_ENV"
+          echo "BUILD_DATE=$(date -u +'%Y-%m-%dT%H:%M:%SZ')" >> "$GITHUB_ENV"
+          echo "TAG_FILE=$tag_file" >> "$GITHUB_ENV"
+
+      - name: Build image
+        run: |
+          tags=()
+          while IFS= read -r tag; do
+            tags+=(--tag "${IMAGE_NAME}:${tag}")
+          done < "$TAG_FILE"
+
+          podman build \
+            --platform "$PLATFORM" \
+            --file "$DOCKERFILE" \
+            --target "$TARGET" \
+            --build-arg "ENV=$BUILD_ENV" \
+            --build-arg "SHORT_SHA=$SHORT_SHA" \
+            --build-arg "GITHUB_SHA=$GITHUB_SHA" \
+            --build-arg "GITHUB_DATE=$BUILD_DATE" \
+            --build-arg "GITHUB_VERSION=$IMAGE_VERSION" \
+            "${tags[@]}" \
+            .
+
+      - name: Log in to Docker Hub
+        if: inputs.publish
+        env:
+          DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+        run: |
+          printf '%s' "$DOCKER_PASSWORD" \
+            | podman login docker.io --username pcm0 --password-stdin
+
+      - name: Push image tags
+        if: inputs.publish
+        run: |
+          while IFS= read -r tag; do
+            podman push "${IMAGE_NAME}:${tag}"
+          done < "$TAG_FILE"
+
+      - name: Log out of Docker Hub
+        if: ${{ always() && inputs.publish }}
+        run: podman logout docker.io || true

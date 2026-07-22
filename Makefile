@@ -8,11 +8,10 @@ release_dir = $(build_dir)/release
 
 COMPILE_DATE :=$(or $(GITHUB_DATE),$(shell date -u +"%Y-%m-%dT%H:%M:%SZ"))
 DATE := $(shell TZ=UTC0 git show --quiet --date='format-local:%Y%m%d%H%M%S' --format="%cd" | tail -n 1)
-PSEUDODATE := $(or $(GITHUB_PSEUDODATE),$(shell date -u '+%Y%m%d%H%M%S'))
 PREFIX = github.com/PaulChristophel/agartha
 BUILD := $(or $(SHORT_SHA),$(shell git rev-parse --short=12 HEAD))
 FULLBUILD := $(or $(GITHUB_SHA),$(shell git rev-parse HEAD))
-VERSION :=  $(or $(GITHUB_VERSION),$(shell cat VERSION))
+VERSION := $(or $(GITHUB_VERSION),0.0.0-dev.$(BUILD))
 GOVERSION = $(shell go version)
 
 build:
@@ -20,7 +19,7 @@ ifdef ENV
 	mkdir -p $(build_dir)/$(ENV)
 	go fmt ./...
 ifeq ($(ENV), debug)
-LDFLAGS=-"-X $(PREFIX)/server/routes.Build=$(FULLBUILD) -X '$(PREFIX)/server/routes.Version=v$(VERSION)-$(DATE)-$(BUILD)' -X '$(PREFIX)/server/routes.GoVersion=$(GOVERSION)' -X '$(PREFIX)/server/routes.CompileDate=$(COMPILE_DATE)' -X '$(PREFIX)/server/routes.CommitDate=$(DATE)'"
+LDFLAGS=-"-X $(PREFIX)/server/routes.Build=$(FULLBUILD) -X '$(PREFIX)/server/routes.Version=v$(VERSION)' -X '$(PREFIX)/server/routes.GoVersion=$(GOVERSION)' -X '$(PREFIX)/server/routes.CompileDate=$(COMPILE_DATE)' -X '$(PREFIX)/server/routes.CommitDate=$(DATE)'"
 build: build-web-dev swagger build-go-dev
 else ifeq ($(ENV), release)
 LDFLAGS="-w -s -X $(PREFIX)/server/routes.Build=$(FULLBUILD) -X '$(PREFIX)/server/routes.Version=v$(VERSION)' -X '$(PREFIX)/server/routes.GoVersion=$(GOVERSION)' -X '$(PREFIX)/server/routes.CompileDate=$(COMPILE_DATE)' -X '$(PREFIX)/server/routes.CommitDate=$(DATE)'"
@@ -36,18 +35,16 @@ build-web: fmt-web lint-web-fix
 	pnpm --dir $(src_dir)/web run re:version
 
 build-web-dev: fmt-web lint-web-fix
-	PNPMVERSION="$(VERSION)-$(DATE)-$(BUILD)" pnpm --dir $(src_dir)/web run set:version
+	PNPMVERSION="$(VERSION)" pnpm --dir $(src_dir)/web run set:version
 	DEBUG=vite:* NODE_ENV=development pnpm --dir $(src_dir)/web run build --mode=development
 	pnpm --dir $(src_dir)/web run re:version
 
 build-go: fmt-go lint-go
 	@echo "USING LDFLAGS=$(LDFLAGS) FOR BUILD"
-	git tag -f v$(VERSION)
 	CGO_ENABLED=0 go build -ldflags=$(LDFLAGS) -v -o $(release_dir)/${BINARY_NAME}
 
 build-go-dev: fmt-go lint-go
 	@echo "USING LDFLAGS=$(LDFLAGS) FOR BUILD"
-	git tag -f v$(VERSION)-$(DATE)-$(BUILD)
 	CGO_ENABLED=0 go build -v -ldflags=$(LDFLAGS) -o $(debug_dir)/${BINARY_NAME}
 
 run: watch
@@ -197,11 +194,7 @@ reversion:
 
 swagger:
 	@echo "BUILDING API DOCS"
-ifeq ($(ENV), release)
 	sed -i.bak 's#//	@version		1.0#//	@version		v$(VERSION)#g' main.go
-else
-	sed -i.bak 's#//	@version		1.0#//	@version		v$(VERSION)-$(DATE)-$(BUILD)#g' main.go
-endif
 	rm main.go.bak
 	swag fmt --exclude $(shell find $(src_dir) -mindepth 1 -maxdepth 1 -type d | grep -v 'server' | tr '\n' ',')
 	swag init -p snakecase --generatedTime --pd --pdl 3 --exclude $(shell find $(src_dir) -mindepth 1 -maxdepth 1 -type d | grep -v 'server' | tr '\n' ',') --output $(src_dir)/server/docs/v1
@@ -210,16 +203,15 @@ endif
 	
 podman-test: clean
 	@echo "GITHUB_DATE=$(DATE)"
-	@echo "GITHUB_PSEUDODATE=$(PSEUDODATE)"
-	@echo "GITHUB_VERSION=$(VERSION)-$(DATE)-$(BUILD)"
+	@echo "GITHUB_VERSION=$(VERSION)"
 	podman pull docker.io/library/golang:alpine
 	podman pull docker.io/library/golang:bookworm
 	podman pull docker.io/library/alpine:edge
 	podman pull docker.io/library/debian:bookworm
-	podman build -f musl.podmanfile --build-arg=ENV=debug --build-arg=GITHUB_DATE=${DATE} --build-arg=GITHUB_PSEUDODATE=${PSEUDODATE} --build-arg=GITHUB_VERSION=${VERSION}-${DATE}-${BUILD} . -t oitacr.azurecr.io/pmartin47/${BINARY_NAME}:slim-test --target slim-musl
-	podman build -f musl.podmanfile --build-arg=ENV=debug --build-arg=GITHUB_DATE=${DATE} --build-arg=GITHUB_PSEUDODATE=${PSEUDODATE} --build-arg=GITHUB_VERSION=${VERSION}-${DATE}-${BUILD} . -t oitacr.azurecr.io/pmartin47/${BINARY_NAME}:alpine-test --target alpine
-	podman build -f glibc.podmanfile --build-arg=ENV=debug --build-arg=GITHUB_DATE=${DATE} --build-arg=GITHUB_PSEUDODATE=${PSEUDODATE} --build-arg=GITHUB_VERSION=${VERSION}-${DATE}-${BUILD} . -t oitacr.azurecr.io/pmartin47/${BINARY_NAME}:slim-glibc-test --target slim-glibc
-	podman build -f glibc.podmanfile --build-arg=ENV=debug --build-arg=GITHUB_DATE=${DATE} --build-arg=GITHUB_PSEUDODATE=${PSEUDODATE} --build-arg=GITHUB_VERSION=${VERSION}-${DATE}-${BUILD} . -t oitacr.azurecr.io/pmartin47/${BINARY_NAME}:debian-test --target debian
+	podman build -f musl.podmanfile --build-arg=ENV=debug --build-arg=GITHUB_DATE=${DATE} --build-arg=GITHUB_VERSION=${VERSION} . -t oitacr.azurecr.io/pmartin47/${BINARY_NAME}:slim-test --target slim-musl
+	podman build -f musl.podmanfile --build-arg=ENV=debug --build-arg=GITHUB_DATE=${DATE} --build-arg=GITHUB_VERSION=${VERSION} . -t oitacr.azurecr.io/pmartin47/${BINARY_NAME}:alpine-test --target alpine
+	podman build -f glibc.podmanfile --build-arg=ENV=debug --build-arg=GITHUB_DATE=${DATE} --build-arg=GITHUB_VERSION=${VERSION} . -t oitacr.azurecr.io/pmartin47/${BINARY_NAME}:slim-glibc-test --target slim-glibc
+	podman build -f glibc.podmanfile --build-arg=ENV=debug --build-arg=GITHUB_DATE=${DATE} --build-arg=GITHUB_VERSION=${VERSION} . -t oitacr.azurecr.io/pmartin47/${BINARY_NAME}:debian-test --target debian
 	$(MAKE) podman-compose-base-test
 
 podman-compose: podman-clean
