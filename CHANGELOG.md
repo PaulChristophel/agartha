@@ -7,6 +7,13 @@
 
 * **deps:** upgrade dependencies ([822a31e](https://github.com/PaulChristophel/agartha/commit/822a31e9e593b726a425506f51337c0d4023d848))
 
+## [0.12.1](https://github.com/PaulChristophel/agartha/compare/v0.12.1...v0.12.1) (2026-08-06)
+
+
+### Miscellaneous Chores
+
+* **deps:** upgrade dependencies ([822a31e](https://github.com/PaulChristophel/agartha/commit/822a31e9e593b726a425506f51337c0d4023d848))
+
 ## [0.12.1](https://github.com/PaulChristophel/agartha/compare/v0.12.0...v0.12.1) (2026-08-06)
 
 
