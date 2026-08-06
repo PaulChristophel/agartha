@@ -205,7 +205,7 @@ func RetrieveToken(c *gin.Context) {
 		settings = model.UserSettings{
 			UserID:          user.ID,
 			Created:         time.Now(),
-			SaltPermissions: `[".*", "@jobs", "@runner", "@wheel"]`,
+			SaltPermissions: `[]`,
 		}
 		err := settings.SetSettingsFromJSON("")
 		if err != nil {

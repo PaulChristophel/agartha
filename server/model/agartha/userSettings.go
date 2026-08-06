@@ -73,7 +73,7 @@ func (us *UserSettings) SetSettingsFromJSON(jsonStr string) error {
 	return nil
 }
 
-var defaultSaltPermissions = `[".*", "@jobs", "@runner", "@wheel"]`
+var defaultSaltPermissions = `[]`
 
 var defaultSettings = `
 {

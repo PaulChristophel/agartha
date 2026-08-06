@@ -2,6 +2,8 @@ package netapi
 
 import (
 	"bytes"
+	"encoding/json"
+	"fmt"
 	"io"
 	"net"
 	"net/http"
@@ -14,9 +16,11 @@ import (
 
 	"github.com/PaulChristophel/agartha/server/api/validate"
 	"github.com/PaulChristophel/agartha/server/logger"
+	"github.com/PaulChristophel/agartha/server/middleware"
+	"gorm.io/gorm"
 )
 
-func Handler(r *gin.RouterGroup, target string) {
+func Handler(r *gin.RouterGroup, target string, database *gorm.DB) {
 
 	headerCheck := func(c *gin.Context) {
 		_, err := validate.Token(c.GetHeader("X-Auth-Token"))
@@ -29,38 +33,38 @@ func Handler(r *gin.RouterGroup, target string) {
 	}
 
 	// Proxy handler for exact match
-	r.Any("/netapi", headerCheck, func(c *gin.Context) {
-		proxy(c, target, r.BasePath())
+	r.Any("/netapi", middleware.SaltPermissionForMethodRequired(database), headerCheck, func(c *gin.Context) {
+		proxy(c, target, r.BasePath(), nil)
 	})
 
 	// Proxy handler for exact match
-	r.Any("/netapi/", headerCheck, func(c *gin.Context) {
-		proxy(c, target, r.BasePath())
+	r.Any("/netapi/", middleware.SaltPermissionForMethodRequired(database), headerCheck, func(c *gin.Context) {
+		proxy(c, target, r.BasePath(), nil)
 	})
 
 	// Proxy handler for login
 	r.Any("/netapi/login", DecodeTokenAndCreateCredentials(), func(c *gin.Context) {
-		proxy(c, target, r.BasePath())
+		proxy(c, target, r.BasePath(), cacheSaltPermissions(c, database))
 	})
 
 	// Proxy handler for logout
 	r.Any("/netapi/logout", headerCheck, func(c *gin.Context) {
-		proxy(c, target, r.BasePath())
+		proxy(c, target, r.BasePath(), nil)
 	})
 
 	// Proxy handler for hook
-	r.Any("/netapi/hook", headerCheck, func(c *gin.Context) {
-		proxy(c, target, r.BasePath())
+	r.Any("/netapi/hook", middleware.SaltPermissionRequired(database, middleware.ExecuteSaltCommand), headerCheck, func(c *gin.Context) {
+		proxy(c, target, r.BasePath(), nil)
 	})
 
 	// Proxy handler for hook
-	r.Any("/netapi/hook/*path", headerCheck, func(c *gin.Context) {
-		proxy(c, target, r.BasePath())
+	r.Any("/netapi/hook/*path", middleware.SaltPermissionRequired(database, middleware.ExecuteSaltCommand), headerCheck, func(c *gin.Context) {
+		proxy(c, target, r.BasePath(), nil)
 	})
 
 	// Proxy handler for stats
-	r.Any("/netapi/stats", headerCheck, func(c *gin.Context) {
-		proxy(c, target, r.BasePath())
+	r.Any("/netapi/stats", middleware.SaltPermissionRequired(database, middleware.ReadSaltData), headerCheck, func(c *gin.Context) {
+		proxy(c, target, r.BasePath(), nil)
 	})
 
 	// // Proxy handler for paths
@@ -69,7 +73,7 @@ func Handler(r *gin.RouterGroup, target string) {
 	// })
 }
 
-func proxy(c *gin.Context, target, repl string) {
+func proxy(c *gin.Context, target, repl string, modifyResponse func(*http.Response) error) {
 	remote, err := url.Parse(target)
 	if err != nil {
 		logger.GetLogger().Sugar().Fatalf("Could not parse target URL: %v", err)
@@ -77,6 +81,7 @@ func proxy(c *gin.Context, target, repl string) {
 
 	// Do NOT use NewSingleHostReverseProxy (it sets Director, which triggers SA1019 and conflicts with Rewrite in Go 1.26).
 	proxy := &httputil.ReverseProxy{}
+	proxy.ModifyResponse = modifyResponse
 
 	// Custom transport with timeout
 	proxy.Transport = &http.Transport{
@@ -128,4 +133,59 @@ func proxy(c *gin.Context, target, repl string) {
 
 	// Forward the request to the proxy
 	proxy.ServeHTTP(c.Writer, c.Request)
+}
+
+func cacheSaltPermissions(c *gin.Context, database *gorm.DB) func(*http.Response) error {
+	usernameValue, usernameOK := c.Get("username")
+	userIDValue, userIDOK := c.Get("user_id")
+	username, usernameTypeOK := usernameValue.(string)
+	userID, userIDTypeOK := userIDValue.(uint)
+
+	return func(response *http.Response) error {
+		if response.StatusCode < http.StatusOK || response.StatusCode >= http.StatusMultipleChoices {
+			return nil
+		}
+		if !usernameOK || !userIDOK || !usernameTypeOK || !userIDTypeOK {
+			return fmt.Errorf("validated user context is missing")
+		}
+
+		body, err := io.ReadAll(response.Body)
+		if err != nil {
+			return fmt.Errorf("read Salt login response: %w", err)
+		}
+		response.Body = io.NopCloser(bytes.NewReader(body))
+		response.ContentLength = int64(len(body))
+
+		var login struct {
+			Return []struct {
+				User  string          `json:"user"`
+				Perms json.RawMessage `json:"perms"`
+			} `json:"return"`
+		}
+		if err := json.Unmarshal(body, &login); err != nil || len(login.Return) != 1 {
+			return fmt.Errorf("invalid Salt login response")
+		}
+		if login.Return[0].User != username {
+			return fmt.Errorf("Salt login identity does not match authenticated user")
+		}
+		permissions := login.Return[0].Perms
+		if len(permissions) == 0 {
+			permissions = json.RawMessage(`[]`)
+		}
+		var decoded any
+		if err := json.Unmarshal(permissions, &decoded); err != nil {
+			return fmt.Errorf("invalid Salt permissions in login response")
+		}
+
+		result := database.Model(&struct {
+			UserID uint `gorm:"column:user_id"`
+		}{}).Table("user_settings").Where("user_id = ?", userID).Update("salt_permissions", string(permissions))
+		if result.Error != nil {
+			return fmt.Errorf("cache Salt permissions: %w", result.Error)
+		}
+		if result.RowsAffected != 1 {
+			return fmt.Errorf("cache Salt permissions: user settings row not found")
+		}
+		return nil
+	}
 }

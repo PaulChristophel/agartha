@@ -220,20 +220,21 @@ func addServerRoutes(router *gin.Engine) {
 		middleware.AuthRequired([]byte(options.Secret)),
 		middleware.ActiveUserRequired(db.DB),
 	)
-	netapi.Handler(grpV1, saltOptions.URL)
-	conformity.AddRoutes(grpV1)
+	netapi.Handler(grpV1, saltOptions.URL, db.DB)
+	saltOperational := grpV1.Group("", middleware.SaltPermissionForMethodRequired(db.DB))
+	conformity.AddRoutes(saltOperational)
 	jid.SetOptions(saltDBTables)
-	jid.AddRoutes(grpV1)
+	jid.AddRoutes(saltOperational)
 	saltCache.SetOptions(saltDBTables)
-	saltCache.AddRoutes(grpV1)
+	saltCache.AddRoutes(saltOperational)
 	saltKeys.SetOptions(saltDBTables)
-	saltKeys.AddRoutes(grpV1)
-	saltMinion.AddRoutes(grpV1)
+	saltKeys.AddRoutes(grpV1, db.DB)
+	saltMinion.AddRoutes(saltOperational)
 	saltEvent.SetOptions(saltDBTables)
-	saltEvent.AddRoutes(grpV1)
-	highState.AddRoutes(grpV1)
+	saltEvent.AddRoutes(saltOperational)
+	highState.AddRoutes(saltOperational)
 	saltReturn.SetOptions(saltDBTables)
-	saltReturn.AddRoutes(grpV1)
+	saltReturn.AddRoutes(saltOperational)
 	validate.AddRoutes(grpV1)
 
 	grpV1secure := grpV1.Group("/secure", middleware.UniqueAuthRequired())
@@ -246,7 +247,7 @@ func addServerRoutes(router *gin.Engine) {
 		middleware.ActiveUserRequired(db.DB),
 	)
 	v2SaltCache.SetOptions(saltDBTables)
-	v2SaltCache.AddRoutes(grpV2)
+	v2SaltCache.AddRoutes(grpV2.Group("", middleware.SaltPermissionForMethodRequired(db.DB)))
 
 }
 

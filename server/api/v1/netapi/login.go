@@ -65,17 +65,6 @@ func DecodeTokenAndCreateCredentials() gin.HandlerFunc {
 
 		logger.GetLogger().Sugar().Debugf("Request Body: %s", string(bodyBytes))
 
-		// Check if the body is already a Credentials object
-		var existingCreds Credentials
-		if err := json.Unmarshal(bodyBytes, &existingCreds); err == nil && existingCreds.Username != "" && existingCreds.Password != "" && existingCreds.Eauth != "" {
-			// Body is already a Credentials object, do nothing
-			// Restore the body to the request
-			c.Request.Body = io.NopCloser(bytes.NewBuffer(bodyBytes))
-			c.Set("Authorization", "")
-			c.Next()
-			return
-		}
-
 		authHeader := c.GetHeader("Authorization")
 		usernameValue, exists := c.Get("username")
 		username, ok := usernameValue.(string)
