@@ -166,7 +166,7 @@ func cacheSaltPermissions(c *gin.Context, database *gorm.DB) func(*http.Response
 			return fmt.Errorf("invalid Salt login response")
 		}
 		if login.Return[0].User != username {
-			return fmt.Errorf("Salt login identity does not match authenticated user")
+			return fmt.Errorf("salt login identity does not match authenticated user")
 		}
 		permissions := login.Return[0].Perms
 		if len(permissions) == 0 {
