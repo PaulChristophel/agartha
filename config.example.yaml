@@ -13,8 +13,9 @@ http:
   get_started_url: "https://example.com"
   forgot_password_url: "https://example.com"
 auth:
-  # Only listed providers are accepted by /auth/token.
-  methods: [local, ldap, cas]
+  # Required. Only listed providers are accepted by /auth/token.
+  # Add ldap and/or cas only after configuring their sections below.
+  methods: [local]
 db:
   port: 5432
   host: psql.example.com

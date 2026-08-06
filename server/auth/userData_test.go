@@ -1,6 +1,7 @@
 package auth
 
 import (
+	"crypto/tls"
 	"io"
 	"net/http"
 	"net/http/httptest"
@@ -13,6 +14,7 @@ import (
 	"github.com/PaulChristophel/agartha/server/db"
 	"github.com/PaulChristophel/agartha/server/logger"
 	"github.com/gin-gonic/gin"
+	"github.com/go-ldap/ldap/v3"
 	"github.com/stretchr/testify/require"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
@@ -25,9 +27,39 @@ func (f roundTripFunc) RoundTrip(request *http.Request) (*http.Response, error) 
 	return f(request)
 }
 
+type fakeLDAPConnection struct {
+	binds         [][2]string
+	closed        bool
+	searchRequest *ldap.SearchRequest
+	searchResult  *ldap.SearchResult
+}
+
+func (f *fakeLDAPConnection) Bind(username, password string) error {
+	f.binds = append(f.binds, [2]string{username, password})
+	return nil
+}
+
+func (f *fakeLDAPConnection) Close() error {
+	f.closed = true
+	return nil
+}
+
+func (f *fakeLDAPConnection) Search(request *ldap.SearchRequest) (*ldap.SearchResult, error) {
+	f.searchRequest = request
+	return f.searchResult, nil
+}
+
+func (f *fakeLDAPConnection) StartTLS(*tls.Config) error {
+	return nil
+}
+
 func TestAuthRejectsUnsupportedMethod(t *testing.T) {
-	_, err := auth(credentials{Method: "unknown"}, nil)
-	require.ErrorContains(t, err, "unsupported authentication method")
+	for _, method := range []string{"", "unknown", "LOCAL", " ldap"} {
+		t.Run(method, func(t *testing.T) {
+			_, err := auth(credentials{Method: method}, nil)
+			require.ErrorContains(t, err, "unsupported authentication method")
+		})
+	}
 }
 
 func TestAuthRejectsDisabledMethod(t *testing.T) {
@@ -93,6 +125,69 @@ func TestNormalizeLDAPUsername(t *testing.T) {
 			require.Equal(t, tt.wantUPN, upn)
 		})
 	}
+}
+
+func TestAuthLDAPBindsAndUsesDirectoryIdentity(t *testing.T) {
+	_, err := logger.InitLogger(gin.TestMode)
+	require.NoError(t, err)
+
+	connection := &fakeLDAPConnection{
+		searchResult: &ldap.SearchResult{Entries: []*ldap.Entry{
+			ldap.NewEntry("cn=Alice,dc=example,dc=test", map[string][]string{
+				"sAMAccountName": {"directory-alice"},
+				"givenName":      {"Alice"},
+				"sn":             {"Admin"},
+				"mail":           {"alice@example.test"},
+			}),
+		}},
+	}
+	originalOptions := ldapOptions
+	originalDial := ldapDialURL
+	ldapOptions = config.LDAPOptions{
+		Server:            "ldaps://directory.example.test:636",
+		User:              "cn=service,dc=example,dc=test",
+		Password:          "service-password",
+		BaseDN:            "dc=example,dc=test",
+		Filter:            "(&(objectClass=person)(sAMAccountName=%s))",
+		LDAPDomainDefault: "example.test",
+	}
+	ldapDialURL = func(server string) (ldapConnection, error) {
+		require.Equal(t, ldapOptions.Server, server)
+		return connection, nil
+	}
+	t.Cleanup(func() {
+		ldapOptions = originalOptions
+		ldapDialURL = originalDial
+	})
+
+	user, err := authLDAP("requested-alice", "user-password")
+	require.NoError(t, err)
+	require.Equal(t, "directory-alice", user.Username)
+	require.Equal(t, "alice@example.test", user.Email)
+	require.Equal(t, [][2]string{
+		{"requested-alice@example.test", "user-password"},
+		{"cn=service,dc=example,dc=test", "service-password"},
+	}, connection.binds)
+	require.Equal(t, ldapOptions.BaseDN, connection.searchRequest.BaseDN)
+	require.Equal(t, "(&(objectClass=person)(sAMAccountName=requested-alice))", connection.searchRequest.Filter)
+	require.True(t, connection.closed)
+}
+
+func TestAuthLDAPRejectsEmptyPasswordBeforeConnecting(t *testing.T) {
+	originalOptions := ldapOptions
+	originalDial := ldapDialURL
+	ldapOptions.LDAPDomainDefault = "example.test"
+	ldapDialURL = func(string) (ldapConnection, error) {
+		t.Fatal("LDAP connection should not be opened for an empty password")
+		return nil, nil
+	}
+	t.Cleanup(func() {
+		ldapOptions = originalOptions
+		ldapDialURL = originalDial
+	})
+
+	_, err := authLDAP("alice", "")
+	require.ErrorContains(t, err, "password is empty")
 }
 
 func TestAuthLocalUsesStoredPassword(t *testing.T) {
@@ -178,6 +273,19 @@ func TestAuthCASRequiresAuthenticationSuccess(t *testing.T) {
 			responseBody: `<?xml version="1.0"?>
 				<cas:serviceResponse xmlns:cas="http://www.yale.edu/tp/cas">
 				  <cas:authenticationFailure code="INVALID_TICKET">invalid ticket</cas:authenticationFailure>
+				</cas:serviceResponse>`,
+			wantError: true,
+		},
+		{
+			name:         "rejects malformed XML response",
+			responseBody: `<cas:serviceResponse><cas:authenticationSuccess>`,
+			wantError:    true,
+		},
+		{
+			name: "rejects success without an asserted user",
+			responseBody: `<?xml version="1.0"?>
+				<cas:serviceResponse xmlns:cas="http://www.yale.edu/tp/cas">
+				  <cas:authenticationSuccess><cas:user> </cas:user></cas:authenticationSuccess>
 				</cas:serviceResponse>`,
 			wantError: true,
 		},

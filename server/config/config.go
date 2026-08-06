@@ -149,19 +149,10 @@ func (c Config) ValidateForServe() error {
 	return errors.Join(errs...)
 }
 
-// EffectiveAuthMethods returns the configured authentication allowlist. When
-// auth.methods is omitted, it derives the legacy provider list for compatibility.
+// EffectiveAuthMethods returns the explicitly configured authentication
+// allowlist. No provider is enabled implicitly.
 func (c Config) EffectiveAuthMethods() ([]string, error) {
 	methods := c.Auth.Methods
-	if len(methods) == 0 {
-		methods = []string{"local"}
-		if ldapConfigured(c.LDAP) {
-			methods = append(methods, "ldap")
-		}
-		if casConfigured(c.CAS) {
-			methods = append(methods, "cas")
-		}
-	}
 
 	seen := make(map[string]struct{}, len(methods))
 	normalized := make([]string, 0, len(methods))
@@ -226,10 +217,6 @@ func (c Config) ValidateDatabase() error {
 	return errors.Join(errs...)
 }
 
-func ldapConfigured(options LDAPOptions) bool {
-	return strings.TrimSpace(options.Server) != "" && !strings.EqualFold(strings.TrimSpace(options.Server), "ldap.example.com")
-}
-
 func validateLDAP(options LDAPOptions) error {
 	var errs []error
 	parsed, err := url.Parse(options.Server)
@@ -258,10 +245,6 @@ func validateLDAP(options LDAPOptions) error {
 		errs = append(errs, errors.New("ldap.start_tls requires an ldap:// server URL, not ldaps://"))
 	}
 	return errors.Join(errs...)
-}
-
-func casConfigured(options CASOptions) bool {
-	return strings.TrimSpace(options.Server) != "" && !strings.EqualFold(strings.TrimSpace(options.Server), "https://cas.example.com")
 }
 
 func validateCAS(options CASOptions) error {

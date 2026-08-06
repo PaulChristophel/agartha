@@ -5,6 +5,7 @@ import (
 	"net/http/httptest"
 	"regexp"
 	"testing"
+	"time"
 
 	"github.com/DATA-DOG/go-sqlmock"
 	model "github.com/PaulChristophel/agartha/server/model/agartha"
@@ -41,6 +42,27 @@ func TestAuthRequiredSetsValidatedClaims(t *testing.T) {
 
 	require.Equal(t, http.StatusOK, response.Code)
 	require.JSONEq(t, `{"username":"alice","user_id":7}`, response.Body.String())
+}
+
+func TestAuthRequiredRejectsExpiredJWT(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+	secret := []byte("test-secret")
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
+		"username": "alice",
+		"user_id":  7,
+		"exp":      time.Now().Add(-time.Minute).Unix(),
+	})
+	signedToken, err := token.SignedString(secret)
+	require.NoError(t, err)
+
+	router := gin.New()
+	router.GET("/protected", AuthRequired(secret), noContent)
+	request := httptest.NewRequest(http.MethodGet, "/protected", nil)
+	request.Header.Set("Authorization", "Bearer "+signedToken)
+	response := httptest.NewRecorder()
+	router.ServeHTTP(response, request)
+
+	require.Equal(t, http.StatusUnauthorized, response.Code)
 }
 
 func TestActiveUserRequired(t *testing.T) {
