@@ -10,6 +10,7 @@ import (
 func validConfig() Config {
 	config := *NewConfig()
 	config.HTTP.Secret = "a-unique-secret-with-at-least-32-characters"
+	config.Auth.Methods = []string{"local"}
 	config.DB.Password = "a-unique-database-password"
 	return config
 }
@@ -71,6 +72,14 @@ func TestEffectiveAuthMethodsRejectsUnsupportedProvider(t *testing.T) {
 
 	_, err := config.EffectiveAuthMethods()
 	require.ErrorContains(t, err, "unsupported method")
+}
+
+func TestEffectiveAuthMethodsRequiresExplicitProvider(t *testing.T) {
+	config := validConfig()
+	config.Auth.Methods = nil
+
+	_, err := config.EffectiveAuthMethods()
+	require.ErrorContains(t, err, "must enable at least one authentication method")
 }
 
 func TestValidateDatabaseRejectsInvalidRetryPolicy(t *testing.T) {

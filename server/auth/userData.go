@@ -137,7 +137,17 @@ func authLDAP(username, password string) (userData, error) {
 	var log = logger.GetLogger()
 	var userData userData
 	var ldap_server = ldapOptions.Server
-	l, err := ldap.DialURL(ldap_server)
+	accountName, userPrincipalName, err := normalizeLDAPUsername(username, ldapOptions.LDAPDomainDefault)
+	if err != nil {
+		return userData, err
+	}
+	if password == "" {
+		return userData, errors.New("LDAP password is empty")
+	}
+	userData.SamAccountName = accountName
+	userData.UserPrincipalName = userPrincipalName
+
+	l, err := ldapDialURL(ldap_server)
 	if err != nil {
 		return userData, fmt.Errorf("failed to connect: %w", err)
 	}
@@ -148,13 +158,6 @@ func authLDAP(username, password string) (userData, error) {
 			log.Error("failed to close ldap connection", zap.Error(lerr))
 		}
 	}()
-
-	accountName, userPrincipalName, err := normalizeLDAPUsername(username, ldapOptions.LDAPDomainDefault)
-	if err != nil {
-		return userData, err
-	}
-	userData.SamAccountName = accountName
-	userData.UserPrincipalName = userPrincipalName
 
 	if ldapOptions.StartTLS {
 		tlsConfig := &tls.Config{
