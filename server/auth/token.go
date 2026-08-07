@@ -43,6 +43,11 @@ type AuthMethods struct {
 	AuthMethods []string `json:"auth_methods" example:"local"`
 }
 
+const (
+	authSessionCookieName = "agarthaAuthSession"
+	legacyAuthCookiePath  = "/auth"
+)
+
 // Get auth methods
 //
 //	@Summary		Gets the list of available auth methods.
@@ -239,6 +244,11 @@ func RetrieveToken(c *gin.Context) {
 		}
 	}
 
+	// Older releases created this cookie without an explicit Path while handling
+	// /auth/token, so browsers defaulted it to /auth. Remove that legacy cookie
+	// after saving the current Path=/ session; otherwise it shadows the current
+	// cookie on /auth/session after logout.
+	expireLegacyAuthCookie(c)
 	c.JSON(http.StatusOK, Token{Token: "Bearer " + tokenString})
 }
 
@@ -267,7 +277,21 @@ func Logout(c *gin.Context) {
 		httputil.NewError(c, http.StatusInternalServerError, "Failed to clear authentication session.")
 		return
 	}
+	expireLegacyAuthCookie(c)
 	c.Status(http.StatusNoContent)
+}
+
+func expireLegacyAuthCookie(c *gin.Context) {
+	http.SetCookie(c.Writer, &http.Cookie{
+		Name:     authSessionCookieName,
+		Value:    "",
+		Path:     legacyAuthCookiePath,
+		Expires:  time.Unix(1, 0),
+		MaxAge:   -1,
+		HttpOnly: true,
+		Secure:   sessionCookieSecure,
+		SameSite: http.SameSiteLaxMode,
+	})
 }
 
 // // Authenticate authenticates and authorizes a user against an LDAP server

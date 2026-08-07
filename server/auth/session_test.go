@@ -43,10 +43,34 @@ func TestLogoutExpiresSecureHttpOnlySessionCookie(t *testing.T) {
 	router.ServeHTTP(response, request)
 
 	require.Equal(t, http.StatusNoContent, response.Code)
-	require.NotEmpty(t, response.Result().Cookies())
-	expired := response.Result().Cookies()[0]
-	require.Less(t, expired.MaxAge, 0)
-	require.True(t, expired.HttpOnly)
-	require.True(t, expired.Secure)
-	require.Equal(t, http.SameSiteLaxMode, expired.SameSite)
+	cookies := response.Result().Cookies()
+	require.Len(t, cookies, 2)
+
+	expiredByPath := make(map[string]*http.Cookie, len(cookies))
+	for _, expired := range cookies {
+		expiredByPath[expired.Path] = expired
+		require.Less(t, expired.MaxAge, 0)
+		require.True(t, expired.HttpOnly)
+		require.True(t, expired.Secure)
+		require.Equal(t, http.SameSiteLaxMode, expired.SameSite)
+	}
+	require.Contains(t, expiredByPath, "/")
+	require.Contains(t, expiredByPath, legacyAuthCookiePath)
+}
+
+func TestExpireLegacyAuthCookieUsesLegacyAuthPath(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+	SetOptions([]byte("secret"), []string{"local"}, config.LDAPOptions{}, config.CASOptions{}, true)
+
+	response := httptest.NewRecorder()
+	context, _ := gin.CreateTestContext(response)
+	expireLegacyAuthCookie(context)
+
+	cookies := response.Result().Cookies()
+	require.Len(t, cookies, 1)
+	require.Equal(t, authSessionCookieName, cookies[0].Name)
+	require.Equal(t, legacyAuthCookiePath, cookies[0].Path)
+	require.Less(t, cookies[0].MaxAge, 0)
+	require.True(t, cookies[0].HttpOnly)
+	require.True(t, cookies[0].Secure)
 }
