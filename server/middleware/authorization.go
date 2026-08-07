@@ -129,22 +129,22 @@ func SaltWheelAdministrationRequired(database *gorm.DB) gin.HandlerFunc {
 
 // AdministrationRequired reserves Agartha user and settings administration for
 // superusers. Salt command permissions and is_staff do not cross this boundary.
-func AdministrationRequired() gin.HandlerFunc {
-	return func(c *gin.Context) {
-		user, ok := AuthenticatedUser(c)
-		if !ok {
-			httputil.NewError(c, http.StatusUnauthorized, "User authorization context is missing.")
-			c.Abort()
-			return
-		}
-		if !user.IsSuperuser {
-			httputil.NewError(c, http.StatusForbidden, "Permission denied: Agartha administration requires superuser access.")
-			c.Abort()
-			return
-		}
-		c.Next()
-	}
-}
+// func AdministrationRequired() gin.HandlerFunc {
+// 	return func(c *gin.Context) {
+// 		user, ok := AuthenticatedUser(c)
+// 		if !ok {
+// 			httputil.NewError(c, http.StatusUnauthorized, "User authorization context is missing.")
+// 			c.Abort()
+// 			return
+// 		}
+// 		if !user.IsSuperuser {
+// 			httputil.NewError(c, http.StatusForbidden, "Permission denied: Agartha administration requires superuser access.")
+// 			c.Abort()
+// 			return
+// 		}
+// 		c.Next()
+// 	}
+// }
 
 func loadSaltPermissions(c *gin.Context, database *gorm.DB, userID uint) (any, bool) {
 	var settings model.UserSettings
