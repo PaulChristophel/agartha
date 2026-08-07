@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.13.2](https://github.com/PaulChristophel/agartha/compare/v0.13.1...v0.13.2) (2026-08-07)
+
+
+### Performance Improvements
+
+* reduce frontend bundle weight ([b482d1f](https://github.com/PaulChristophel/agartha/commit/b482d1f2dea2037691f8090445e010e4efa250ed))
+* reduce frontend bundle weight ([7ce9dbb](https://github.com/PaulChristophel/agartha/commit/7ce9dbbd8c2545e1b5f460718882c5ecb51a8005))
+
 ## [0.13.1](https://github.com/PaulChristophel/agartha/compare/v0.13.0...v0.13.1) (2026-08-07)
 
 
