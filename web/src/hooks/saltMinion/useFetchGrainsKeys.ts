@@ -20,6 +20,7 @@ const useFetchGrainsKeys = (likeIncludes: string, page: number) => {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    const controller = new AbortController();
     const fetchGrainsKeys = async () => {
       setLoading(true);
       setError(null);
@@ -31,21 +32,24 @@ const useFetchGrainsKeys = (likeIncludes: string, page: number) => {
             per_page: 50,
             like_includes: likeIncludes,
           },
+          signal: controller.signal,
         });
         const keys = response.data.results.map((key) => toColonNotation(key));
         setGrainsKeys(keys);
       } catch (err) {
+        if (controller.signal.aborted) return;
         if (axios.isAxiosError(err)) {
           setError(err.message);
         } else {
           setError('An unexpected error occurred');
         }
       } finally {
-        setLoading(false);
+        if (!controller.signal.aborted) setLoading(false);
       }
     };
 
-    fetchGrainsKeys();
+    void fetchGrainsKeys();
+    return () => controller.abort();
   }, [likeIncludes, page]);
 
   return { grainsKeys, loading, error };

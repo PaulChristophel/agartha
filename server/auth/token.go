@@ -14,6 +14,7 @@ import (
 	model "github.com/PaulChristophel/agartha/server/model/agartha"
 
 	"github.com/PaulChristophel/agartha/server/httputil"
+	"github.com/PaulChristophel/agartha/server/middleware"
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v5"
@@ -165,10 +166,10 @@ func RetrieveToken(c *gin.Context) {
 
 	// Create session and save session data to session_user_map
 	session = sessions.Default(c)
-	session.Options(sessions.Options{MaxAge: int(maxAge.Seconds())})
 	session.Set("username", authenticatedUsername)
 	session.Set("user_id", user.ID)
 	session.Set("exp", strconv.FormatInt(utime, 10))
+	session.Set("auth_token", "Bearer "+tokenString)
 	// session.Set("expires_at", strconv.FormatInt(utime, 10))
 	if err := session.Save(); err != nil {
 		sugar.Errorf("Failed to save session: %v", err)
@@ -239,6 +240,34 @@ func RetrieveToken(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, Token{Token: "Bearer " + tokenString})
+}
+
+// GetSession returns the active user associated with the HttpOnly session cookie.
+func GetSession(c *gin.Context) {
+	user, ok := middleware.AuthenticatedUser(c)
+	if !ok {
+		httputil.NewError(c, http.StatusUnauthorized, "Authentication session is unavailable.")
+		return
+	}
+	c.JSON(http.StatusOK, user)
+}
+
+// Logout expires the browser session and removes all server-side credentials.
+func Logout(c *gin.Context) {
+	session := sessions.Default(c)
+	session.Clear()
+	session.Options(sessions.Options{
+		Path:     "/",
+		MaxAge:   -1,
+		HttpOnly: true,
+		Secure:   sessionCookieSecure,
+		SameSite: http.SameSiteLaxMode,
+	})
+	if err := session.Save(); err != nil {
+		httputil.NewError(c, http.StatusInternalServerError, "Failed to clear authentication session.")
+		return
+	}
+	c.Status(http.StatusNoContent)
 }
 
 // // Authenticate authenticates and authorizes a user against an LDAP server

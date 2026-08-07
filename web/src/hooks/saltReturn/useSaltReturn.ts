@@ -1,80 +1,41 @@
-import { useState, useEffect } from 'react';
+import { useQuery } from '@tanstack/react-query';
 
-import { apiClient as axios } from 'src/api/client.ts';
+import { apiClient } from 'src/api/client.ts';
+import { queryKeys } from 'src/api/queryKeys.ts';
 
 interface ReturnData {
   alter_time: string;
-  full_ret: Record<string, unknown>; // Assuming full_ret is an object with unknown properties
+  full_ret: Record<string, unknown>;
   fun: string;
   id: string;
   jid: string;
-  return: Record<string, unknown>; // Assuming return is an object with unknown properties
+  return: Record<string, unknown>;
   success: boolean;
 }
 
-interface UseSaltReturn {
-  alterTime: string;
-  fullRet: Record<string, unknown>;
-  fun: string;
-  returnId: string;
-  returnJid: string;
-  returnData: Record<string, unknown>;
-  success: boolean;
-  isLoading: boolean;
-  error: Error | null;
-}
-
-const useSaltReturn = (
-  jid: string,
-  id: string,
-  load_return: boolean,
-  load_full_ret: boolean
-): UseSaltReturn => {
-  const [alterTime, setAlterTime] = useState<string>('');
-  const [fullRet, setFullRet] = useState<Record<string, unknown>>({});
-  const [fun, setFun] = useState<string>('');
-  const [returnId, setReturnId] = useState<string>('');
-  const [returnJid, setReturnJid] = useState<string>('');
-  const [returnData, setReturnData] = useState<Record<string, unknown>>({});
-  const [success, setSuccess] = useState<boolean>(false);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<Error | null>(null);
-
-  useEffect(() => {
-    const fetchReturnData = async () => {
-      setIsLoading(true);
-      try {
-        const { data } = await axios.get<ReturnData>(
-          `/api/v1/salt_return/${jid}/${id}?load_return=${load_return}&load_full_ret=${load_full_ret}`
-        );
-        setAlterTime(data.alter_time);
-        setFullRet(data.full_ret);
-        setFun(data.fun);
-        setReturnId(data.id);
-        setReturnJid(data.jid);
-        setReturnData(data.return);
-        setSuccess(data.success);
-      } catch (err) {
-        setError(err as Error);
-      }
-      setIsLoading(false);
-    };
-
-    if (jid && id) {
-      fetchReturnData();
-    }
-  }, [jid, id, load_return, load_full_ret]);
+const useSaltReturn = (jid: string, id: string, loadReturn: boolean, loadFullRet: boolean) => {
+  const { data, isLoading, error } = useQuery({
+    queryKey: queryKeys.saltReturns.detail(jid, id, loadReturn, loadFullRet),
+    queryFn: async ({ signal }) => {
+      const response = await apiClient.get<ReturnData>(`/api/v1/salt_return/${jid}/${id}`, {
+        params: { load_return: loadReturn, load_full_ret: loadFullRet },
+        signal,
+      });
+      return response.data;
+    },
+    enabled: Boolean(jid && id),
+  });
 
   return {
-    alterTime,
-    fullRet,
-    fun,
-    returnId,
-    returnJid,
-    returnData,
-    success,
+    alterTime: data?.alter_time ?? '',
+    fullRet: data?.full_ret ?? {},
+    fun: data?.fun ?? '',
+    returnId: data?.id ?? '',
+    returnJid: data?.jid ?? '',
+    returnData: data?.return ?? {},
+    success: data?.success ?? false,
     isLoading,
-    error,
+    error: error as Error | null,
   };
 };
 

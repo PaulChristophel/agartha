@@ -15,6 +15,7 @@ import (
 	"os/signal"
 	"strings"
 	"syscall"
+	"time"
 
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
@@ -118,6 +119,13 @@ func Router(frontend embed.FS, agarthaOptions config.Config) error {
 
 	// This is the server backend API
 	store := gormsessions.NewStore(db.DB, true, []byte(options.Secret))
+	store.Options(sessions.Options{
+		Path:     "/",
+		MaxAge:   int((8 * time.Hour).Seconds()),
+		HttpOnly: true,
+		Secure:   options.CookieSecure,
+		SameSite: http.SameSiteLaxMode,
+	})
 	router.Use(sessions.Sessions("agarthaAuthSession", store))
 	addServerRoutes(router)
 	addStaticRoutes(router, frontend)
@@ -212,8 +220,13 @@ func addServerRoutes(router *gin.Engine) {
 	AddVersionRoutes(rootRoute)
 
 	authRoute := router.Group("/auth")
-	auth.SetOptions([]byte(options.Secret), authMethods, ldapOptions, casOptions)
+	auth.SetOptions([]byte(options.Secret), authMethods, ldapOptions, casOptions, options.CookieSecure)
 	auth.AddRoutes(authRoute)
+	auth.AddSessionRoutes(authRoute.Group(
+		"",
+		middleware.AuthRequired([]byte(options.Secret)),
+		middleware.ActiveUserRequired(db.DB),
+	))
 
 	grpV1 := router.Group(
 		"/api/v1",

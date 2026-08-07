@@ -1,6 +1,7 @@
-import { useState, useEffect } from 'react';
+import { useQuery } from '@tanstack/react-query';
 
-import { apiClient as axios } from 'src/api/client.ts';
+import { apiClient } from 'src/api/client.ts';
+import { queryKeys } from 'src/api/queryKeys.ts';
 
 interface MinionData {
   alter_time: string;
@@ -10,53 +11,27 @@ interface MinionData {
   id: string;
 }
 
-interface UseMinion {
-  alterTime: string;
-  grains: Record<string, unknown>;
-  pillar: Record<string, unknown>;
-  minionID: string;
-  id: string;
-  isLoading: boolean;
-  error: Error | null;
-}
-
-const useSaltMinionID = (minionID: string): UseMinion => {
-  const [alterTime, setAlterTime] = useState<string>('');
-  const [grains, setGrains] = useState<Record<string, unknown>>({});
-  const [pillar, setPillar] = useState<Record<string, unknown>>({});
-  const [id, setID] = useState<string>('00000000-0000-0000-0000-000000000000');
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<Error | null>(null);
-
-  useEffect(() => {
-    const fetchCacheData = async () => {
-      setIsLoading(true);
-      try {
-        const encodedMinionID = encodeURIComponent(minionID);
-        const { data } = await axios.get<MinionData>(`/api/v1/salt_minion/${encodedMinionID}`);
-        setAlterTime(data.alter_time);
-        setGrains(data.grains);
-        setPillar(data.pillar);
-        setID(data.id);
-      } catch (err) {
-        setError(err as Error);
-      }
-      setIsLoading(false);
-    };
-
-    if (minionID) {
-      fetchCacheData();
-    }
-  }, [minionID]);
+const useSaltMinionID = (minionID: string) => {
+  const { data, isLoading, error } = useQuery({
+    queryKey: queryKeys.saltMinions.byId(minionID),
+    queryFn: async ({ signal }) => {
+      const encodedMinionID = encodeURIComponent(minionID);
+      const response = await apiClient.get<MinionData>(`/api/v1/salt_minion/${encodedMinionID}`, {
+        signal,
+      });
+      return response.data;
+    },
+    enabled: Boolean(minionID),
+  });
 
   return {
-    alterTime,
-    grains,
-    pillar,
-    id,
+    alterTime: data?.alter_time ?? '',
+    grains: data?.grains ?? {},
+    pillar: data?.pillar ?? {},
+    id: data?.id ?? '00000000-0000-0000-0000-000000000000',
     minionID,
     isLoading,
-    error,
+    error: error as Error | null,
   };
 };
 

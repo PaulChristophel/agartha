@@ -18,6 +18,7 @@ const useFetchFunKeys = (likeIncludes: string, page: number, since?: string, unt
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    const controller = new AbortController();
     const fetchFunKeys = async () => {
       setLoading(true);
       setError(null);
@@ -32,22 +33,25 @@ const useFetchFunKeys = (likeIncludes: string, page: number, since?: string, unt
 
         const response = await axios.get<PaginatedResponse>('/api/v1/salt_return/fun', {
           params,
+          signal: controller.signal,
         });
 
         const keys = response.data.results.map((x) => x);
         setFunKeys(keys);
       } catch (err) {
+        if (controller.signal.aborted) return;
         if (axios.isAxiosError(err)) {
           setError(err.message);
         } else {
           setError('An unexpected error occurred');
         }
       } finally {
-        setLoading(false);
+        if (!controller.signal.aborted) setLoading(false);
       }
     };
 
-    fetchFunKeys();
+    void fetchFunKeys();
+    return () => controller.abort();
   }, [likeIncludes, page, since, until]);
 
   return { funKeys, loading, error };

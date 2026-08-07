@@ -31,6 +31,7 @@ func NewConfig() *Config {
 		HTTP: HTTPOptions{
 			Host:              "",
 			Port:              8080,
+			CookieSecure:      true,
 			ReadTimeout:       15 * time.Second,
 			ReadHeaderTimeout: 5 * time.Second,
 			WriteTimeout:      30 * time.Second,

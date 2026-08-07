@@ -17,18 +17,24 @@ import (
 	"github.com/PaulChristophel/agartha/server/api/validate"
 	"github.com/PaulChristophel/agartha/server/logger"
 	"github.com/PaulChristophel/agartha/server/middleware"
+	"github.com/gin-contrib/sessions"
 	"gorm.io/gorm"
 )
 
 func Handler(r *gin.RouterGroup, target string, database *gorm.DB) {
 
 	headerCheck := func(c *gin.Context) {
-		_, err := validate.Token(c.GetHeader("X-Auth-Token"))
+		token := c.GetHeader("X-Auth-Token")
+		if token == "" {
+			token, _ = sessions.Default(c).Get("salt_token").(string)
+		}
+		_, err := validate.Token(token)
 		if err != nil {
 			c.JSON(http.StatusUnauthorized, gin.H{"error": "invalid X-Auth-Token"})
 			c.Abort()
 			return
 		}
+		c.Request.Header.Set("X-Auth-Token", token)
 		c.Next()
 	}
 
@@ -159,6 +165,7 @@ func cacheSaltPermissions(c *gin.Context, database *gorm.DB) func(*http.Response
 		var login struct {
 			Return []struct {
 				User  string          `json:"user"`
+				Token string          `json:"token"`
 				Perms json.RawMessage `json:"perms"`
 			} `json:"return"`
 		}
@@ -167,6 +174,14 @@ func cacheSaltPermissions(c *gin.Context, database *gorm.DB) func(*http.Response
 		}
 		if login.Return[0].User != username {
 			return fmt.Errorf("salt login identity does not match authenticated user")
+		}
+		if _, err := validate.Token(login.Return[0].Token); err != nil {
+			return fmt.Errorf("invalid Salt token in login response")
+		}
+		session := sessions.Default(c)
+		session.Set("salt_token", login.Return[0].Token)
+		if err := session.Save(); err != nil {
+			return fmt.Errorf("save Salt token in session: %w", err)
 		}
 		permissions := login.Return[0].Perms
 		if len(permissions) == 0 {

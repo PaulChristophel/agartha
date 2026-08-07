@@ -1,4 +1,5 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 
 import Box from '@mui/material/Box';
 import Link from '@mui/material/Link';
@@ -16,12 +17,12 @@ import InputAdornment from '@mui/material/InputAdornment';
 
 import { useRouter } from 'src/routes/hooks';
 
-import { fetchAndStoreAuthUser } from 'src/hooks/auth/fetchAndStoreAuthUser.ts';
 import useFetchAndStoreSaltAuth from 'src/hooks/auth/useFetchAndStoreSaltAuth.ts';
 
 import { bgGradient } from 'src/theme/css';
+import { queryKeys } from 'src/api/queryKeys.ts';
 import { sessionStore } from 'src/api/session.ts';
-import { apiClient as axios } from 'src/api/client.ts';
+import { login, getSession, getAuthMethods } from 'src/api/auth.ts';
 import { Version, GetStartedURL, ForgotPasswordURL } from 'src/config.ts';
 
 import Logo from 'src/components/logo';
@@ -30,56 +31,46 @@ import Iconify from 'src/components/iconify';
 const LoginView: React.FC = () => {
   const theme = useTheme();
   const router = useRouter();
+  const queryClient = useQueryClient();
   const [showPassword, setShowPassword] = useState(false);
-  const [authMethods, setAuthMethods] = useState<string[]>([]);
   const [selectedAuthMethod, setSelectedAuthMethod] = useState('');
+  const [loginError, setLoginError] = useState('');
   const { postSaltAuth } = useFetchAndStoreSaltAuth();
+  const { data: authMethods = [] } = useQuery({
+    queryKey: queryKeys.auth.methods(),
+    queryFn: ({ signal }) => getAuthMethods(signal),
+    select: (methods) => {
+      const order = ['ldap', 'local', 'cas'];
+      return [...methods].sort((a, b) => order.indexOf(a) - order.indexOf(b));
+    },
+  });
 
-  useEffect(() => {
-    const fetchAuthMethods = async () => {
-      try {
-        const response = await axios.get('/auth/method');
-        const methods = response.data.auth_methods;
-        // Set the order of precedence:
-        const orderedMethods = methods.sort((a: string, b: string) => {
-          const order = ['ldap', 'local', 'cas']; // We put cas last because eventually it will be a redirect
-          return order.indexOf(a) - order.indexOf(b);
-        });
-        setAuthMethods(orderedMethods);
-        setSelectedAuthMethod(orderedMethods[0]);
-      } catch (err) {
-        console.error('Error fetching auth methods:', err);
-      }
-    };
-
-    fetchAuthMethods();
-  }, []);
+  const effectiveAuthMethod = selectedAuthMethod || authMethods[0] || '';
 
   const handleClick = async () => {
     const username = (document.querySelector('input[name="username"]') as HTMLInputElement).value;
     const password = (document.querySelector('input[name="password"]') as HTMLInputElement).value;
 
     try {
-      const response = await axios.post('/auth/token', {
+      setLoginError('');
+      await login({
         username,
         password,
-        method: selectedAuthMethod,
+        method: effectiveAuthMethod,
       });
-      const { token } = response.data;
-
-      sessionStore.setAuthToken(token);
-
-      const authUser = await fetchAndStoreAuthUser(token);
-      if (!authUser) {
-        throw new Error('Failed to load the authenticated user');
-      }
+      const authUser = await queryClient.fetchQuery({
+        queryKey: queryKeys.auth.session(),
+        queryFn: ({ signal }) => getSession(signal),
+        staleTime: 0,
+      });
+      sessionStore.setAuthenticated(authUser);
       await postSaltAuth();
 
       // Redirect to the home page
       router.push('/');
     } catch (err) {
       console.error('Login error:', err);
-      // Handle errors, e.g., show an error message to the user
+      setLoginError('Unable to sign in. Check your credentials and try again.');
     }
   };
 
@@ -104,7 +95,7 @@ const LoginView: React.FC = () => {
         />
 
         <Select
-          value={selectedAuthMethod}
+          value={effectiveAuthMethod}
           onChange={(e) => setSelectedAuthMethod(e.target.value)}
           displayEmpty
           inputProps={{ 'aria-label': 'Select Auth Method' }}
@@ -133,6 +124,11 @@ const LoginView: React.FC = () => {
       >
         Login
       </LoadingButton>
+      {loginError && (
+        <Typography role="alert" color="error" sx={{ mt: 2 }}>
+          {loginError}
+        </Typography>
+      )}
     </>
   );
 

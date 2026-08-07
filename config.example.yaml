@@ -3,6 +3,8 @@ http:
   port: 8080
   # Set through AGARTHA_HTTP_SECRET in production. Must be at least 32 characters.
   secret: REPLACE_WITH_AT_LEAST_32_RANDOM_CHARACTERS
+  # Keep true when Agartha is served over HTTPS. Set false only for local HTTP development.
+  cookie_secure: true
   # Empty means do not trust forwarded client IP/protocol headers from any proxy.
   trusted_proxies: []
   read_timeout: 15s

@@ -62,6 +62,7 @@ const useReturnPaginated = (
   const stableQueryParams = useMemo(() => queryParams, [queryParams]);
 
   useEffect(() => {
+    const controller = new AbortController();
     const fetchReturns = async () => {
       setIsLoading(true);
       try {
@@ -81,13 +82,16 @@ const useReturnPaginated = (
         params.append('page', String(currentPage));
         params.append('per_page', String(rowsPerPage));
 
-        const response = await axios.get<ApiResponse>(`/api/v1/salt_return?${params.toString()}`);
+        const response = await axios.get<ApiResponse>(`/api/v1/salt_return?${params.toString()}`, {
+          signal: controller.signal,
+        });
 
         setReturns(response.data.results);
         setTotalPages(response.data.paging.num_pages);
         setTotalCount(response.data.paging.count);
         setError(null); // Reset error state on successful response
       } catch (err) {
+        if (controller.signal.aborted) return;
         if (axios.isAxiosError(err) && err.response && err.response.status === 404) {
           setReturns([]); // Treat 404 as empty results
           setTotalPages(0);
@@ -96,11 +100,12 @@ const useReturnPaginated = (
           setError(err as Error);
         }
       } finally {
-        setIsLoading(false);
+        if (!controller.signal.aborted) setIsLoading(false);
       }
     };
 
-    fetchReturns();
+    void fetchReturns();
+    return () => controller.abort();
   }, [currentPage, rowsPerPage, stableQueryParams]); // Ensure proper dependencies
 
   return {

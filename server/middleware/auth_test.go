@@ -9,6 +9,8 @@ import (
 
 	"github.com/DATA-DOG/go-sqlmock"
 	model "github.com/PaulChristophel/agartha/server/model/agartha"
+	"github.com/gin-contrib/sessions"
+	"github.com/gin-contrib/sessions/cookie"
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/stretchr/testify/require"
@@ -63,6 +65,41 @@ func TestAuthRequiredRejectsExpiredJWT(t *testing.T) {
 	router.ServeHTTP(response, request)
 
 	require.Equal(t, http.StatusUnauthorized, response.Code)
+}
+
+func TestAuthRequiredAcceptsServerSideSession(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+	router := gin.New()
+	store := cookie.NewStore([]byte("01234567890123456789012345678901"))
+	store.Options(sessions.Options{Path: "/", HttpOnly: true, SameSite: http.SameSiteLaxMode})
+	router.Use(sessions.Sessions("agarthaAuthSession", store))
+	router.GET("/login", func(c *gin.Context) {
+		session := sessions.Default(c)
+		session.Set("username", "alice")
+		session.Set("user_id", uint(7))
+		session.Set("exp", "4102444800")
+		require.NoError(t, session.Save())
+		c.Status(http.StatusNoContent)
+	})
+	router.GET("/protected", AuthRequired([]byte("unused")), func(c *gin.Context) {
+		username, _ := c.Get("username")
+		userID, _ := c.Get("user_id")
+		c.JSON(http.StatusOK, gin.H{"username": username, "user_id": userID})
+	})
+
+	loginResponse := httptest.NewRecorder()
+	router.ServeHTTP(loginResponse, httptest.NewRequest(http.MethodGet, "/login", nil))
+	require.NotEmpty(t, loginResponse.Result().Cookies())
+	require.True(t, loginResponse.Result().Cookies()[0].HttpOnly)
+	require.Equal(t, http.SameSiteLaxMode, loginResponse.Result().Cookies()[0].SameSite)
+
+	request := httptest.NewRequest(http.MethodGet, "/protected", nil)
+	request.AddCookie(loginResponse.Result().Cookies()[0])
+	response := httptest.NewRecorder()
+	router.ServeHTTP(response, request)
+
+	require.Equal(t, http.StatusOK, response.Code)
+	require.JSONEq(t, `{"username":"alice","user_id":7}`, response.Body.String())
 }
 
 func TestActiveUserRequired(t *testing.T) {

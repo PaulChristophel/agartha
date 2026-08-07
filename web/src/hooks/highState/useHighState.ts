@@ -1,75 +1,41 @@
-import { useState, useEffect } from 'react';
+import { useQuery } from '@tanstack/react-query';
 
-import { apiClient as axios } from 'src/api/client.ts';
+import { apiClient } from 'src/api/client.ts';
+import { queryKeys } from 'src/api/queryKeys.ts';
 
 interface HighStateData {
   alter_time: string;
-  full_ret: Record<string, unknown>; // Assuming full_ret is an object with unknown properties
+  full_ret: Record<string, unknown>;
   fun: string;
   id: string;
   jid: string;
-  return: Record<string, unknown>; // Assuming return is an object with unknown properties
+  return: Record<string, unknown>;
   success: boolean;
 }
 
-interface UseHighState {
-  alterTime: string;
-  fullRet: Record<string, unknown>;
-  fun: string;
-  returnId: string;
-  returnJid: string;
-  returnData: Record<string, unknown>;
-  success: boolean;
-  isLoading: boolean;
-  error: Error | null;
-}
-
-const useHighState = (id: string, load_return: boolean, load_full_ret: boolean): UseHighState => {
-  const [alterTime, setAlterTime] = useState<string>('');
-  const [fullRet, setFullRet] = useState<Record<string, unknown>>({});
-  const [fun, setFun] = useState<string>('');
-  const [returnId, setHighStateId] = useState<string>('');
-  const [returnJid, setHighStateJid] = useState<string>('');
-  const [returnData, setHighStateData] = useState<Record<string, unknown>>({});
-  const [success, setSuccess] = useState<boolean>(false);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<Error | null>(null);
-
-  useEffect(() => {
-    const fetchHighStateData = async () => {
-      setIsLoading(true);
-      try {
-        const { data } = await axios.get<HighStateData>(
-          `/api/v1/high_state/${id}?load_return=${load_return}&load_full_ret=${load_full_ret}`
-        );
-        setAlterTime(data.alter_time);
-        setFullRet(data.full_ret);
-        setFun(data.fun);
-        setHighStateId(data.id);
-        setHighStateJid(data.jid);
-        setHighStateData(data.return);
-        setSuccess(data.success);
-      } catch (err) {
-        setError(err as Error);
-      }
-      setIsLoading(false);
-    };
-
-    if (id) {
-      fetchHighStateData();
-    }
-  }, [id, load_return, load_full_ret]);
+const useHighState = (id: string, loadReturn: boolean, loadFullRet: boolean) => {
+  const { data, isLoading, error } = useQuery({
+    queryKey: queryKeys.highStates.detail(id, loadReturn, loadFullRet),
+    queryFn: async ({ signal }) => {
+      const response = await apiClient.get<HighStateData>(`/api/v1/high_state/${id}`, {
+        params: { load_return: loadReturn, load_full_ret: loadFullRet },
+        signal,
+      });
+      return response.data;
+    },
+    enabled: Boolean(id),
+  });
 
   return {
-    alterTime,
-    fullRet,
-    fun,
-    returnId,
-    returnJid,
-    returnData,
-    success,
+    alterTime: data?.alter_time ?? '',
+    fullRet: data?.full_ret ?? {},
+    fun: data?.fun ?? '',
+    returnId: data?.id ?? '',
+    returnJid: data?.jid ?? '',
+    returnData: data?.return ?? {},
+    success: data?.success ?? false,
     isLoading,
-    error,
+    error: error as Error | null,
   };
 };
 

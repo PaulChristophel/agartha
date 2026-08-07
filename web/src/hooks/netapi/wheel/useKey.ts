@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react';
+import { useQuery } from '@tanstack/react-query';
 
-import { sessionStore } from 'src/api/session.ts';
+import { queryKeys } from 'src/api/queryKeys.ts';
 import { apiClient as axios } from 'src/api/client.ts';
 
 interface KeysResponse {
@@ -15,41 +15,19 @@ interface UseKeys {
 }
 
 const useKeys = (id: string): UseKeys => {
-  const [minion, setMinion] = useState<string>('');
-  const [hash, setHash] = useState<string>('');
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<Error | null>(null);
-
-  useEffect(() => {
-    const fetchKeyData = async () => {
-      setIsLoading(true);
-      try {
-        const token = sessionStore.getSnapshot().authSalt?.token;
-        if (!token) throw new Error('Missing Salt authentication');
-
-        const { data } = await axios.get<KeysResponse>(`/api/v1/netapi/key/${id}`, {
-          params: { token },
-        });
-
-        const [minionKey, minionHash] = Object.entries(data)[0];
-        setMinion(minionKey);
-        setHash(minionHash);
-        setError(null);
-      } catch (err) {
-        setError(err as Error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchKeyData();
-  }, [id]);
+  const { data, isLoading, error } = useQuery({
+    queryKey: queryKeys.saltKeys.detail(id),
+    queryFn: async ({ signal }) => {
+      const response = await axios.get<KeysResponse>(`/api/v1/netapi/key/${id}`, { signal });
+      return Object.entries(response.data)[0];
+    },
+  });
 
   return {
-    minion,
-    hash,
+    minion: data?.[0] ?? '',
+    hash: data?.[1] ?? '',
     isLoading,
-    error,
+    error: error as Error | null,
   };
 };
 

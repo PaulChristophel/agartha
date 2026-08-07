@@ -35,7 +35,7 @@ const StatusWidget: React.FC<StatusWidgetProps> = ({ sx, ...other }) => {
   const [saltVersionData, setSaltVersionData] = useState<string | null>(null);
   const [isSaltVersionLoading, setIsSaltVersionLoading] = useState<boolean>(true);
   const [saltVersionError, setSaltVersionError] = useState<string | null>(null);
-  const { authToken, authSalt } = useSession();
+  const { status: sessionStatus } = useSession();
 
   const { status, isStatusLoading } = useStatus();
 
@@ -67,13 +67,13 @@ const StatusWidget: React.FC<StatusWidgetProps> = ({ sx, ...other }) => {
       }
     };
 
-    if (authToken && authSalt) {
-      fetchSaltVersion();
+    if (sessionStatus === 'authenticated') {
+      void fetchSaltVersion();
     } else {
       setSaltVersionError('Missing auth token');
       setIsSaltVersionLoading(false);
     }
-  }, [authToken, authSalt]);
+  }, [sessionStatus]);
 
   return (
     <Card

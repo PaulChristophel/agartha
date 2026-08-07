@@ -12,17 +12,20 @@ const useVersionData = () => {
   const [error, setError] = useState<Error | null>(null);
 
   useEffect(() => {
+    const controller = new AbortController();
     const fetchVersionData = async () => {
       setIsLoading(true);
       try {
-        const response = await axios.get('/version');
+        const response = await axios.get<VersionData>('/version', { signal: controller.signal });
         setVersionData(response.data);
       } catch (err) {
+        if (controller.signal.aborted) return;
         setError(err as Error);
       }
-      setIsLoading(false);
+      if (!controller.signal.aborted) setIsLoading(false);
     };
-    fetchVersionData();
+    void fetchVersionData();
+    return () => controller.abort();
   }, []);
 
   return {

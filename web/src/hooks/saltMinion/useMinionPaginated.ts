@@ -76,7 +76,7 @@ const useMinionPaginated = (
   const stableQueryParams = useMemo(() => queryParams, [queryParams]);
 
   const fetchMinions = useCallback(
-    async (page: number, limit: number) => {
+    async (page: number, limit: number, signal?: AbortSignal) => {
       const {
         minion_id,
         load_grains,
@@ -104,7 +104,9 @@ const useMinionPaginated = (
       params.append('page', String(page));
       params.append('per_page', String(limit));
 
-      const response = await axios.get<ApiResponse>(`/api/v1/salt_minion?${params.toString()}`);
+      const response = await axios.get<ApiResponse>(`/api/v1/salt_minion?${params.toString()}`, {
+        signal,
+      });
 
       // Process the response to decode base64 strings and update grains and pillar
       const decodedMinions = response.data.results.map((minion) => ({
@@ -119,15 +121,17 @@ const useMinionPaginated = (
   );
 
   useEffect(() => {
+    const controller = new AbortController();
     const fetchData = async () => {
       setIsLoading(true);
       try {
-        const data = await fetchMinions(currentPage, rowsPerPage);
+        const data = await fetchMinions(currentPage, rowsPerPage, controller.signal);
         setMinions(data.results);
         setTotalPages(data.paging.num_pages);
         setTotalCount(data.paging.count);
         setError(null); // Reset error state on successful response
       } catch (err) {
+        if (controller.signal.aborted) return;
         if (axios.isAxiosError(err) && err.response && err.response.status === 404) {
           setMinions([]); // Treat 404 as empty results
           setTotalPages(0);
@@ -136,11 +140,12 @@ const useMinionPaginated = (
           setError(err as Error);
         }
       } finally {
-        setIsLoading(false);
+        if (!controller.signal.aborted) setIsLoading(false);
       }
     };
 
-    fetchData();
+    void fetchData();
+    return () => controller.abort();
   }, [currentPage, rowsPerPage, stableQueryParams, fetchMinions]);
 
   const fetchAllData = async (): Promise<Minion[]> => {

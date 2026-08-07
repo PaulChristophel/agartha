@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useQueryClient } from '@tanstack/react-query';
 
 import Box from '@mui/material/Box';
 import Avatar from '@mui/material/Avatar';
@@ -12,6 +13,7 @@ import IconButton from '@mui/material/IconButton';
 
 import { getAuthUser } from 'src/hooks/auth/getAuthUser.ts';
 
+import { logout } from 'src/api/auth.ts';
 import { sessionStore } from 'src/api/session.ts';
 
 const MENU_OPTIONS = [
@@ -33,6 +35,7 @@ export default function AccountPopover() {
   const [anchorEl, setAnchorEl] = useState(null);
   const [userInfo, setUserInfo] = useState({ first_name: '', last_name: '', email: '' });
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
 
   useEffect(() => {
     const cachedSettings = getAuthUser();
@@ -49,11 +52,14 @@ export default function AccountPopover() {
     setAnchorEl(null);
   };
 
-  const handleLogout = () => {
-    sessionStore.clear();
-
-    // Redirect to the login page
-    navigate('/login');
+  const handleLogout = async () => {
+    try {
+      await logout();
+    } finally {
+      sessionStore.clear();
+      queryClient.clear();
+      navigate('/login');
+    }
   };
 
   return (

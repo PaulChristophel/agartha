@@ -1,4 +1,4 @@
-import { AxiosError, AxiosHeaders } from 'axios';
+import { AxiosError, InternalAxiosRequestConfig } from 'axios';
 import { it, expect, describe, afterEach, beforeEach } from 'vitest';
 
 import { sessionStore } from './session.ts';
@@ -8,15 +8,17 @@ const originalAdapter = apiClient.defaults.adapter;
 
 describe('apiClient', () => {
   beforeEach(() => {
-    sessionStore.clear();
-    sessionStore.setAuthToken('jwt-token');
-    sessionStore.setAuthSalt({
-      eauth: 'pam',
-      expire: 9999999999,
-      perms: [],
-      start: 1,
-      token: 'salt-token',
-      user: 'alice',
+    sessionStore.setAuthenticated({
+      id: 1,
+      username: 'alice',
+      date_joined: '',
+      first_name: 'Alice',
+      last_name: 'Example',
+      email: 'alice@example.com',
+      is_active: true,
+      is_staff: false,
+      is_superuser: false,
+      last_login: '',
     });
   });
 
@@ -25,17 +27,19 @@ describe('apiClient', () => {
     sessionStore.clear();
   });
 
-  it('adds JWT and Salt authorization headers to netapi requests', async () => {
-    let headers = new AxiosHeaders();
+  it('uses credentials without adding JavaScript-readable authorization headers', async () => {
+    let requestConfig: InternalAxiosRequestConfig | undefined;
     apiClient.defaults.adapter = async (config) => {
-      headers = AxiosHeaders.from(config.headers);
+      requestConfig = config;
       return { config, data: {}, headers: {}, status: 200, statusText: 'OK' };
     };
 
     await apiClient.get('/api/v1/netapi/jobs');
 
-    expect(headers.get('Authorization')).toBe('jwt-token');
-    expect(headers.get('X-Auth-Token')).toBe('salt-token');
+    expect(requestConfig).toBeDefined();
+    expect(requestConfig!.withCredentials).toBe(true);
+    expect(requestConfig!.headers.Authorization).toBeUndefined();
+    expect(requestConfig!.headers['X-Auth-Token']).toBeUndefined();
   });
 
   it('normalizes 401 errors and expires the local session', async () => {
@@ -53,7 +57,7 @@ describe('apiClient', () => {
       name: 'ApiError',
       status: 401,
     });
-    expect(sessionStore.getSnapshot().authToken).toBeNull();
+    expect(sessionStore.getSnapshot().status).toBe('anonymous');
   });
 
   it('marks cancelled requests consistently', () => {

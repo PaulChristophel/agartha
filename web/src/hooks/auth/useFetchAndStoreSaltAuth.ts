@@ -1,14 +1,19 @@
 import { useState, useCallback } from 'react';
 
 import { apiClient as axios } from 'src/api/client.ts';
-import { sessionStore, SaltAuthSession } from 'src/api/session.ts';
+interface SaltAuthSession {
+  eauth: string;
+  expire: number;
+  perms: string[];
+  start: number;
+  user: string;
+}
 
 export interface UseFetchAndStoreSaltAuth {
   eauth: string;
   expire: number;
   perms: string[];
   start: number;
-  token: string;
   user: string;
   isLoading: boolean;
   status: number | null;
@@ -21,7 +26,6 @@ const useFetchAndStoreSaltAuth = (): UseFetchAndStoreSaltAuth => {
   const [expire, setExpire] = useState<number>(0);
   const [perms, setPerms] = useState<string[]>([]);
   const [start, setStart] = useState<number>(0);
-  const [token, setToken] = useState<string>('');
   const [user, setUser] = useState<string>('');
 
   const [isLoading, setIsLoading] = useState(false);
@@ -38,10 +42,7 @@ const useFetchAndStoreSaltAuth = (): UseFetchAndStoreSaltAuth => {
       setExpire(authData.expire);
       setPerms(authData.perms);
       setStart(authData.start);
-      setToken(authData.token);
       setUser(authData.user);
-
-      sessionStore.setAuthSalt(authData);
 
       setStatus(200);
       setError(null);
@@ -63,7 +64,6 @@ const useFetchAndStoreSaltAuth = (): UseFetchAndStoreSaltAuth => {
     expire,
     perms,
     start,
-    token,
     user,
     isLoading,
     status,

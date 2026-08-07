@@ -1,6 +1,7 @@
-import { useState, useEffect } from 'react';
+import { useQuery } from '@tanstack/react-query';
 
-import { apiClient as axios } from 'src/api/client.ts';
+import { apiClient } from 'src/api/client.ts';
+import { queryKeys } from 'src/api/queryKeys.ts';
 
 interface CacheData {
   alter_time: string;
@@ -10,66 +11,29 @@ interface CacheData {
   id: string;
 }
 
-interface UseCache {
-  alterTime: string;
-  cacheData: Record<string, unknown>;
-  bank: string;
-  psqlKey: string;
-  id: string;
-  isLoading: boolean;
-  error: Error | null;
-}
-
-// const decodeBase64 = (base64: string | null): Record<string, unknown> => {
-//   if (!base64) return {};
-//   try {
-//     const decodedString = atob(base64);
-//     return JSON.parse(decodedString);
-//   } catch (e) {
-//     console.error('Failed to decode base64 string:', e);
-//     return {};
-//   }
-// };
-
-const useCacheBankKey = (bank: string, psqlKey: string): UseCache => {
-  const [alterTime, setAlterTime] = useState<string>('');
-  const [cacheData, setCacheData] = useState<Record<string, unknown>>({});
-  const [id, setID] = useState<string>('00000000-0000-0000-0000-000000000000');
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<Error | null>(null);
-
-  useEffect(() => {
-    const fetchCacheData = async () => {
-      setIsLoading(true);
-      try {
-        const encodedBank = encodeURIComponent(bank);
-        const encodedPsqlKey = encodeURIComponent(psqlKey);
-        const { data } = await axios.get<CacheData>(
-          `/api/v1/salt_cache/${encodedBank}/${encodedPsqlKey}`
-        );
-        setAlterTime(data.alter_time);
-        setCacheData(data.data);
-        setID(data.id);
-      } catch (err) {
-        setError(err as Error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    if (bank && psqlKey) {
-      fetchCacheData();
-    }
-  }, [bank, psqlKey]);
+const useCacheBankKey = (bank: string, psqlKey: string) => {
+  const { data, isLoading, error } = useQuery({
+    queryKey: queryKeys.saltCache.detail(bank, psqlKey),
+    queryFn: async ({ signal }) => {
+      const encodedBank = encodeURIComponent(bank);
+      const encodedPsqlKey = encodeURIComponent(psqlKey);
+      const response = await apiClient.get<CacheData>(
+        `/api/v1/salt_cache/${encodedBank}/${encodedPsqlKey}`,
+        { signal }
+      );
+      return response.data;
+    },
+    enabled: Boolean(bank && psqlKey),
+  });
 
   return {
-    alterTime,
-    cacheData,
-    id,
+    alterTime: data?.alter_time ?? '',
+    cacheData: data?.data ?? {},
+    id: data?.id ?? '00000000-0000-0000-0000-000000000000',
     psqlKey,
     bank,
     isLoading,
-    error,
+    error: error as Error | null,
   };
 };
 

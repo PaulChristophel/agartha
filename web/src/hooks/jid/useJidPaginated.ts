@@ -54,6 +54,7 @@ const useJidPaginated = (
   const stableQueryParams = useMemo(() => queryParams, [queryParams]);
 
   useEffect(() => {
+    const controller = new AbortController();
     const fetchJobs = async () => {
       setIsLoading(true);
       try {
@@ -68,13 +69,16 @@ const useJidPaginated = (
         params.append('page', String(currentPage));
         params.append('per_page', String(rowsPerPage));
 
-        const response = await axios.get<ApiResponse>(`/api/v1/jid?${params.toString()}`);
+        const response = await axios.get<ApiResponse>(`/api/v1/jid?${params.toString()}`, {
+          signal: controller.signal,
+        });
 
         setJobs(response.data.results);
         setTotalPages(response.data.paging.num_pages);
         setTotalCount(response.data.paging.count);
         setError(null); // Reset error state on successful response
       } catch (err) {
+        if (controller.signal.aborted) return;
         if (axios.isAxiosError(err) && err.response && err.response.status === 404) {
           setJobs([]); // Treat 404 as empty results
           setTotalPages(0);
@@ -83,11 +87,12 @@ const useJidPaginated = (
           setError(err as Error);
         }
       } finally {
-        setIsLoading(false);
+        if (!controller.signal.aborted) setIsLoading(false);
       }
     };
 
-    fetchJobs();
+    void fetchJobs();
+    return () => controller.abort();
   }, [currentPage, rowsPerPage, stableQueryParams]); // Ensure proper dependencies
 
   return {
