@@ -42,6 +42,8 @@ jobs:
         run: pnpm --dir web install --frozen-lockfile
       - name: Run frontend lint
         run: pnpm --dir web lint
+      - name: Run frontend tests
+        run: pnpm --dir web test
       - name: Build frontend
         run: pnpm --dir web build
       - name: Generate API docs

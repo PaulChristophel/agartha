@@ -66,8 +66,16 @@ func GetSaltEvents(c *gin.Context) {
 		selection = append(selection, "data")
 	}
 
-	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
-	limit, _ := strconv.Atoi(c.DefaultQuery("per_page", "50"))
+	page, err := positiveQueryInt(c, "page", 1)
+	if err != nil {
+		httputil.NewError(c, http.StatusBadRequest, err.Error())
+		return
+	}
+	limit, err := positiveQueryInt(c, "per_page", 50)
+	if err != nil {
+		httputil.NewError(c, http.StatusBadRequest, err.Error())
+		return
+	}
 
 	if limit > 1000 {
 		limit = 1000
@@ -141,14 +149,22 @@ func GetSaltEvents(c *gin.Context) {
 	if validatedOrderBy != "" {
 		filterQuery = filterQuery.Order(validatedOrderBy)
 	} else {
-		filterQuery.Order("id desc")
+		filterQuery = filterQuery.Order("id desc")
 	}
 
 	var totalCount int64
-	filterQuery.Count(&totalCount)
+	if err := filterQuery.Count(&totalCount).Error; err != nil {
+		log.Error("Failed to count salt events", zap.Error(err))
+		httputil.NewError(c, http.StatusInternalServerError, "Failed to count salt events.")
+		return
+	}
 
 	resultsQuery := filterQuery.Offset((page - 1) * limit).Limit(limit)
-	resultsQuery.Find(&saltEvents)
+	if err := resultsQuery.Find(&saltEvents).Error; err != nil {
+		log.Error("Failed to retrieve salt events", zap.Error(err))
+		httputil.NewError(c, http.StatusInternalServerError, "Failed to retrieve salt events.")
+		return
+	}
 
 	scheme := "http"
 	if c.Request.TLS != nil {
@@ -187,4 +203,12 @@ func GetSaltEvents(c *gin.Context) {
 
 	log.Debug("Returning salt_events", zap.Int("count", len(saltEvents)))
 	c.JSON(http.StatusOK, response)
+}
+
+func positiveQueryInt(c *gin.Context, name string, defaultValue int) (int, error) {
+	value, err := strconv.Atoi(c.DefaultQuery(name, strconv.Itoa(defaultValue)))
+	if err != nil || value < 1 {
+		return 0, fmt.Errorf("invalid %s parameter.", name)
+	}
+	return value, nil
 }
