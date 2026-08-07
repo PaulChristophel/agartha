@@ -42,8 +42,6 @@
 
 * **deps:** upgrade dependencies ([45232da](https://github.com/PaulChristophel/agartha/commit/45232da66e8a1f37f3abbbd38dc980ffa1f87634))
 * **deps:** upgrade dependencies ([822a31e](https://github.com/PaulChristophel/agartha/commit/822a31e9e593b726a425506f51337c0d4023d848))
-* **deps:** upgrade dependencies ([822a31e](https://github.com/PaulChristophel/agartha/commit/822a31e9e593b726a425506f51337c0d4023d848))
-* **deps:** upgrade dependencies ([822a31e](https://github.com/PaulChristophel/agartha/commit/822a31e9e593b726a425506f51337c0d4023d848))
 
 ## [0.12.0](https://github.com/PaulChristophel/agartha/compare/v0.11.3...v0.12.0) (2026-07-22)
 
