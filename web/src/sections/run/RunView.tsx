@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { lazy, Suspense, useState } from 'react';
 
 import Box from '@mui/material/Box';
 import Fab from '@mui/material/Fab';
@@ -11,9 +11,10 @@ import Typography from '@mui/material/Typography';
 import { SelectChangeEvent } from '@mui/material/Select';
 import Snackbar, { SnackbarCloseReason } from '@mui/material/Snackbar';
 
-import CLIView from './CLIView.tsx';
 import OutputView from './OutputView.tsx';
-import FormattedView from './FormattedView.tsx';
+
+const CLIView = lazy(() => import('./CLIView.tsx'));
+const FormattedView = lazy(() => import('./FormattedView.tsx'));
 
 const RunView: React.FC = () => {
   const [tab, setTab] = useState(0);
@@ -94,22 +95,24 @@ const RunView: React.FC = () => {
             <Tab label="Formatted" />
             <Tab label="CLI" className="hidden" />
           </Tabs>
-          {tab === 0 ? (
-            <FormattedView
-              clientType={clientType}
-              onClientTypeChange={handleClientTypeChange}
-              tgt=""
-              tgtType="glob"
-              fun=""
-              timeout=""
-              aSync={false}
-              batch=""
-              setOutput={handleSetOutput}
-              showInfoMessage={showInfoMessage}
-            />
-          ) : (
-            <CLIView />
-          )}
+          <Suspense fallback={<Typography color="text.secondary">Loading run tools…</Typography>}>
+            {tab === 0 ? (
+              <FormattedView
+                clientType={clientType}
+                onClientTypeChange={handleClientTypeChange}
+                tgt=""
+                tgtType="glob"
+                fun=""
+                timeout=""
+                aSync={false}
+                batch=""
+                setOutput={handleSetOutput}
+                showInfoMessage={showInfoMessage}
+              />
+            ) : (
+              <CLIView />
+            )}
+          </Suspense>
         </Box>
       </Grid>
       <Grid container item spacing={1}>

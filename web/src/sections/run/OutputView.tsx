@@ -1,9 +1,9 @@
-import React from 'react';
-import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
-import { solarizedDarkAtom } from 'react-syntax-highlighter/dist/esm/styles/prism';
+import React, { lazy, Suspense } from 'react';
 
 import Fab from '@mui/material/Fab';
 import DeleteSweepIcon from '@mui/icons-material/DeleteSweep';
+
+const OutputRenderer = lazy(() => import('./OutputRenderer.tsx'));
 
 const OutputView: React.FC<{ output: string; clearOutput: () => void }> = ({
   output,
@@ -37,9 +37,11 @@ const OutputView: React.FC<{ output: string; clearOutput: () => void }> = ({
           <DeleteSweepIcon />
         </Fab>
       )}
-      <SyntaxHighlighter language="yaml" style={solarizedDarkAtom}>
-        {output}
-      </SyntaxHighlighter>
+      {output && (
+        <Suspense fallback={<pre>{output}</pre>}>
+          <OutputRenderer output={output} />
+        </Suspense>
+      )}
     </div>
   );
 };
