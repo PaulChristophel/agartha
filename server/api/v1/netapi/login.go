@@ -9,6 +9,7 @@ import (
 	_ "github.com/PaulChristophel/agartha/server/httputil"
 
 	"github.com/PaulChristophel/agartha/server/logger"
+	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
 )
 
@@ -66,6 +67,9 @@ func DecodeTokenAndCreateCredentials() gin.HandlerFunc {
 		logger.GetLogger().Sugar().Debugf("Request Body: %s", string(bodyBytes))
 
 		authHeader := c.GetHeader("Authorization")
+		if authHeader == "" {
+			authHeader, _ = sessions.Default(c).Get("auth_token").(string)
+		}
 		usernameValue, exists := c.Get("username")
 		username, ok := usernameValue.(string)
 		if authHeader == "" || !exists || !ok || username == "" {

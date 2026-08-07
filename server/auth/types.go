@@ -18,6 +18,7 @@ type ldapConnection interface {
 }
 
 var jwtSecret []byte
+var sessionCookieSecure bool
 var session sessions.Session
 var ldapOptions config.LDAPOptions
 var casOptions config.CASOptions
@@ -27,8 +28,9 @@ var ldapDialURL = func(server string) (ldapConnection, error) {
 	return ldap.DialURL(server)
 }
 
-func SetOptions(secret []byte, methods []string, ldap config.LDAPOptions, cas config.CASOptions) {
+func SetOptions(secret []byte, methods []string, ldap config.LDAPOptions, cas config.CASOptions, cookieSecure bool) {
 	jwtSecret = secret
+	sessionCookieSecure = cookieSecure
 	ldapOptions = ldap
 	casOptions = cas
 	enabledMethods = make(map[string]struct{}, len(methods))

@@ -1,6 +1,7 @@
-import { useState, useEffect } from 'react';
+import { useQuery } from '@tanstack/react-query';
 
-import { apiClient as axios } from 'src/api/client.ts';
+import { apiClient } from 'src/api/client.ts';
+import { queryKeys } from 'src/api/queryKeys.ts';
 
 interface ConformityData {
   alter_time: string;
@@ -12,62 +13,26 @@ interface ConformityData {
   id: string;
 }
 
-interface UseSaltConformity {
-  alterTime: string;
-  trueCount: number;
-  falseCount: number;
-  changedCount: number;
-  unchangedCount: number;
-  conformityId: string;
-  success: boolean;
-  isLoading: boolean;
-  error: Error | null;
-}
-
-const useSaltConformity = (id: string): UseSaltConformity => {
-  const [alterTime, setAlterTime] = useState<string>('');
-  const [conformityId, setConformityIdTime] = useState<string>('');
-  const [trueCount, setTrueCount] = useState<number>(0);
-  const [falseCount, setFalseCount] = useState<number>(0);
-  const [changedCount, setChangedCount] = useState<number>(0);
-  const [unchangedCount, setUnchangedCount] = useState<number>(0);
-  const [success, setSuccess] = useState<boolean>(false);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<Error | null>(null);
-
-  useEffect(() => {
-    const fetchConformityData = async () => {
-      setIsLoading(true);
-      try {
-        const { data } = await axios.get<ConformityData>(`/api/v1/conformity/${id}`);
-        setAlterTime(data.alter_time);
-        setTrueCount(data.true_count);
-        setFalseCount(data.false_count);
-        setChangedCount(data.changed_count);
-        setUnchangedCount(data.unchanged_count);
-        setSuccess(data.success);
-        setConformityIdTime(data.id);
-      } catch (err) {
-        setError(err as Error);
-      }
-      setIsLoading(false);
-    };
-
-    if (id) {
-      fetchConformityData();
-    }
-  }, [alterTime, id, trueCount, falseCount, changedCount, unchangedCount, success]);
+const useSaltConformity = (id: string) => {
+  const { data, isLoading, error } = useQuery({
+    queryKey: queryKeys.conformity.detail(id),
+    queryFn: async ({ signal }) => {
+      const response = await apiClient.get<ConformityData>(`/api/v1/conformity/${id}`, { signal });
+      return response.data;
+    },
+    enabled: Boolean(id),
+  });
 
   return {
-    alterTime,
-    trueCount,
-    falseCount,
-    changedCount,
-    unchangedCount,
-    success,
-    conformityId,
+    alterTime: data?.alter_time ?? '',
+    trueCount: data?.true_count ?? 0,
+    falseCount: data?.false_count ?? 0,
+    changedCount: data?.changed_count ?? 0,
+    unchangedCount: data?.unchanged_count ?? 0,
+    success: data?.success ?? false,
+    conformityId: data?.id ?? '',
     isLoading,
-    error,
+    error: error as Error | null,
   };
 };
 

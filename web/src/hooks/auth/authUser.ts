@@ -1,5 +1,3 @@
-export const AUTH_USER_KEY = 'authUser';
-
 export interface AuthUser {
   date_joined: string;
   email: string;
@@ -10,6 +8,5 @@ export interface AuthUser {
   is_superuser: boolean;
   last_login: string;
   last_name: string;
-  password: string;
   username: string;
 }

@@ -8,7 +8,7 @@ import (
 
 type AuthUser struct {
 	ID          uint       `json:"id" gorm:"primaryKey"`
-	Password    string     `json:"password" gorm:"type:varchar(128);not null"`
+	Password    string     `json:"-" gorm:"type:varchar(128);not null"`
 	LastLogin   *time.Time `json:"last_login" gorm:"type:timestamp with time zone;default:now();"`
 	IsSuperuser bool       `json:"is_superuser" gorm:"not null"`
 	Username    string     `json:"username" gorm:"type:varchar(150);not null;unique"`

@@ -1,6 +1,7 @@
 package model
 
 import (
+	"encoding/json"
 	"regexp"
 	"testing"
 	"time"
@@ -11,6 +12,12 @@ import (
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
 )
+
+func TestAuthUserJSONOmitsPassword(t *testing.T) {
+	encoded, err := json.Marshal(testAuthUser())
+	require.NoError(t, err)
+	require.NotContains(t, string(encoded), "password")
+}
 
 func setupTestDB(t *testing.T) (*gorm.DB, sqlmock.Sqlmock) {
 	t.Helper()

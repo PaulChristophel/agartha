@@ -60,6 +60,7 @@ const useHighStatePaginated = (
   const stableQueryParams = useMemo(() => queryParams, [queryParams]);
 
   useEffect(() => {
+    const controller = new AbortController();
     const fetchHighStates = async () => {
       setIsLoading(true);
       try {
@@ -78,13 +79,16 @@ const useHighStatePaginated = (
         params.append('page', String(currentPage));
         params.append('per_page', String(rowsPerPage));
 
-        const response = await axios.get<ApiResponse>(`/api/v1/high_state?${params.toString()}`);
+        const response = await axios.get<ApiResponse>(`/api/v1/high_state?${params.toString()}`, {
+          signal: controller.signal,
+        });
 
         setHighStates(response.data.results);
         setTotalPages(response.data.paging.num_pages);
         setTotalCount(response.data.paging.count);
         setError(null); // Reset error state on successful response
       } catch (err) {
+        if (controller.signal.aborted) return;
         if (axios.isAxiosError(err) && err.response && err.response.status === 404) {
           setHighStates([]); // Treat 404 as empty results
           setTotalPages(0);
@@ -93,11 +97,12 @@ const useHighStatePaginated = (
           setError(err as Error);
         }
       } finally {
-        setIsLoading(false);
+        if (!controller.signal.aborted) setIsLoading(false);
       }
     };
 
-    fetchHighStates();
+    void fetchHighStates();
+    return () => controller.abort();
   }, [currentPage, rowsPerPage, stableQueryParams]); // Ensure proper dependencies
 
   return {

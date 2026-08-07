@@ -9,6 +9,7 @@ type HTTPOptions struct {
 	Secret            string `mapstructure:"secret" yaml:"secret"`
 	ForgotPasswordURL string `mapstructure:"forgot_password_url" yaml:"forgot_password_url"`
 	GetStartedURL     string `mapstructure:"get_started_url" yaml:"get_started_url"`
+	CookieSecure      bool   `mapstructure:"cookie_secure" yaml:"cookie_secure"`
 
 	TLSCertFile     string `mapstructure:"tls_cert_file" yaml:"tls_cert_file"`
 	TLSKeyFile      string `mapstructure:"tls_key_file" yaml:"tls_key_file"`

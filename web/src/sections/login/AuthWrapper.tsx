@@ -1,10 +1,11 @@
 import { useEffect } from 'react';
 import PropTypes from 'prop-types';
 import { Navigate } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
 
-import useFetchAndStoreSaltAuth from 'src/hooks/auth/useFetchAndStoreSaltAuth.ts';
-
-import { useSession, isJwtExpired, isSaltAuthExpired } from 'src/api/session.ts';
+import { getSession } from 'src/api/auth.ts';
+import { queryKeys } from 'src/api/queryKeys.ts';
+import { useSession, sessionStore } from 'src/api/session.ts';
 
 interface AuthWrapperProps {
   children: React.ReactNode;
@@ -12,22 +13,17 @@ interface AuthWrapperProps {
 
 // Authentication wrapper component
 const AuthWrapper: React.FC<AuthWrapperProps> = ({ children }) => {
-  const { authToken, authSalt } = useSession();
-  const { postSaltAuth } = useFetchAndStoreSaltAuth();
+  const { status } = useSession();
+  const { data, isPending, isError } = useQuery({
+    queryKey: queryKeys.auth.session(),
+    queryFn: ({ signal }) => getSession(signal),
+  });
 
   useEffect(() => {
-    if (authToken && authSalt) {
-      // Only attempt to refresh the salt token if the authToken is not expired
-      if (!isJwtExpired(authToken) && isSaltAuthExpired(authSalt)) {
-        void postSaltAuth().catch((error) => {
-          console.error('Failed to refresh Salt authentication:', error);
-        });
-      }
-    }
-  }, [authSalt, postSaltAuth, authToken]);
-
-  // Redirect if no token or token is expired
-  if (!authToken || isJwtExpired(authToken)) {
+    if (data) sessionStore.setAuthenticated(data);
+  }, [data]);
+  if (isPending) return null;
+  if (isError || status === 'anonymous') {
     return <Navigate to="/login" replace />;
   }
 

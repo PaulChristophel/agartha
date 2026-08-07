@@ -7,6 +7,10 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+func TestNewConfigUsesSecureSessionCookiesByDefault(t *testing.T) {
+	require.True(t, NewConfig().HTTP.CookieSecure)
+}
+
 func validConfig() Config {
 	config := *NewConfig()
 	config.HTTP.Secret = "a-unique-secret-with-at-least-32-characters"

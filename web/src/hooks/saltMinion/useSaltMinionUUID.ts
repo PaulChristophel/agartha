@@ -1,6 +1,7 @@
-import { useState, useEffect } from 'react';
+import { useQuery } from '@tanstack/react-query';
 
-import { apiClient as axios } from 'src/api/client.ts';
+import { apiClient } from 'src/api/client.ts';
+import { queryKeys } from 'src/api/queryKeys.ts';
 
 interface MinionData {
   alter_time: string;
@@ -10,52 +11,26 @@ interface MinionData {
   id: string;
 }
 
-interface UseMinion {
-  alterTime: string;
-  grains: Record<string, unknown>;
-  pillar: Record<string, unknown>;
-  minionID: string;
-  id: string;
-  isLoading: boolean;
-  error: Error | null;
-}
-
-const useMinionID = (id: string): UseMinion => {
-  const [alterTime, setAlterTime] = useState<string>('');
-  const [grains, setGrains] = useState<Record<string, unknown>>({});
-  const [pillar, setPillar] = useState<Record<string, unknown>>({});
-  const [minionID, setMinionID] = useState<string>('');
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<Error | null>(null);
-
-  useEffect(() => {
-    const fetchMinionData = async () => {
-      setIsLoading(true);
-      try {
-        const { data } = await axios.get<MinionData>(`/api/v1/salt_minion/uuid/${id}`);
-        setAlterTime(data.alter_time);
-        setGrains(data.grains);
-        setPillar(data.pillar);
-        setMinionID(data.minion_id);
-      } catch (err) {
-        setError(err as Error);
-      }
-      setIsLoading(false);
-    };
-
-    if (id) {
-      fetchMinionData();
-    }
-  }, [id]);
+const useMinionID = (id: string) => {
+  const { data, isLoading, error } = useQuery({
+    queryKey: queryKeys.saltMinions.byUUID(id),
+    queryFn: async ({ signal }) => {
+      const response = await apiClient.get<MinionData>(`/api/v1/salt_minion/uuid/${id}`, {
+        signal,
+      });
+      return response.data;
+    },
+    enabled: Boolean(id),
+  });
 
   return {
-    alterTime,
-    grains,
-    pillar,
+    alterTime: data?.alter_time ?? '',
+    grains: data?.grains ?? {},
+    pillar: data?.pillar ?? {},
     id,
-    minionID,
+    minionID: data?.minion_id ?? '',
     isLoading,
-    error,
+    error: error as Error | null,
   };
 };
 

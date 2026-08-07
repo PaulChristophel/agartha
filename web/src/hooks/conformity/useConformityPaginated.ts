@@ -59,7 +59,7 @@ const useConformityPaginated = (
   const stableQueryParams = useMemo(() => queryParams, [queryParams]);
 
   const fetchConformity = useCallback(
-    async (page: number, limit: number) => {
+    async (page: number, limit: number, signal?: AbortSignal) => {
       const { id, success, since, until, order_by } = stableQueryParams;
       const params = new URLSearchParams();
 
@@ -71,7 +71,9 @@ const useConformityPaginated = (
       params.append('page', String(page));
       params.append('limit', String(limit));
 
-      const response = await axios.get<ApiResponse>(`/api/v1/conformity?${params.toString()}`);
+      const response = await axios.get<ApiResponse>(`/api/v1/conformity?${params.toString()}`, {
+        signal,
+      });
 
       return response.data;
     },
@@ -79,15 +81,17 @@ const useConformityPaginated = (
   );
 
   useEffect(() => {
+    const controller = new AbortController();
     const fetchData = async () => {
       setIsLoading(true);
       try {
-        const data = await fetchConformity(currentPage, rowsPerPage);
+        const data = await fetchConformity(currentPage, rowsPerPage, controller.signal);
         setConformity(data.results);
         setTotalPages(data.paging.num_pages);
         setTotalCount(data.paging.count);
         setError(null); // Reset error state on successful response
       } catch (err) {
+        if (controller.signal.aborted) return;
         if (axios.isAxiosError(err) && err.response && err.response.status === 404) {
           setConformity([]); // Treat 404 as empty results
           setTotalPages(0);
@@ -96,11 +100,12 @@ const useConformityPaginated = (
           setError(err as Error);
         }
       } finally {
-        setIsLoading(false);
+        if (!controller.signal.aborted) setIsLoading(false);
       }
     };
 
-    fetchData();
+    void fetchData();
+    return () => controller.abort();
   }, [currentPage, rowsPerPage, stableQueryParams, fetchConformity]);
 
   const fetchAllData = async (): Promise<Conformity[]> => {

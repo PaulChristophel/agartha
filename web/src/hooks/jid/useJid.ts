@@ -1,6 +1,7 @@
-import { useState, useEffect } from 'react';
+import { useQuery } from '@tanstack/react-query';
 
-import { apiClient as axios } from 'src/api/client.ts';
+import { apiClient } from 'src/api/client.ts';
+import { queryKeys } from 'src/api/queryKeys.ts';
 
 interface JidData {
   alter_time: string;
@@ -8,44 +9,22 @@ interface JidData {
   load: Record<string, unknown>;
 }
 
-interface UseJid {
-  alterTime: string;
-  jid: string;
-  load: Record<string, unknown>;
-  isLoading: boolean;
-  error: Error | null;
-}
-
-const useJid = (jid: string): UseJid => {
-  const [alterTime, setAlterTime] = useState<string>('');
-  const [load, setLoad] = useState<Record<string, unknown>>({});
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<Error | null>(null);
-
-  useEffect(() => {
-    const fetchJidData = async () => {
-      setIsLoading(true);
-      try {
-        const { data } = await axios.get<JidData>(`/api/v1/jid/${jid}`);
-        setAlterTime(data.alter_time);
-        setLoad(data.load);
-      } catch (err) {
-        setError(err as Error);
-      }
-      setIsLoading(false);
-    };
-
-    if (jid) {
-      fetchJidData();
-    }
-  }, [jid]);
+const useJid = (jid: string) => {
+  const { data, isLoading, error } = useQuery({
+    queryKey: queryKeys.jids.detail(jid),
+    queryFn: async ({ signal }) => {
+      const response = await apiClient.get<JidData>(`/api/v1/jid/${jid}`, { signal });
+      return response.data;
+    },
+    enabled: Boolean(jid),
+  });
 
   return {
-    alterTime,
+    alterTime: data?.alter_time ?? '',
     jid,
-    load,
+    load: data?.load ?? {},
     isLoading,
-    error,
+    error: error as Error | null,
   };
 };
 

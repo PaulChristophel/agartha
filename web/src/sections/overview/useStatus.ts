@@ -7,13 +7,13 @@ import { apiClient as axios } from 'src/api/client.ts';
 const useStatus = () => {
   const [status, setStatus] = useState<string>('Loading...');
   const [isStatusLoading, setIsStatusLoading] = useState<boolean>(true);
-  const { authToken, authSalt } = useSession();
+  const { status: sessionStatus } = useSession();
 
   useEffect(() => {
     const fetchStatus = async () => {
       setIsStatusLoading(true);
       try {
-        const response = await axios.get('/api/v1/netapi');
+        const response = await axios.get('/api/v1/netapi', { signal: controller.signal });
         if (response.data && response.data.return === 'Welcome') {
           setStatus('OK');
         } else {
@@ -27,13 +27,15 @@ const useStatus = () => {
       }
     };
 
-    if (authToken && authSalt) {
-      fetchStatus();
+    const controller = new AbortController();
+    if (sessionStatus === 'authenticated') {
+      void fetchStatus();
     } else {
       setStatus('Restricted');
       setIsStatusLoading(false);
     }
-  }, [authToken, authSalt]);
+    return () => controller.abort();
+  }, [sessionStatus]);
 
   return { status, isStatusLoading };
 };

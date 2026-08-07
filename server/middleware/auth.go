@@ -4,10 +4,13 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"strconv"
 	"strings"
+	"time"
 
 	"github.com/PaulChristophel/agartha/server/httputil"
 	model "github.com/PaulChristophel/agartha/server/model/agartha"
+	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v5"
 	"gorm.io/gorm"
@@ -17,9 +20,17 @@ const authUserContextKey = "auth_user"
 
 func AuthRequired(jwtSecret []byte) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		// get JWT token from Authorization header
 		authHeader := c.GetHeader("Authorization")
 		parts := strings.Fields(authHeader)
+		if len(parts) == 0 {
+			if authenticateSession(c) {
+				c.Next()
+				return
+			}
+			httputil.NewError(c, http.StatusUnauthorized, "Authentication is required.")
+			c.Abort()
+			return
+		}
 		if len(parts) != 2 || parts[0] != "Bearer" {
 			httputil.NewError(c, http.StatusUnauthorized, "Authorization header format must be Bearer {token}.")
 			c.Abort()
@@ -65,6 +76,26 @@ func AuthRequired(jwtSecret []byte) gin.HandlerFunc {
 
 		c.Next()
 	}
+}
+
+func authenticateSession(c *gin.Context) bool {
+	if _, exists := c.Get(sessions.DefaultKey); !exists {
+		return false
+	}
+	session := sessions.Default(c)
+	username, usernameOK := session.Get("username").(string)
+	userID, userIDOK := session.Get("user_id").(uint)
+	expiresAt, expiresOK := session.Get("exp").(string)
+	if !usernameOK || username == "" || !userIDOK || userID == 0 || !expiresOK {
+		return false
+	}
+	exp, err := strconv.ParseInt(expiresAt, 10, 64)
+	if err != nil || exp <= time.Now().Unix() {
+		return false
+	}
+	c.Set("username", username)
+	c.Set("user_id", userID)
+	return true
 }
 
 func claimUserID(value any) (uint, error) {

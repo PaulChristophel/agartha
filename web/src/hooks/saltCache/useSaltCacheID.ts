@@ -1,6 +1,7 @@
-import { useState, useEffect } from 'react';
+import { useQuery } from '@tanstack/react-query';
 
-import { apiClient as axios } from 'src/api/client.ts';
+import { apiClient } from 'src/api/client.ts';
+import { queryKeys } from 'src/api/queryKeys.ts';
 
 interface CacheData {
   alter_time: string;
@@ -10,52 +11,24 @@ interface CacheData {
   id: string;
 }
 
-interface UseCache {
-  alterTime: string;
-  cacheData: Record<string, unknown>;
-  bank: string;
-  psqlKey: string;
-  id: string;
-  isLoading: boolean;
-  error: Error | null;
-}
-
-const useCacheID = (id: string): UseCache => {
-  const [alterTime, setAlterTime] = useState<string>('');
-  const [cacheData, setCacheData] = useState<Record<string, unknown>>({});
-  const [psqlKey, setPsqlKey] = useState<string>('');
-  const [bank, setBank] = useState<string>('');
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<Error | null>(null);
-
-  useEffect(() => {
-    const fetchCacheData = async () => {
-      setIsLoading(true);
-      try {
-        const { data } = await axios.get<CacheData>(`/api/v1/salt_cache/uuid/${id}`);
-        setAlterTime(data.alter_time);
-        setCacheData(data.data);
-        setPsqlKey(data.psql_key);
-        setBank(data.bank);
-      } catch (err) {
-        setError(err as Error);
-      }
-      setIsLoading(false);
-    };
-
-    if (id) {
-      fetchCacheData();
-    }
-  }, [id]);
+const useCacheID = (id: string) => {
+  const { data, isLoading, error } = useQuery({
+    queryKey: queryKeys.saltCache.detail('uuid', id),
+    queryFn: async ({ signal }) => {
+      const response = await apiClient.get<CacheData>(`/api/v1/salt_cache/uuid/${id}`, { signal });
+      return response.data;
+    },
+    enabled: Boolean(id),
+  });
 
   return {
-    alterTime,
-    cacheData,
+    alterTime: data?.alter_time ?? '',
+    cacheData: data?.data ?? {},
     id,
-    psqlKey,
-    bank,
+    psqlKey: data?.psql_key ?? '',
+    bank: data?.bank ?? '',
     isLoading,
-    error,
+    error: error as Error | null,
   };
 };
 
