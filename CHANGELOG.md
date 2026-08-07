@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.13.1](https://github.com/PaulChristophel/agartha/compare/v0.13.0...v0.13.1) (2026-08-07)
+
+
+### Bug Fixes
+
+* clear legacy authentication cookie ([849353e](https://github.com/PaulChristophel/agartha/commit/849353e84a4164d9115f2566b9798e2493e259cd))
+* clear legacy authentication cookie ([6d52996](https://github.com/PaulChristophel/agartha/commit/6d529963d6657895dc523ade2212e9e76d174222))
+
 ## [0.13.0](https://github.com/PaulChristophel/agartha/compare/v0.12.1...v0.13.0) (2026-08-07)
 
 
