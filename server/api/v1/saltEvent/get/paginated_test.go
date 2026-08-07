@@ -25,11 +25,11 @@ func TestGetSaltEventsValidatesPaginationAndFilters(t *testing.T) {
 		url  string
 		body string
 	}{
-		{name: "invalid page", url: "/salt_event?page=zero", body: `{"code":400,"message":"invalid page parameter."}`},
-		{name: "zero page", url: "/salt_event?page=0", body: `{"code":400,"message":"invalid page parameter."}`},
-		{name: "negative per page", url: "/salt_event?per_page=-1", body: `{"code":400,"message":"invalid per_page parameter."}`},
-		{name: "invalid since", url: "/salt_event?since=yesterday", body: `{"code":400,"message":"invalid 'since' date format."}`},
-		{name: "invalid until", url: "/salt_event?until=tomorrow", body: `{"code":400,"message":"invalid 'until' date format."}`},
+		{name: "invalid page", url: "/salt_event?page=zero", body: `{"code":400,"message":"invalid page parameter"}`},
+		{name: "zero page", url: "/salt_event?page=0", body: `{"code":400,"message":"invalid page parameter"}`},
+		{name: "negative per page", url: "/salt_event?per_page=-1", body: `{"code":400,"message":"invalid per_page parameter"}`},
+		{name: "invalid since", url: "/salt_event?since=yesterday", body: `{"code":400,"message":"invalid 'since' date format"}`},
+		{name: "invalid until", url: "/salt_event?until=tomorrow", body: `{"code":400,"message":"invalid 'until' date format"}`},
 		{name: "invalid order", url: "/salt_event?order_by=data", body: `{"code":400,"message":"invalid column name 'data'. Valid columns: [id tag alter_time master_id]"}`},
 	}
 

@@ -54,14 +54,14 @@ func GetConformities(c *gin.Context) {
 	page, err := strconv.Atoi(c.DefaultQuery("page", "1"))
 	if err != nil {
 		log.Error("invalid page parameter", zap.Error(err))
-		httputil.NewError(c, http.StatusBadRequest, "invalid page parameter.")
+		httputil.NewError(c, http.StatusBadRequest, "invalid page parameter")
 		return
 	}
 
 	limit, err := strconv.Atoi(c.DefaultQuery("limit", "100"))
 	if err != nil {
 		log.Error("invalid limit parameter", zap.Error(err))
-		httputil.NewError(c, http.StatusBadRequest, "invalid limit parameter.")
+		httputil.NewError(c, http.StatusBadRequest, "invalid limit parameter")
 		return
 	}
 
@@ -90,7 +90,7 @@ func GetConformities(c *gin.Context) {
 		fromTime, err := time.Parse(time.RFC3339, since)
 		if err != nil {
 			log.Error("invalid 'since' date format", zap.String("since", since), zap.Error(err))
-			httputil.NewError(c, http.StatusBadRequest, "invalid 'since' date format.")
+			httputil.NewError(c, http.StatusBadRequest, "invalid 'since' date format")
 			return
 		}
 		filterQuery = filterQuery.Where("alter_time >= ?", fromTime)
@@ -99,7 +99,7 @@ func GetConformities(c *gin.Context) {
 		toTime, err := time.Parse(time.RFC3339, until)
 		if err != nil {
 			log.Error("invalid 'until' date format", zap.String("until", until), zap.Error(err))
-			httputil.NewError(c, http.StatusBadRequest, "invalid 'until' date format.")
+			httputil.NewError(c, http.StatusBadRequest, "invalid 'until' date format")
 			return
 		}
 		filterQuery = filterQuery.Where("alter_time <= ?", toTime)

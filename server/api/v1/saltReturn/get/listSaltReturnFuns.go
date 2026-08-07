@@ -63,7 +63,7 @@ func ListSaltReturnFuns(c *gin.Context) {
 		fromTime, err := time.Parse(time.RFC3339, since)
 		if err != nil {
 			log.Debug("Invalid 'since' date format", zap.String("since", since), zap.Error(err))
-			httputil.NewError(c, http.StatusBadRequest, "invalid 'since' date format.")
+			httputil.NewError(c, http.StatusBadRequest, "invalid 'since' date format")
 			return
 		}
 		filterQuery = filterQuery.Where("alter_time >= ?", fromTime)
@@ -76,7 +76,7 @@ func ListSaltReturnFuns(c *gin.Context) {
 		toTime, err := time.Parse(time.RFC3339, until)
 		if err != nil {
 			log.Debug("Invalid 'until' date format", zap.String("until", until), zap.Error(err))
-			httputil.NewError(c, http.StatusBadRequest, "invalid 'until' date format.")
+			httputil.NewError(c, http.StatusBadRequest, "invalid 'until' date format")
 			return
 		}
 		filterQuery = filterQuery.Where("alter_time <= ?", toTime)

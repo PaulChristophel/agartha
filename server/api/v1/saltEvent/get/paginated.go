@@ -113,7 +113,7 @@ func GetSaltEvents(c *gin.Context) {
 		fromTime, err := time.Parse(time.RFC3339, since)
 		if err != nil {
 			log.Debug("Invalid since date format", zap.Error(err))
-			httputil.NewError(c, http.StatusBadRequest, "invalid 'since' date format.")
+			httputil.NewError(c, http.StatusBadRequest, "invalid 'since' date format")
 			return
 		}
 		filterQuery = filterQuery.Where("alter_time >= ?", fromTime)
@@ -126,7 +126,7 @@ func GetSaltEvents(c *gin.Context) {
 		toTime, err := time.Parse(time.RFC3339, until)
 		if err != nil {
 			log.Debug("Invalid until date format", zap.Error(err))
-			httputil.NewError(c, http.StatusBadRequest, "invalid 'until' date format.")
+			httputil.NewError(c, http.StatusBadRequest, "invalid 'until' date format")
 			return
 		}
 		filterQuery = filterQuery.Where("alter_time <= ?", toTime)
@@ -208,7 +208,7 @@ func GetSaltEvents(c *gin.Context) {
 func positiveQueryInt(c *gin.Context, name string, defaultValue int) (int, error) {
 	value, err := strconv.Atoi(c.DefaultQuery(name, strconv.Itoa(defaultValue)))
 	if err != nil || value < 1 {
-		return 0, fmt.Errorf("invalid %s parameter.", name)
+		return 0, fmt.Errorf("invalid %s parameter", name)
 	}
 	return value, nil
 }
