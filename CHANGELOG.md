@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.13.3](https://github.com/PaulChristophel/agartha/compare/v0.13.2...v0.13.3) (2026-08-07)
+
+
+### Tests
+
+* add route authorization coverage ([f3dcb75](https://github.com/PaulChristophel/agartha/commit/f3dcb752a798867941d91d3bd4bf1864cf79a485))
+
 ## [0.13.2](https://github.com/PaulChristophel/agartha/compare/v0.13.1...v0.13.2) (2026-08-07)
 
 
