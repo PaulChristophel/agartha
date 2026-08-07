@@ -1,10 +1,5 @@
 import yaml from 'js-yaml';
-import '@xterm/xterm/css/xterm.css';
-import CodeMirror from '@uiw/react-codemirror';
-import React, { useState, useEffect } from 'react';
-import { LanguageSupport } from '@codemirror/language';
-import { json as jsonLang } from '@codemirror/lang-json';
-import { yaml as yamlLang } from '@codemirror/lang-yaml';
+import React, { lazy, Suspense, useState, useEffect } from 'react';
 
 import Grid from '@mui/material/Grid';
 import Button from '@mui/material/Button';
@@ -19,6 +14,8 @@ import FormControlLabel from '@mui/material/FormControlLabel';
 import Select, { SelectChangeEvent } from '@mui/material/Select';
 
 import { handleRun } from './handleRun.ts';
+
+const PillarEditor = lazy(() => import('./PillarEditor.tsx'));
 
 const FormattedView: React.FC<{
   aSync: boolean;
@@ -54,7 +51,6 @@ const FormattedView: React.FC<{
   const [kwArgumentsState, setKwArgumentsState] = useState('');
   const [pillarVisible, setPillarVisible] = useState(false);
   const [pillarValue, setPillarValue] = useState('');
-  const [codeMirrorMode, setCodeMirrorMode] = useState<LanguageSupport>(yamlLang());
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -75,11 +71,6 @@ const FormattedView: React.FC<{
 
   const handleCodeChange = (value: string) => {
     setPillarValue(value);
-    if (value.trim().startsWith('{') || value.trim().startsWith('[')) {
-      setCodeMirrorMode(jsonLang());
-    } else {
-      setCodeMirrorMode(yamlLang());
-    }
   };
 
   const updateURLParams = (key: string, value: string | boolean) => {
@@ -426,12 +417,13 @@ const FormattedView: React.FC<{
       <Grid item xs={6} sm={3} />
       <Grid item xs={6} sm={3}>
         {pillarVisible && (
-          <CodeMirror
-            value={pillarValue}
-            extensions={[codeMirrorMode, codeMirrorMode.language]}
-            onChange={(value) => handleCodeChange(value)}
-            onBlur={() => updateURLParams('pillar', pillarValue)}
-          />
+          <Suspense fallback={<div>Loading editor…</div>}>
+            <PillarEditor
+              value={pillarValue}
+              onChange={handleCodeChange}
+              onBlur={() => updateURLParams('pillar', pillarValue)}
+            />
+          </Suspense>
         )}{' '}
       </Grid>
       <Grid item xs={6} sm={3} />
