@@ -21,6 +21,7 @@ Vite proxies Agartha API, authentication, version, and documentation requests to
 ## Validation
 
 ```bash
+pnpm --dir web test
 pnpm --dir web lint
 pnpm --dir web build
 ```
