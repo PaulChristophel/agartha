@@ -1,5 +1,25 @@
 # Changelog
 
+## [0.13.0](https://github.com/PaulChristophel/agartha/compare/v0.12.1...v0.13.0) (2026-08-07)
+
+
+### Features
+
+* consolidate frontend sessions and data access ([9076b8e](https://github.com/PaulChristophel/agartha/commit/9076b8eb427fbc6f56412521de7b8beea2c27825))
+* consolidate frontend sessions and data access ([33817d9](https://github.com/PaulChristophel/agartha/commit/33817d95427dfb4881de95828967bbfc884d4282))
+
+
+### Documentation
+
+* Fix changelog ([433e1e5](https://github.com/PaulChristophel/agartha/commit/433e1e57d87789e5f893951908cdf1f85caa4d9b))
+* Fix changelog ([04722ed](https://github.com/PaulChristophel/agartha/commit/04722ed2ddd460067e047eda0f670f18470e68d7))
+
+
+### Miscellaneous Chores
+
+* **deps:** upgrade dependencies ([c0684f3](https://github.com/PaulChristophel/agartha/commit/c0684f318683f7c321c85f7d82b1e4bbd1f9ebcd))
+* **deps:** upgrade dependencies ([0e6350f](https://github.com/PaulChristophel/agartha/commit/0e6350f23977a5547e21fd25c75a42dddeb46ee1))
+
 ## [0.12.1](https://github.com/PaulChristophel/agartha/compare/v0.12.1...v0.12.1) (2026-08-06)
 
 ### server/api/v1/netapi/netapi.go
