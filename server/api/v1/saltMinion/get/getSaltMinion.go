@@ -198,7 +198,15 @@ func GetSaltMinion(c *gin.Context) {
 		"id",
 		"alter_time",
 	}
-	validatedOrderBy, err := validate.OrderBy(orderBy, validColumns, "grains", strings.Split(jsonpathGrains, ","))
+	validatedOrderBy, err := validate.OrderByJSONColumns(
+		orderBy,
+		validColumns,
+		map[string][]string{
+			"grains": strings.Split(jsonpathGrains, ","),
+			"pillar": strings.Split(jsonpathPillar, ","),
+		},
+		"grains",
+	)
 	if err != nil {
 		log.Debug("Invalid order_by value", zap.String("order_by", orderBy), zap.Error(err))
 		httputil.NewError(c, http.StatusBadRequest, err.Error())

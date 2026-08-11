@@ -123,3 +123,58 @@ func TestOrderBy(t *testing.T) {
 		})
 	}
 }
+
+func TestOrderByJSONColumns(t *testing.T) {
+	tests := []struct {
+		name    string
+		orderBy string
+		want    string
+		wantErr bool
+	}{
+		{
+			name:    "qualified grain field",
+			orderBy: "grains.os desc",
+			want:    "jsonb_extract_path_text(grains, 'os') desc",
+		},
+		{
+			name:    "qualified nested pillar field",
+			orderBy: "pillar.application asc",
+			want:    "jsonb_extract_path_text(pillar, 'roles', 'application') asc",
+		},
+		{
+			name:    "legacy unqualified grain field",
+			orderBy: "os",
+			want:    "jsonb_extract_path_text(grains, 'os') asc",
+		},
+		{
+			name:    "same leaf is disambiguated by qualifier",
+			orderBy: "grains.role, pillar.role desc",
+			want:    "jsonb_extract_path_text(grains, 'role') asc, jsonb_extract_path_text(pillar, 'role') desc",
+		},
+		{
+			name:    "unselected pillar field rejected",
+			orderBy: "pillar.missing",
+			wantErr: true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := OrderByJSONColumns(
+				tt.orderBy,
+				[]string{"minion_id", "alter_time"},
+				map[string][]string{
+					"grains": {"os", "role"},
+					"pillar": {"roles.application", "role"},
+				},
+				"grains",
+			)
+			if (err != nil) != tt.wantErr {
+				t.Fatalf("OrderByJSONColumns() error = %v, wantErr %v", err, tt.wantErr)
+			}
+			if got != tt.want {
+				t.Errorf("OrderByJSONColumns() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}

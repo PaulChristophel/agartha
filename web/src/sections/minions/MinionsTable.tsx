@@ -31,6 +31,8 @@ interface MinionsTableProps {
     minion_id?: string;
     jsonpath_grains?: string;
     jsonpath_grains_filter?: string;
+    jsonpath_pillar?: string;
+    jsonpath_pillar_filter?: string;
     since?: string;
     until?: string;
     limit?: number;
@@ -207,6 +209,8 @@ const MinionsTable: React.FC<MinionsTableProps> = ({
 
   const grainEntries =
     minions.length > 0 && minions[0].grains ? Object.entries(minions[0].grains) : [];
+  const pillarEntries =
+    minions.length > 0 && minions[0].pillar ? Object.entries(minions[0].pillar) : [];
 
   //   function searchStringInArray (str: string, strArray: string[]) {
   //     for (let j=0; j<strArray.length; j+=1) {
@@ -270,11 +274,22 @@ const MinionsTable: React.FC<MinionsTableProps> = ({
               {grainEntries.map(([key]) => (
                 <TableCell key={key}>
                   <TableSortLabel
-                    active={queryParams.order_by?.startsWith(key)}
+                    active={queryParams.order_by?.startsWith(`grains.${key}`)}
                     direction={queryParams.order_by?.endsWith('desc') ? 'desc' : 'asc'}
-                    onClick={() => handleRequestSort(key)}
+                    onClick={() => handleRequestSort(`grains.${key}`)}
                   >
-                    {String(key)}
+                    Grain: {String(key)}
+                  </TableSortLabel>
+                </TableCell>
+              ))}
+              {pillarEntries.map(([key]) => (
+                <TableCell key={key}>
+                  <TableSortLabel
+                    active={queryParams.order_by?.startsWith(`pillar.${key}`)}
+                    direction={queryParams.order_by?.endsWith('desc') ? 'desc' : 'asc'}
+                    onClick={() => handleRequestSort(`pillar.${key}`)}
+                  >
+                    Pillar: {String(key)}
                   </TableSortLabel>
                 </TableCell>
               ))}

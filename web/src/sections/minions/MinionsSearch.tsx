@@ -9,6 +9,7 @@ import Autocomplete from '@mui/material/Autocomplete';
 
 import useDebounce from 'src/hooks/useDebounce.ts';
 import useFetchGrainsKeys from 'src/hooks/saltMinion/useFetchGrainsKeys.ts';
+import useFetchPillarKeys from 'src/hooks/saltMinion/useFetchPillarKeys.ts';
 
 interface MinionsSearchProps {
   minionID: string;
@@ -21,10 +22,11 @@ interface MinionsSearchProps {
   setGrainKeys: (value: string[]) => void;
   grainFilters: string[];
   setGrainFilters: React.Dispatch<React.SetStateAction<string[]>>;
+  pillarKeys: string[];
+  setPillarKeys: (value: string[]) => void;
+  pillarFilters: string[];
+  setPillarFilters: React.Dispatch<React.SetStateAction<string[]>>;
   setOrderBy: (orderBy: string) => void;
-
-  // grainValue: string;
-  // setGrainValue: (value: string) => void;
 }
 
 const MinionsSearch: React.FC<MinionsSearchProps> = ({
@@ -38,36 +40,81 @@ const MinionsSearch: React.FC<MinionsSearchProps> = ({
   setGrainKeys,
   grainFilters,
   setGrainFilters,
+  pillarKeys,
+  setPillarKeys,
+  pillarFilters,
+  setPillarFilters,
   setOrderBy,
-  // grainValue,
-  // setGrainValue,
 }) => {
-  const [inputValue, setInputValue] = useState('');
-  const [page, setPage] = useState(1);
+  const [grainInputValue, setGrainInputValue] = useState('');
+  const [grainPage, setGrainPage] = useState(1);
   const [allGrainsKeys, setAllGrainsKeys] = useState<string[]>([]);
-  const [hasMore, setHasMore] = useState(true);
-  const [filterPath, setFilterPath] = useState('');
-  const [filterValue, setFilterValue] = useState('');
-  const [filterType, setFilterType] = useState('string');
-  const [filterOperator, setFilterOperator] = useState<'eq' | 'not' | 'like' | 'not_like'>('eq');
-  const debouncedInputValue = useDebounce(inputValue, 500);
+  const [hasMoreGrains, setHasMoreGrains] = useState(true);
+  const [pillarInputValue, setPillarInputValue] = useState('');
+  const [pillarPage, setPillarPage] = useState(1);
+  const [allPillarKeys, setAllPillarKeys] = useState<string[]>([]);
+  const [hasMorePillars, setHasMorePillars] = useState(true);
+  const [grainFilterPath, setGrainFilterPath] = useState('');
+  const [grainFilterValue, setGrainFilterValue] = useState('');
+  const [grainFilterType, setGrainFilterType] = useState('string');
+  const [grainFilterOperator, setGrainFilterOperator] = useState<
+    'eq' | 'not' | 'like' | 'not_like'
+  >('eq');
+  const [pillarFilterPath, setPillarFilterPath] = useState('');
+  const [pillarFilterValue, setPillarFilterValue] = useState('');
+  const [pillarFilterType, setPillarFilterType] = useState('string');
+  const [pillarFilterOperator, setPillarFilterOperator] = useState<
+    'eq' | 'not' | 'like' | 'not_like'
+  >('eq');
+  const debouncedGrainInputValue = useDebounce(grainInputValue, 500);
+  const debouncedPillarInputValue = useDebounce(pillarInputValue, 500);
 
-  const { grainsKeys, loading, error } = useFetchGrainsKeys(debouncedInputValue, page);
+  const {
+    grainsKeys,
+    loading: grainsLoading,
+    error: grainsError,
+  } = useFetchGrainsKeys(debouncedGrainInputValue, grainPage);
+  const {
+    pillarKeys: fetchedPillarKeys,
+    loading: pillarsLoading,
+    error: pillarsError,
+  } = useFetchPillarKeys(debouncedPillarInputValue, pillarPage);
 
   useEffect(() => {
-    if (page === 1) {
+    if (grainPage === 1) {
       setAllGrainsKeys(grainsKeys);
     } else {
       setAllGrainsKeys((prev) => [...prev, ...grainsKeys]);
     }
-    setHasMore(grainsKeys.length > 0); // Assuming that if the current fetch returned no results, we have no more data to load
-  }, [grainsKeys, page]);
+    setHasMoreGrains(grainsKeys.length > 0);
+  }, [grainsKeys, grainPage]);
 
   useEffect(() => {
-    if ((filterOperator === 'like' || filterOperator === 'not_like') && filterType !== 'string') {
-      setFilterType('string');
+    if (pillarPage === 1) {
+      setAllPillarKeys(fetchedPillarKeys);
+    } else {
+      setAllPillarKeys((prev) => [...prev, ...fetchedPillarKeys]);
     }
-  }, [filterOperator, filterType]);
+    setHasMorePillars(fetchedPillarKeys.length > 0);
+  }, [fetchedPillarKeys, pillarPage]);
+
+  useEffect(() => {
+    if (
+      (grainFilterOperator === 'like' || grainFilterOperator === 'not_like') &&
+      grainFilterType !== 'string'
+    ) {
+      setGrainFilterType('string');
+    }
+  }, [grainFilterOperator, grainFilterType]);
+
+  useEffect(() => {
+    if (
+      (pillarFilterOperator === 'like' || pillarFilterOperator === 'not_like') &&
+      pillarFilterType !== 'string'
+    ) {
+      setPillarFilterType('string');
+    }
+  }, [pillarFilterOperator, pillarFilterType]);
 
   const handleMinionIDChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setMinionID(e.target.value);
@@ -86,39 +133,81 @@ const MinionsSearch: React.FC<MinionsSearchProps> = ({
     setOrderBy('');
   };
 
-  const handleScroll = (event: React.SyntheticEvent) => {
+  const handlePillarKeyChange = (_event: React.ChangeEvent<unknown>, newValue: string[]) => {
+    setPillarKeys(newValue);
+    setOrderBy('');
+  };
+
+  const handleGrainsScroll = (event: React.SyntheticEvent) => {
     const listboxNode = event.currentTarget;
     if (listboxNode.scrollTop + listboxNode.clientHeight >= listboxNode.scrollHeight - 1) {
-      if (!loading && hasMore) {
-        setPage((prevPage) => prevPage + 1);
+      if (!grainsLoading && hasMoreGrains) {
+        setGrainPage((prevPage) => prevPage + 1);
       }
     }
   };
 
-  const handleAddFilter = () => {
-    if (!filterPath.trim() || !filterValue.trim()) {
+  const handlePillarsScroll = (event: React.SyntheticEvent) => {
+    const listboxNode = event.currentTarget;
+    if (listboxNode.scrollTop + listboxNode.clientHeight >= listboxNode.scrollHeight - 1) {
+      if (!pillarsLoading && hasMorePillars) {
+        setPillarPage((prevPage) => prevPage + 1);
+      }
+    }
+  };
+
+  const handleAddGrainFilter = () => {
+    if (!grainFilterPath.trim() || !grainFilterValue.trim()) {
       return;
     }
 
-    const normalizedPath = filterPath.trim();
-    const operatorSuffix = filterOperator === 'eq' ? '' : `::${filterOperator}`;
-    const newFilter = `${normalizedPath}:${filterValue.trim()}::${filterType}${operatorSuffix}`;
+    const normalizedPath = grainFilterPath.trim();
+    const operatorSuffix = grainFilterOperator === 'eq' ? '' : `::${grainFilterOperator}`;
+    const newFilter = `${normalizedPath}:${grainFilterValue.trim()}::${grainFilterType}${operatorSuffix}`;
     setGrainFilters((prev) => {
       if (prev.includes(newFilter)) {
         return prev;
       }
       return [...prev, newFilter];
     });
-    setFilterValue('');
-    setFilterPath('');
+    setGrainFilterValue('');
+    setGrainFilterPath('');
   };
 
   const handleRemoveFilter = (targetFilter: string) => {
     setGrainFilters((prev) => prev.filter((filter) => filter !== targetFilter));
   };
 
-  const valuePlaceholder =
-    filterOperator === 'like' || filterOperator === 'not_like' ? 'Use % wildcards' : 'e.g. RedHat';
+  const handleAddPillarFilter = () => {
+    if (!pillarFilterPath.trim() || !pillarFilterValue.trim()) {
+      return;
+    }
+
+    const normalizedPath = pillarFilterPath.trim();
+    const operatorSuffix = pillarFilterOperator === 'eq' ? '' : `::${pillarFilterOperator}`;
+    const newFilter = `${normalizedPath}:${pillarFilterValue.trim()}::${pillarFilterType}${operatorSuffix}`;
+    setPillarFilters((prev) => {
+      if (prev.includes(newFilter)) {
+        return prev;
+      }
+      return [...prev, newFilter];
+    });
+    setPillarFilterValue('');
+    setPillarFilterPath('');
+  };
+
+  const handleRemovePillarFilter = (targetFilter: string) => {
+    setPillarFilters((prev) => prev.filter((filter) => filter !== targetFilter));
+  };
+
+  const grainValuePlaceholder =
+    grainFilterOperator === 'like' || grainFilterOperator === 'not_like'
+      ? 'Use % wildcards'
+      : 'e.g. RedHat';
+  const pillarValuePlaceholder =
+    pillarFilterOperator === 'like' || pillarFilterOperator === 'not_like'
+      ? 'Use % wildcards'
+      : 'e.g. web';
 
   return (
     <Box
@@ -142,18 +231,18 @@ const MinionsSearch: React.FC<MinionsSearchProps> = ({
         multiple
         freeSolo
         options={allGrainsKeys}
-        loading={loading}
+        loading={grainsLoading}
         value={grainKeys}
-        inputValue={inputValue}
+        inputValue={grainInputValue}
         sx={{ flex: '2 1 320px' }}
         onInputChange={(_event, newInputValue) => {
-          setInputValue(newInputValue);
+          setGrainInputValue(newInputValue);
           setAllGrainsKeys([]); // Reset the list of options
-          setPage(1); // Reset page when input changes
+          setGrainPage(1); // Reset page when input changes
         }}
         onChange={handleGrainKeyChange}
         ListboxProps={{
-          onScroll: handleScroll,
+          onScroll: handleGrainsScroll,
         }}
         renderTags={(value: string[], getTagProps) =>
           value.map((option: string, index: number) => (
@@ -167,8 +256,44 @@ const MinionsSearch: React.FC<MinionsSearchProps> = ({
             InputLabelProps={{
               shrink: true,
             }}
-            error={Boolean(error) && !hasMore}
-            helperText={Boolean(error) && !hasMore ? 'Failed to load grains keys' : ''}
+            error={Boolean(grainsError) && !hasMoreGrains}
+            helperText={Boolean(grainsError) && !hasMoreGrains ? 'Failed to load grains keys' : ''}
+          />
+        )}
+      />
+      <Autocomplete
+        multiple
+        freeSolo
+        options={allPillarKeys}
+        loading={pillarsLoading}
+        value={pillarKeys}
+        inputValue={pillarInputValue}
+        sx={{ flex: '2 1 320px' }}
+        onInputChange={(_event, newInputValue) => {
+          setPillarInputValue(newInputValue);
+          setAllPillarKeys([]);
+          setPillarPage(1);
+        }}
+        onChange={handlePillarKeyChange}
+        ListboxProps={{
+          onScroll: handlePillarsScroll,
+        }}
+        renderTags={(value: string[], getTagProps) =>
+          value.map((option: string, index: number) => (
+            <Chip variant="outlined" label={option} {...getTagProps({ index })} key={option} />
+          ))
+        }
+        renderInput={(params) => (
+          <TextField
+            {...params}
+            label="SELECT Pillar"
+            InputLabelProps={{
+              shrink: true,
+            }}
+            error={Boolean(pillarsError) && !hasMorePillars}
+            helperText={
+              Boolean(pillarsError) && !hasMorePillars ? 'Failed to load pillar keys' : ''
+            }
           />
         )}
       />
@@ -177,13 +302,13 @@ const MinionsSearch: React.FC<MinionsSearchProps> = ({
           <Autocomplete
             freeSolo
             options={allGrainsKeys}
-            value={filterPath}
-            inputValue={filterPath}
+            value={grainFilterPath}
+            inputValue={grainFilterPath}
             onInputChange={(_event, newInputValue) => {
-              setFilterPath(newInputValue);
+              setGrainFilterPath(newInputValue);
             }}
             onChange={(_event, newValue) => {
-              setFilterPath(newValue || '');
+              setGrainFilterPath(newValue || '');
             }}
             sx={{ flex: 1 }}
             renderInput={(params) => (
@@ -200,9 +325,9 @@ const MinionsSearch: React.FC<MinionsSearchProps> = ({
           <TextField
             select
             label="Operator"
-            value={filterOperator}
+            value={grainFilterOperator}
             onChange={(e) =>
-              setFilterOperator(e.target.value as 'eq' | 'not' | 'like' | 'not_like')
+              setGrainFilterOperator(e.target.value as 'eq' | 'not' | 'like' | 'not_like')
             }
             sx={{ width: 160 }}
             InputLabelProps={{
@@ -216,9 +341,9 @@ const MinionsSearch: React.FC<MinionsSearchProps> = ({
           </TextField>
           <TextField
             label="Value"
-            value={filterValue}
-            onChange={(e) => setFilterValue(e.target.value)}
-            placeholder={valuePlaceholder}
+            value={grainFilterValue}
+            onChange={(e) => setGrainFilterValue(e.target.value)}
+            placeholder={grainValuePlaceholder}
             InputLabelProps={{
               shrink: true,
             }}
@@ -226,15 +351,15 @@ const MinionsSearch: React.FC<MinionsSearchProps> = ({
             onKeyDown={(e) => {
               if (e.key === 'Enter') {
                 e.preventDefault();
-                handleAddFilter();
+                handleAddGrainFilter();
               }
             }}
           />
           <TextField
             select
             label="Type"
-            value={filterType}
-            onChange={(e) => setFilterType(e.target.value)}
+            value={grainFilterType}
+            onChange={(e) => setGrainFilterType(e.target.value)}
             sx={{ width: 120 }}
             InputLabelProps={{
               shrink: true,
@@ -247,13 +372,98 @@ const MinionsSearch: React.FC<MinionsSearchProps> = ({
             <MenuItem value="array">array</MenuItem>
             <MenuItem value="null">null</MenuItem>
           </TextField>
-          <Button variant="outlined" onClick={handleAddFilter} sx={{ whiteSpace: 'nowrap' }}>
+          <Button variant="outlined" onClick={handleAddGrainFilter} sx={{ whiteSpace: 'nowrap' }}>
             Add
           </Button>
         </Box>
         <Box display="flex" flexWrap="wrap" gap={1}>
           {grainFilters.map((filter) => (
             <Chip key={filter} label={filter} onDelete={() => handleRemoveFilter(filter)} />
+          ))}
+        </Box>
+      </Box>
+      <Box display="flex" flexDirection="column" sx={{ flex: '1 1 100%', minWidth: 320 }}>
+        <Box display="flex" gap={1} mb={1}>
+          <Autocomplete
+            freeSolo
+            options={allPillarKeys}
+            value={pillarFilterPath}
+            inputValue={pillarFilterPath}
+            onInputChange={(_event, newInputValue) => {
+              setPillarFilterPath(newInputValue);
+            }}
+            onChange={(_event, newValue) => {
+              setPillarFilterPath(newValue || '');
+            }}
+            sx={{ flex: 1 }}
+            renderInput={(params) => (
+              <TextField
+                {...params}
+                label="WHERE Pillar"
+                placeholder="e.g. role"
+                InputLabelProps={{
+                  shrink: true,
+                }}
+              />
+            )}
+          />
+          <TextField
+            select
+            label="Operator"
+            value={pillarFilterOperator}
+            onChange={(e) =>
+              setPillarFilterOperator(e.target.value as 'eq' | 'not' | 'like' | 'not_like')
+            }
+            sx={{ width: 160 }}
+            InputLabelProps={{
+              shrink: true,
+            }}
+          >
+            <MenuItem value="eq">Equals</MenuItem>
+            <MenuItem value="not">Not Equals</MenuItem>
+            <MenuItem value="like">Like</MenuItem>
+            <MenuItem value="not_like">Not Like</MenuItem>
+          </TextField>
+          <TextField
+            label="Value"
+            value={pillarFilterValue}
+            onChange={(e) => setPillarFilterValue(e.target.value)}
+            placeholder={pillarValuePlaceholder}
+            InputLabelProps={{
+              shrink: true,
+            }}
+            sx={{ flex: 1 }}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') {
+                e.preventDefault();
+                handleAddPillarFilter();
+              }
+            }}
+          />
+          <TextField
+            select
+            label="Type"
+            value={pillarFilterType}
+            onChange={(e) => setPillarFilterType(e.target.value)}
+            sx={{ width: 120 }}
+            InputLabelProps={{
+              shrink: true,
+            }}
+          >
+            <MenuItem value="string">string</MenuItem>
+            <MenuItem value="int">int</MenuItem>
+            <MenuItem value="float">float</MenuItem>
+            <MenuItem value="bool">bool</MenuItem>
+            <MenuItem value="array">array</MenuItem>
+            <MenuItem value="null">null</MenuItem>
+          </TextField>
+          <Button variant="outlined" onClick={handleAddPillarFilter} sx={{ whiteSpace: 'nowrap' }}>
+            Add
+          </Button>
+        </Box>
+        <Box display="flex" flexWrap="wrap" gap={1}>
+          {pillarFilters.map((filter) => (
+            <Chip key={filter} label={filter} onDelete={() => handleRemovePillarFilter(filter)} />
           ))}
         </Box>
       </Box>
