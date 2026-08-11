@@ -45,6 +45,7 @@ const Row: React.FC<RowProps> = ({ row, selected, onSelect, onDeselect }) => {
 
   // Extract grains keys and values
   const grainEntries = row.grains ? Object.entries(row.grains) : [];
+  const pillarEntries = row.pillar ? Object.entries(row.pillar) : [];
 
   return (
     <TableRow sx={{ '& > *': { borderBottom: 'unset' } }}>
@@ -56,6 +57,11 @@ const Row: React.FC<RowProps> = ({ row, selected, onSelect, onDeselect }) => {
         <Link to={`/minion/${row.minion_id}/`}>{row.minion_id}</Link>
       </TableCell>
       {grainEntries.map(([key, value]) => (
+        <TableCell key={key}>
+          {typeof value === 'object' ? JSON.stringify(value) : String(value)}
+        </TableCell>
+      ))}
+      {pillarEntries.map(([key, value]) => (
         <TableCell key={key}>
           {typeof value === 'object' ? JSON.stringify(value) : String(value)}
         </TableCell>

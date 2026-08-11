@@ -45,7 +45,16 @@ const MinionsView: React.FC = () => {
       ? grainFiltersParam.split(',').filter((filter) => filter.length > 0)
       : []
   );
-  // const [grainValue, setGrainValue] = useState(query.get('grain_value') || '');
+  const pillarKeysParam = query.get('pillar_keys');
+  const [pillarKeys, setPillarKeys] = useState<string[]>(
+    pillarKeysParam ? pillarKeysParam.split(',').map((key) => toColonNotation(key)) : []
+  );
+  const pillarFiltersParam = query.get('pillar_filters');
+  const [pillarFilters, setPillarFilters] = useState<string[]>(
+    pillarFiltersParam && pillarFiltersParam.length > 0
+      ? pillarFiltersParam.split(',').filter((filter) => filter.length > 0)
+      : []
+  );
 
   const queryParams = useMemo(() => {
     const normalizedGrainKeys = grainKeys
@@ -81,17 +90,63 @@ const MinionsView: React.FC = () => {
       })
       .filter((filter) => filter.length > 0);
 
+    const normalizedPillarKeys = pillarKeys
+      .map((key) => toJSONPathNotation(key))
+      .filter((key) => key.length > 0);
+
+    const normalizedPillarFilters = pillarFilters
+      .map((filter) => {
+        const parts = filter.split('::');
+        if (parts.length < 2) {
+          return '';
+        }
+        const [pathAndValue, type, ...operatorParts] = parts;
+        if (!pathAndValue || !type) {
+          return '';
+        }
+        const operator = operatorParts.join('::');
+        const lastColon = pathAndValue.lastIndexOf(':');
+        if (lastColon === -1) {
+          return '';
+        }
+        const path = pathAndValue.slice(0, lastColon);
+        const value = pathAndValue.slice(lastColon + 1);
+        const normalizedPath = toJSONPathNotation(path);
+        if (!normalizedPath) {
+          return '';
+        }
+        let normalizedFilter = `${normalizedPath}:${value}::${type}`;
+        if (operator) {
+          normalizedFilter = `${normalizedFilter}::${operator}`;
+        }
+        return normalizedFilter;
+      })
+      .filter((filter) => filter.length > 0);
+
     return {
       minion_id: minionID,
       jsonpath_grains: normalizedGrainKeys.join(','),
       jsonpath_grains_filter: normalizedGrainFilters.join(','),
+      jsonpath_pillar: normalizedPillarKeys.join(','),
+      jsonpath_pillar_filter: normalizedPillarFilters.join(','),
       since,
       until,
       limit,
       page,
       order_by: orderBy,
     };
-  }, [minionID, since, until, limit, page, orderBy, grainKeys, grainFilters]);
+  }, [
+    minionID,
+    since,
+    until,
+    limit,
+    page,
+    orderBy,
+    grainKeys,
+    grainFilters,
+    pillarKeys,
+    pillarFilters,
+  ]);
 
   const handleSetLimit = useCallback((newLimit: number) => {
     setLimit(newLimit);
@@ -115,28 +170,32 @@ const MinionsView: React.FC = () => {
       return;
     }
 
-    // Extract keys from the first element to form the header row, ignoring "pillar"
-    const headers = Object.keys(data[0]).filter((key) => key !== 'pillar' && key !== 'id') as Array<
-      keyof Minion
-    >;
+    const headers = Object.keys(data[0]).filter(
+      (key) => key !== 'grains' && key !== 'pillar' && key !== 'id'
+    ) as Array<keyof Minion>;
 
     // Extract keys from the grains object
     const grainsKeys = Object.keys(data[0].grains || {});
+    const pillarKeysForExport = Object.keys(data[0].pillar || {});
 
-    // Combine minion headers and grains keys
-    const allHeaders = [...headers.filter((header) => header !== 'grains'), ...grainsKeys];
+    const allHeaders = [
+      ...headers,
+      ...grainsKeys.map((key) => `grains.${key}`),
+      ...pillarKeysForExport.map((key) => `pillar.${key}`),
+    ];
 
     // Map through each row to get the values
     const csvRows = [
       allHeaders.join(','), // Header row
       ...data.map((row) => {
-        const rowValues = headers
-          .filter((header) => header !== 'grains')
-          .map((header) => JSON.stringify(row[header] ?? ''));
+        const rowValues = headers.map((header) => JSON.stringify(row[header] ?? ''));
 
         const grainsValues = grainsKeys.map((key) => JSON.stringify(row.grains[key] ?? ''));
+        const pillarValues = pillarKeysForExport.map((key) =>
+          JSON.stringify(row.pillar[key] ?? '')
+        );
 
-        return [...rowValues, ...grainsValues].join(',');
+        return [...rowValues, ...grainsValues, ...pillarValues].join(',');
       }),
     ];
 
@@ -159,9 +218,22 @@ const MinionsView: React.FC = () => {
     if (orderBy) params.set('order_by', orderBy);
     if (grainKeys.length) params.set('grain_keys', grainKeys.join(',')); // Updated to grain_keys
     if (grainFilters.length) params.set('grain_filters', grainFilters.join(','));
-    // if (grainValue) params.set('grain_value', grainValue);
+    if (pillarKeys.length) params.set('pillar_keys', pillarKeys.join(','));
+    if (pillarFilters.length) params.set('pillar_filters', pillarFilters.join(','));
     navigate({ search: params.toString() });
-  }, [minionID, since, until, limit, page, orderBy, grainKeys, grainFilters, navigate]);
+  }, [
+    minionID,
+    since,
+    until,
+    limit,
+    page,
+    orderBy,
+    grainKeys,
+    grainFilters,
+    pillarKeys,
+    pillarFilters,
+    navigate,
+  ]);
 
   return (
     <Box>
@@ -182,8 +254,10 @@ const MinionsView: React.FC = () => {
         setGrainKeys={setGrainKeys}
         grainFilters={grainFilters}
         setGrainFilters={setGrainFilters}
-        // grainValue={grainValue}
-        // setGrainValue={setGrainValue}
+        pillarKeys={pillarKeys}
+        setPillarKeys={setPillarKeys}
+        pillarFilters={pillarFilters}
+        setPillarFilters={setPillarFilters}
         setOrderBy={handleSetOrderBy}
       />
       <MinionsTable
