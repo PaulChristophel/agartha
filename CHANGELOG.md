@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.14.0](https://github.com/PaulChristophel/agartha/compare/v0.13.3...v0.14.0) (2026-08-11)
+
+
+### Features
+
+* add pillar sorting to minions ([6b45a3a](https://github.com/PaulChristophel/agartha/commit/6b45a3a761c9fe07079ab879cc491a8ed100b66a))
+* add pillar sorting to minions ([629ceca](https://github.com/PaulChristophel/agartha/commit/629ceca96976fb75d9c69d1bde16ccfaf8aa1e2e))
+
 ## [0.13.3](https://github.com/PaulChristophel/agartha/compare/v0.13.2...v0.13.3) (2026-08-07)
 
 
