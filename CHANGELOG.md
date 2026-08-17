@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.14.1](https://github.com/PaulChristophel/agartha/compare/v0.14.0...v0.14.1) (2026-08-17)
+
+
+### Miscellaneous Chores
+
+* **deps:** upgrade dependencies ([9ec8429](https://github.com/PaulChristophel/agartha/commit/9ec8429d322d9da3e33b6c77712c3f24b97b43fb))
+
 ## [0.14.0](https://github.com/PaulChristophel/agartha/compare/v0.13.3...v0.14.0) (2026-08-11)
 
 
