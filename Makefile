@@ -94,9 +94,11 @@ migrate-ci:
 # We need this to keep podman builds from failing "on the first thing that exits"
 	# sleep 1200
 
-clean-go:
-	go clean
+tidy:
 	go mod tidy
+
+clean-go: tidy
+	go clean
 	rm -f $(debug_dir)/* $(release_dir)/*
 
 clean-web:
@@ -150,8 +152,12 @@ dep: dep-web dep-go
 
 configure: configure-web configure-go
 
+fix:
+	go fix -v ./...
+
 upgrade:
 	go get -v -u ./...
+	go mod tidy
 	pnpm --dir $(src_dir)/web upgrade
 
 vet-go:
@@ -178,7 +184,7 @@ lint-go-all:
 lint: lint-web lint-go
 
 fix:
-	go fix ./...
+	go fix ./server/...
 
 fmt-go:
 	go fmt -x ./...

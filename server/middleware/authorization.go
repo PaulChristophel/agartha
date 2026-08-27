@@ -5,6 +5,7 @@ import (
 	"errors"
 	"net/http"
 	"regexp"
+	"slices"
 	"strings"
 
 	"github.com/PaulChristophel/agartha/server/httputil"
@@ -173,10 +174,8 @@ func hasSaltPermission(value any) bool {
 	case string:
 		return strings.TrimSpace(permission) != ""
 	case []any:
-		for _, item := range permission {
-			if hasSaltPermission(item) {
-				return true
-			}
+		if slices.ContainsFunc(permission, hasSaltPermission) {
+			return true
 		}
 	case map[string]any:
 		return len(permission) > 0
@@ -190,10 +189,8 @@ func hasExecutableSaltPermission(value any) bool {
 		permission = strings.TrimSpace(permission)
 		return permission != "" && permission != "@jobs"
 	case []any:
-		for _, item := range permission {
-			if hasExecutableSaltPermission(item) {
-				return true
-			}
+		if slices.ContainsFunc(permission, hasExecutableSaltPermission) {
+			return true
 		}
 	case map[string]any:
 		for scope, entries := range permission {
