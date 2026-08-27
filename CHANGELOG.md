@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.14.2](https://github.com/PaulChristophel/agartha/compare/v0.14.1...v0.14.2) (2026-08-27)
+
+
+### Miscellaneous Chores
+
+* modernize Go maintenance helpers ([d0db687](https://github.com/PaulChristophel/agartha/commit/d0db687d7d0e915f993ba460788286ce5b3884ee))
+
 ## [0.14.1](https://github.com/PaulChristophel/agartha/compare/v0.14.0...v0.14.1) (2026-08-17)
 
 
