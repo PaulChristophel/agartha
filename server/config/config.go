@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"net"
 	"net/url"
+	"slices"
 	"strings"
 	"time"
 
@@ -177,12 +178,7 @@ func (c Config) EffectiveAuthMethods() ([]string, error) {
 }
 
 func contains(values []string, wanted string) bool {
-	for _, value := range values {
-		if value == wanted {
-			return true
-		}
-	}
-	return false
+	return slices.Contains(values, wanted)
 }
 
 // ValidateDatabase validates settings shared by the server and migration command.
