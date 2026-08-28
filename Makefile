@@ -214,9 +214,8 @@ podman-test: clean
 	podman pull docker.io/library/golang:bookworm
 	podman pull docker.io/library/alpine:edge
 	podman pull docker.io/library/debian:bookworm
-	podman build -f musl.podmanfile --build-arg=ENV=debug --build-arg=GITHUB_DATE=${DATE} --build-arg=GITHUB_VERSION=${VERSION} . -t oitacr.azurecr.io/pmartin47/${BINARY_NAME}:slim-test --target slim-musl
+	podman build -f glibc.podmanfile --build-arg=ENV=debug --build-arg=GITHUB_DATE=${DATE} --build-arg=GITHUB_VERSION=${VERSION} . -t oitacr.azurecr.io/pmartin47/${BINARY_NAME}:slim-test --target slim
 	podman build -f musl.podmanfile --build-arg=ENV=debug --build-arg=GITHUB_DATE=${DATE} --build-arg=GITHUB_VERSION=${VERSION} . -t oitacr.azurecr.io/pmartin47/${BINARY_NAME}:alpine-test --target alpine
-	podman build -f glibc.podmanfile --build-arg=ENV=debug --build-arg=GITHUB_DATE=${DATE} --build-arg=GITHUB_VERSION=${VERSION} . -t oitacr.azurecr.io/pmartin47/${BINARY_NAME}:slim-glibc-test --target slim-glibc
 	podman build -f glibc.podmanfile --build-arg=ENV=debug --build-arg=GITHUB_DATE=${DATE} --build-arg=GITHUB_VERSION=${VERSION} . -t oitacr.azurecr.io/pmartin47/${BINARY_NAME}:debian-test --target debian
 	$(MAKE) podman-compose-base-test
 

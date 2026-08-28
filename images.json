@@ -3,9 +3,9 @@
   "platform": "linux/amd64",
   "variants": [
     {
-      "name": "release slim glibc",
+      "name": "release slim",
       "dockerfile": "glibc.podmanfile",
-      "target": "slim-glibc",
+      "target": "slim",
       "environment": "release",
       "rolling_tags": [
         "latest",
@@ -14,6 +14,7 @@
         "latest-slim"
       ],
       "version_suffixes": [
+        "-slim",
         "-slim-glibc",
         "-glibc",
         ""
@@ -37,15 +38,19 @@
       "floating_version_tags": false
     },
     {
-      "name": "test slim glibc",
+      "name": "test slim",
       "dockerfile": "glibc.podmanfile",
-      "target": "slim-glibc",
+      "target": "slim",
       "environment": "debug",
       "rolling_tags": [
-        "latest-slim-glibc-test"
+        "latest-slim-test",
+        "latest-slim-glibc-test",
+        "latest-slim-musl-test"
       ],
       "version_suffixes": [
-        "-slim-glibc-test"
+        "-slim-test",
+        "-slim-glibc-test",
+        "-slim-musl-test"
       ],
       "floating_version_tags": false
     },
@@ -61,19 +66,6 @@
       "version_suffixes": [
         "-alpine-musl-test",
         "-musl-test"
-      ],
-      "floating_version_tags": false
-    },
-    {
-      "name": "test slim musl",
-      "dockerfile": "musl.podmanfile",
-      "target": "slim-musl",
-      "environment": "debug",
-      "rolling_tags": [
-        "latest-slim-musl-test"
-      ],
-      "version_suffixes": [
-        "-slim-musl-test"
       ],
       "floating_version_tags": false
     }

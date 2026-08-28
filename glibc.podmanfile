@@ -30,11 +30,9 @@ USER ${USER_ID}:${USER_ID}
 ENTRYPOINT ["/usr/local/bin/agartha"]
 
 # Export it to scratch
-FROM scratch as slim-glibc
+FROM scratch as slim
 ARG ENV=debug
 ARG USER_ID=1000
-# COPY --from=builder-glibc /lib/x86_64-linux-gnu/libc.so.6 /lib/x86_64-linux-gnu/libc.so.6
-# COPY --from=builder-glibc /lib64/ld-linux-x86-64.so.2 /lib64/ld-linux-x86-64.so.2 
 COPY --from=builder-glibc /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
 COPY --from=builder-glibc /usr/share/zoneinfo /usr/share/zoneinfo
 COPY --from=builder-glibc /etc/passwd /etc/passwd
