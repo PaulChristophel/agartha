@@ -131,7 +131,19 @@ func ensureAlterTimeTrigger(table string) error {
 }
 
 func ensureSaltHighstatesView(saltReturnsTable string) error {
-	query := fmt.Sprintf(`
+	var exists bool
+	if err := DB.Raw(`SELECT to_regclass('vw_salt_highstates') IS NOT NULL`).Scan(&exists).Error; err != nil {
+		return err
+	}
+	if exists {
+		return nil
+	}
+
+	return DB.Exec(saltHighstatesViewQuery(saltReturnsTable)).Error
+}
+
+func saltHighstatesViewQuery(saltReturnsTable string) string {
+	return fmt.Sprintf(`
     CREATE OR REPLACE VIEW vw_salt_highstates AS
     SELECT
         distinct on(a.id)
@@ -150,6 +162,12 @@ func ensureSaltHighstatesView(saltReturnsTable string) error {
     ) a
     WHERE
         (a.fun::text = 'state.highstate'::text OR a.fun::text = 'state.apply'::text) AND
-        (a.full_ret::jsonb ->> 'fun_args'::text) = '[]'::text`, saltReturnsTable)
-	return DB.Exec(query).Error
+		(a.full_ret::jsonb ->> 'fun_args'::text) = '[]'::text AND
+		(
+			a.success::boolean IS FALSE AND
+			(a.full_ret::jsonb ->> 'retcode'::text) = '1'::text AND
+			jsonb_typeof(a.return::jsonb) = 'array' AND
+			(a.return::jsonb ->> 0) LIKE 'The function %% was started at %% with jid %%'
+		) IS NOT TRUE
+	ORDER BY a.id, a.alter_time DESC`, saltReturnsTable)
 }
