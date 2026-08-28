@@ -5,6 +5,7 @@ package db
 import (
 	"database/sql"
 	"errors"
+	"fmt"
 	"net/url"
 	"os"
 	"path"
@@ -43,6 +44,7 @@ func TestSQLMigrationsSaltCacheCompatibility(t *testing.T) {
 	t.Cleanup(func() { resetMigrationSchema(t, verificationDB) })
 	createMigrationBaseline(t, verificationDB)
 	insertSaltCacheFixtures(t, verificationDB)
+	insertSaltReturnFixtures(t, verificationDB)
 
 	migrator := newTestMigrator(t, databaseURL)
 	t.Cleanup(func() {
@@ -51,16 +53,23 @@ func TestSQLMigrationsSaltCacheCompatibility(t *testing.T) {
 	})
 
 	require.NoError(t, migrator.Up())
-	requireMigrationVersion(t, migrator, 2)
+	requireMigrationVersion(t, migrator, 3)
 	requireMinionFixtures(t, verificationDB)
 	requireMaterializedKeys(t, verificationDB)
+	requireLatestHighstateIgnoresRunningCollision(t, verificationDB)
+	requireConformityUsesCacheWithoutKeyTable(t, verificationDB)
+	requireConformityUsesAcceptedDatabaseKeys(t, verificationDB)
+
+	require.NoError(t, migrator.Steps(-1))
+	requireMigrationVersion(t, migrator, 2)
+	requireMinionFixtures(t, verificationDB)
 
 	require.NoError(t, migrator.Steps(-1))
 	requireMigrationVersion(t, migrator, 1)
 	requireLegacyViewAfterDown(t, verificationDB)
 
-	require.NoError(t, migrator.Steps(1))
-	requireMigrationVersion(t, migrator, 2)
+	require.NoError(t, migrator.Steps(2))
+	requireMigrationVersion(t, migrator, 3)
 	requireMinionFixtures(t, verificationDB)
 	requireMaterializedKeys(t, verificationDB)
 }
@@ -93,19 +102,44 @@ func createMigrationBaseline(t *testing.T, database *sql.DB) {
 			alter_time timestamptz
 		);
 
-		CREATE VIEW vw_salt_highstates AS
-		SELECT
-			NULL::text AS id,
-			NULL::timestamptz AS alter_time,
-			NULL::boolean AS success,
-			NULL::jsonb AS return
-		WHERE false;
+		CREATE TABLE salt_returns (
+			fun text NOT NULL,
+			jid text NOT NULL,
+			return text NOT NULL,
+			full_ret text NOT NULL,
+			id text NOT NULL,
+			success text NOT NULL,
+			alter_time timestamptz
+		);
 
 		CREATE TABLE sessions (id text PRIMARY KEY);
 		CREATE TABLE session_user_map (session_id text NOT NULL, user_id bigint NOT NULL);
 		CREATE TABLE user_settings (user_id bigint PRIMARY KEY, token text NOT NULL DEFAULT '');
 	`)
 	require.NoError(t, err)
+	_, err = database.Exec(legacySaltHighstatesViewQuery("salt_returns"))
+	require.NoError(t, err)
+}
+
+func legacySaltHighstatesViewQuery(saltReturnsTable string) string {
+	return fmt.Sprintf(`
+		CREATE VIEW vw_salt_highstates AS
+		SELECT DISTINCT ON (a.id)
+			a.fun,
+			a.jid,
+			a.return::jsonb,
+			a.full_ret::jsonb,
+			a.id,
+			a.success::boolean,
+			a.alter_time
+		FROM (
+			SELECT *
+			FROM %s
+			WHERE POSITION($nul$\u0000$nul$ IN return::text) = 0
+				AND POSITION($nul$\u0000$nul$ IN full_ret::text) = 0
+		) AS a
+		WHERE a.fun IN ('state.highstate', 'state.apply')
+			AND (a.full_ret::jsonb ->> 'fun_args') = '[]'`, saltReturnsTable)
 }
 
 func insertSaltCacheFixtures(t *testing.T, database *sql.DB) {
@@ -189,6 +223,79 @@ func insertSaltCacheFixtures(t *testing.T, database *sql.DB) {
 	}
 }
 
+func insertSaltReturnFixtures(t *testing.T, database *sql.DB) {
+	t.Helper()
+
+	fixtures := []struct {
+		jid        string
+		returnData string
+		fullRet    string
+		id         string
+		success    string
+		alterTime  time.Time
+	}{
+		{
+			jid:        "20260704010000000000",
+			returnData: `{"test_|-cached_|-cached_|-succeed_without_changes":{"result":true,"changes":{}}}`,
+			id:         "modern-one",
+			success:    "true",
+			alterTime:  time.Date(2026, time.July, 4, 1, 0, 0, 0, time.UTC),
+		},
+		{
+			jid:        "20260704020000000000",
+			returnData: `["The function \"state.highstate\" is running as PID 1234 and was started at 2026, Jul 04 00:59:00.000000 with jid 20260704005900000000"]`,
+			fullRet:    `{"fun_args":[],"retcode":1}`,
+			id:         "modern-one",
+			success:    "false",
+			alterTime:  time.Date(2026, time.July, 4, 2, 0, 0, 0, time.UTC),
+		},
+		{
+			jid:        "20260704030000000000",
+			returnData: `{"test_|-suffix_|-suffix_|-succeed_with_changes":{"result":true,"changes":{"old":"before","new":"after"}}}`,
+			id:         "suffix-one",
+			success:    "true",
+			alterTime:  time.Date(2026, time.July, 4, 3, 0, 0, 0, time.UTC),
+		},
+		{
+			jid:        "20260704040000000000",
+			returnData: `{"test_|-uncached_|-uncached_|-fail":{"result":false,"changes":{}}}`,
+			id:         "uncached-one",
+			success:    "false",
+			alterTime:  time.Date(2026, time.July, 4, 4, 0, 0, 0, time.UTC),
+		},
+		{
+			jid:        "20260704060000000000",
+			returnData: `{"test_|-older_|-older_|-succeed_without_changes":{"result":true,"changes":{}}}`,
+			id:         "ordering-one",
+			success:    "true",
+			alterTime:  time.Date(2026, time.July, 4, 5, 0, 0, 0, time.UTC),
+		},
+		{
+			jid:        "20260704050000000000",
+			returnData: `{"test_|-newer_|-newer_|-succeed_without_changes":{"result":true,"changes":{}}}`,
+			id:         "ordering-one",
+			success:    "true",
+			alterTime:  time.Date(2026, time.July, 4, 6, 0, 0, 0, time.UTC),
+		},
+		{
+			jid:        "20260704070000000000",
+			returnData: `["The function \"state.highstate\" is running as PID 5678 and was started at 2026, Jul 04 06:59:00.000000 with jid 20260704065900000000"]`,
+			fullRet:    `{"fun_args":[],"retcode":2}`,
+			id:         "different-retcode",
+			success:    "false",
+			alterTime:  time.Date(2026, time.July, 4, 7, 0, 0, 0, time.UTC),
+		},
+	}
+
+	for _, fixture := range fixtures {
+		_, err := database.Exec(`
+			INSERT INTO salt_returns (fun, jid, return, full_ret, id, success, alter_time)
+			VALUES ('state.highstate', $1, $2, COALESCE(NULLIF($3, ''), '{"fun_args":[]}'), $4, $5, $6)
+		`, fixture.jid, fixture.returnData, fixture.fullRet, fixture.id, fixture.success, fixture.alterTime)
+		require.NoError(t, err)
+	}
+}
+
 func newTestMigrator(t *testing.T, databaseURL string) *migrate.Migrate {
 	t.Helper()
 
@@ -257,6 +364,76 @@ func requireMaterializedKeys(t *testing.T, database *sql.DB) {
 		`'role'`,
 	).Scan(&pillarRolePathCount))
 	require.Equal(t, 1, pillarRolePathCount)
+}
+
+func requireLatestHighstateIgnoresRunningCollision(t *testing.T, database *sql.DB) {
+	t.Helper()
+
+	var modernJID string
+	require.NoError(t, database.QueryRow(
+		`SELECT jid FROM vw_salt_highstates WHERE id = 'modern-one'`,
+	).Scan(&modernJID))
+	require.Equal(t, "20260704010000000000", modernJID)
+
+	var orderingJID string
+	require.NoError(t, database.QueryRow(
+		`SELECT jid FROM vw_salt_highstates WHERE id = 'ordering-one'`,
+	).Scan(&orderingJID))
+	require.Equal(t, "20260704050000000000", orderingJID)
+
+	var differentRetcodeJID string
+	require.NoError(t, database.QueryRow(
+		`SELECT jid FROM vw_salt_highstates WHERE id = 'different-retcode'`,
+	).Scan(&differentRetcodeJID))
+	require.Equal(t, "20260704070000000000", differentRetcodeJID)
+}
+
+func requireConformityUsesCacheWithoutKeyTable(t *testing.T, database *sql.DB) {
+	t.Helper()
+
+	rows, err := database.Query(`SELECT id FROM mat_conformity ORDER BY id`)
+	require.NoError(t, err)
+	defer func() { require.NoError(t, rows.Close()) }()
+
+	var ids []string
+	for rows.Next() {
+		var id string
+		require.NoError(t, rows.Scan(&id))
+		ids = append(ids, id)
+	}
+	require.NoError(t, rows.Err())
+	require.Equal(t, []string{"modern-one", "suffix-one"}, ids)
+}
+
+func requireConformityUsesAcceptedDatabaseKeys(t *testing.T, database *sql.DB) {
+	t.Helper()
+
+	_, err := database.Exec(`
+		CREATE TABLE salt_keys (
+			bank text NOT NULL,
+			psql_key text NOT NULL,
+			data jsonb NOT NULL
+		);
+		INSERT INTO salt_keys (bank, psql_key, data) VALUES
+			('pki/master/keys', 'modern-one', '{"state":"accepted"}'),
+			('pki/master/keys', 'suffix-one', '{"state":"pending"}'),
+			('pki/master/keys', 'uncached-one', '{"state":"accepted"}');
+		REFRESH MATERIALIZED VIEW mat_conformity;
+	`)
+	require.NoError(t, err)
+
+	rows, err := database.Query(`SELECT id FROM mat_conformity ORDER BY id`)
+	require.NoError(t, err)
+	defer func() { require.NoError(t, rows.Close()) }()
+
+	var ids []string
+	for rows.Next() {
+		var id string
+		require.NoError(t, rows.Scan(&id))
+		ids = append(ids, id)
+	}
+	require.NoError(t, rows.Err())
+	require.Equal(t, []string{"modern-one", "uncached-one"}, ids)
 }
 
 func requireLegacyViewAfterDown(t *testing.T, database *sql.DB) {
