@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.15.1](https://github.com/PaulChristophel/agartha/compare/v0.15.0...v0.15.1) (2026-08-28)
+
+
+### Bug Fixes
+
+* support application schemas in conformity migration ([e7f021b](https://github.com/PaulChristophel/agartha/commit/e7f021b21c618e973d6065a3410453c6eb3ea3ad))
+
 ## [0.15.0](https://github.com/PaulChristophel/agartha/compare/v0.14.2...v0.15.0) (2026-08-28)
 
 
