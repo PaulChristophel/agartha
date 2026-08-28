@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.15.0](https://github.com/PaulChristophel/agartha/compare/v0.14.2...v0.15.0) (2026-08-28)
+
+
+### Miscellaneous Chores
+
+* **ci:** migrate to pnpm/setup ([e752d4a](https://github.com/PaulChristophel/agartha/commit/e752d4a50e746d78915a52460bb1fe0400f97ea5))
+
 ## [0.14.2](https://github.com/PaulChristophel/agartha/compare/v0.14.1...v0.14.2) (2026-08-27)
 
 
