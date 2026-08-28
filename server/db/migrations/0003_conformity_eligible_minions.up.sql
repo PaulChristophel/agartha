@@ -2,12 +2,13 @@ CREATE OR REPLACE FUNCTION conformity_minion_ids()
 RETURNS TABLE (minion_id text)
 LANGUAGE plpgsql
 STABLE
+SET search_path FROM CURRENT
 AS $$
 BEGIN
-	IF to_regclass('public.salt_keys') IS NOT NULL THEN
+	IF to_regclass('salt_keys') IS NOT NULL THEN
 		RETURN QUERY EXECUTE $query$
 			SELECT DISTINCT keys.psql_key::text AS minion_id
-			FROM public.salt_keys AS keys
+			FROM salt_keys AS keys
 			WHERE keys.bank = 'pki/master/keys'
 				AND keys.data ->> 'state' = 'accepted'
 		$query$;
@@ -16,10 +17,10 @@ BEGIN
 
 	RETURN QUERY EXECUTE $query$
 		SELECT cached.minion_id::text
-		FROM public.vw_salt_minions AS cached
+		FROM vw_salt_minions AS cached
 		UNION
 		SELECT split_part(cached.minion_id::text, ':', 1)
-		FROM public.vw_salt_minions AS cached
+		FROM vw_salt_minions AS cached
 		WHERE position(':' IN cached.minion_id::text) > 0
 	$query$;
 END;

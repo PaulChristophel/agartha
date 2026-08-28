@@ -74,6 +74,46 @@ func TestSQLMigrationsSaltCacheCompatibility(t *testing.T) {
 	requireMaterializedKeys(t, verificationDB)
 }
 
+func TestSQLMigrationsInApplicationSchema(t *testing.T) {
+	databaseURL := os.Getenv(migrationTestDatabaseURL)
+	if databaseURL == "" {
+		t.Skipf("%s is not set", migrationTestDatabaseURL)
+	}
+	requireTestDatabase(t, databaseURL)
+
+	const applicationSchema = "salt-oitdev"
+	verificationDB, err := sql.Open("postgres", databaseURL)
+	require.NoError(t, err)
+	t.Cleanup(func() { require.NoError(t, verificationDB.Close()) })
+	require.NoError(t, verificationDB.Ping())
+
+	_, err = verificationDB.Exec(`DROP SCHEMA IF EXISTS "salt-oitdev" CASCADE; CREATE SCHEMA "salt-oitdev"`)
+	require.NoError(t, err)
+	t.Cleanup(func() {
+		_, cleanupErr := verificationDB.Exec(`DROP SCHEMA IF EXISTS "salt-oitdev" CASCADE`)
+		require.NoError(t, cleanupErr)
+	})
+	_, err = verificationDB.Exec(`SET search_path TO "salt-oitdev"`)
+	require.NoError(t, err)
+
+	createMigrationBaseline(t, verificationDB)
+	insertSaltCacheFixtures(t, verificationDB)
+	insertSaltReturnFixtures(t, verificationDB)
+
+	schemaDatabaseURL := databaseURLWithSearchPath(t, databaseURL, applicationSchema)
+	migrator := newTestMigrator(t, schemaDatabaseURL)
+	t.Cleanup(func() {
+		sourceErr, databaseErr := migrator.Close()
+		require.NoError(t, errors.Join(sourceErr, databaseErr))
+	})
+
+	require.NoError(t, migrator.Up())
+	requireMigrationVersion(t, migrator, 3)
+	requireLatestHighstateIgnoresRunningCollision(t, verificationDB)
+	requireConformityUsesCacheWithoutKeyTable(t, verificationDB)
+	requireConformityUsesAcceptedDatabaseKeys(t, verificationDB)
+}
+
 func requireTestDatabase(t *testing.T, databaseURL string) {
 	t.Helper()
 
@@ -81,6 +121,17 @@ func requireTestDatabase(t *testing.T, databaseURL string) {
 	require.NoError(t, err)
 	require.Equal(t, "postgres", parsedURL.Scheme)
 	require.Equal(t, "agartha_migration_test", path.Base(parsedURL.Path), "refusing to reset a non-test database")
+}
+
+func databaseURLWithSearchPath(t *testing.T, databaseURL string, searchPath string) string {
+	t.Helper()
+
+	parsedURL, err := url.Parse(databaseURL)
+	require.NoError(t, err)
+	query := parsedURL.Query()
+	query.Set("search_path", searchPath)
+	parsedURL.RawQuery = query.Encode()
+	return parsedURL.String()
 }
 
 func resetMigrationSchema(t *testing.T, database *sql.DB) {
