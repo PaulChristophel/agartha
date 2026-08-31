@@ -6,6 +6,11 @@ import Typography from '@mui/material/Typography';
 
 import ReturnsTable from './ReturnsTable.tsx';
 import ReturnsSearch from './ReturnsSearch.tsx';
+import {
+  parseReturnFilter,
+  serializeReturnFilter,
+  type ReturnFilterState,
+} from './returnFilter.ts';
 
 function useQuery() {
   return new URLSearchParams(useLocation().search);
@@ -30,6 +35,9 @@ const ReturnsView: React.FC = () => {
   const [limit, setLimit] = useState<number>(Number(query.get('limit')) || 25);
   const [page, setPage] = useState<number>(Number(query.get('page')) || 1);
   const [orderBy, setOrderBy] = useState<string>(query.get('order_by') || '');
+  const [returnFilter, setReturnFilter] = useState<ReturnFilterState>(() =>
+    parseReturnFilter(query.get('return_query'))
+  );
 
   const parsedSuccess = useMemo(() => parseSuccess(success), [success]);
 
@@ -46,8 +54,9 @@ const ReturnsView: React.FC = () => {
       limit,
       page,
       order_by: orderBy,
+      return_query: serializeReturnFilter(returnFilter),
     }),
-    [minionID, jid, fun, parsedSuccess, since, until, limit, page, orderBy]
+    [minionID, jid, fun, parsedSuccess, since, until, limit, page, orderBy, returnFilter]
   );
 
   const handleSetLimit = useCallback((newLimit: number) => {
@@ -62,6 +71,11 @@ const ReturnsView: React.FC = () => {
     setOrderBy(newOrderBy);
   }, []);
 
+  const handleSetReturnFilter = useCallback((newReturnFilter: ReturnFilterState) => {
+    setReturnFilter(newReturnFilter);
+    setPage(1);
+  }, []);
+
   // Update URL when query parameters change
   useEffect(() => {
     const params = new URLSearchParams();
@@ -74,8 +88,10 @@ const ReturnsView: React.FC = () => {
     if (limit) params.set('limit', limit.toString());
     if (page) params.set('page', page.toString());
     if (orderBy) params.set('order_by', orderBy);
+    const serializedReturnFilter = serializeReturnFilter(returnFilter);
+    if (serializedReturnFilter) params.set('return_query', serializedReturnFilter);
     navigate({ search: params.toString() }, { replace: true });
-  }, [minionID, jid, fun, success, since, until, limit, page, orderBy, navigate]);
+  }, [minionID, jid, fun, success, since, until, limit, page, orderBy, returnFilter, navigate]);
 
   return (
     <Box>
@@ -95,6 +111,8 @@ const ReturnsView: React.FC = () => {
         setSince={setSince}
         until={until}
         setUntil={setUntil}
+        returnFilter={returnFilter}
+        setReturnFilter={handleSetReturnFilter}
       />
       <ReturnsTable
         queryParams={queryParams}
