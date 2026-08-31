@@ -123,7 +123,7 @@ func TestGetSaltEventsReturnsDatabaseErrors(t *testing.T) {
 	}
 }
 
-func installMockDatabase(t *testing.T) (*gorm.DB, sqlmock.Sqlmock) {
+func installMockDatabase(t *testing.T, jsonbEnabled ...bool) (*gorm.DB, sqlmock.Sqlmock) {
 	t.Helper()
 	gin.SetMode(gin.TestMode)
 	_, err := logger.InitLogger(gin.TestMode)
@@ -137,10 +137,18 @@ func installMockDatabase(t *testing.T) (*gorm.DB, sqlmock.Sqlmock) {
 	require.NoError(t, err)
 
 	previousDB := db.DB
+	previousTable := table
+	previousUseJSONB := useJSONB
 	db.DB = gormDB
-	SetOptions(config.SaltDBTables{SaltEvents: "salt_events"})
+	useJSONBForTest := true
+	if len(jsonbEnabled) > 0 {
+		useJSONBForTest = jsonbEnabled[0]
+	}
+	SetOptions(config.SaltDBTables{SaltEvents: "salt_events", UseJSONB: useJSONBForTest})
 	t.Cleanup(func() {
 		db.DB = previousDB
+		table = previousTable
+		useJSONB = previousUseJSONB
 		mock.ExpectClose()
 		require.NoError(t, sqlDB.Close())
 	})

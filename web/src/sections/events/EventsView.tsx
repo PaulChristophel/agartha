@@ -6,6 +6,7 @@ import Typography from '@mui/material/Typography';
 
 import EventsTable from './EventsTable.tsx';
 import EventsSearch from './EventsSearch.tsx';
+import { parseDataFilter, serializeDataFilter, type DataFilterState } from './dataFilter.ts';
 
 function useQuery() {
   return new URLSearchParams(useLocation().search);
@@ -22,6 +23,9 @@ const EventsView: React.FC = () => {
   const [limit, setLimit] = useState<number>(Number(query.get('limit')) || 25);
   const [page, setPage] = useState<number>(Number(query.get('page')) || 1);
   const [orderBy, setOrderBy] = useState<string>(query.get('order_by') || '');
+  const [dataFilter, setDataFilter] = useState<DataFilterState>(() =>
+    parseDataFilter(query.get('data_query'))
+  );
 
   const queryParams = useMemo(
     () => ({
@@ -32,8 +36,9 @@ const EventsView: React.FC = () => {
       limit,
       page,
       order_by: orderBy,
+      data_query: serializeDataFilter(dataFilter),
     }),
-    [tag, masterID, since, until, limit, page, orderBy]
+    [tag, masterID, since, until, limit, page, orderBy, dataFilter]
   );
 
   const handleSetLimit = useCallback((newLimit: number) => {
@@ -48,6 +53,11 @@ const EventsView: React.FC = () => {
     setOrderBy(newOrderBy);
   }, []);
 
+  const handleSetDataFilter = useCallback((newDataFilter: DataFilterState) => {
+    setDataFilter(newDataFilter);
+    setPage(1);
+  }, []);
+
   // Update URL when query parameters change
   useEffect(() => {
     const params = new URLSearchParams();
@@ -58,8 +68,10 @@ const EventsView: React.FC = () => {
     if (limit) params.set('limit', limit.toString());
     if (page) params.set('page', page.toString());
     if (orderBy) params.set('order_by', orderBy);
+    const serializedDataFilter = serializeDataFilter(dataFilter);
+    if (serializedDataFilter) params.set('data_query', serializedDataFilter);
     navigate({ search: params.toString() }, { replace: true });
-  }, [masterID, tag, since, until, limit, page, orderBy, navigate]);
+  }, [masterID, tag, since, until, limit, page, orderBy, dataFilter, navigate]);
 
   return (
     <Box>
@@ -75,6 +87,8 @@ const EventsView: React.FC = () => {
         setSince={setSince}
         until={until}
         setUntil={setUntil}
+        dataFilter={dataFilter}
+        setDataFilter={handleSetDataFilter}
       />
       <EventsTable
         queryParams={queryParams}

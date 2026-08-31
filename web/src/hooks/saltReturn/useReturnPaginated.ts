@@ -44,6 +44,13 @@ interface QueryParams {
   since?: string;
   until?: string;
   order_by?: string;
+  return_match?: string;
+  return_filter?: string;
+  return_key?: string;
+  return_field?: string;
+  return_value?: string;
+  return_value_type?: string;
+  return_query?: string;
 }
 
 const useReturnPaginated = (
@@ -66,8 +73,24 @@ const useReturnPaginated = (
     const fetchReturns = async () => {
       setIsLoading(true);
       try {
-        const { id, jid, fun, success, load_return, load_full_ret, since, until, order_by } =
-          stableQueryParams;
+        const {
+          id,
+          jid,
+          fun,
+          success,
+          load_return,
+          load_full_ret,
+          since,
+          until,
+          order_by,
+          return_match,
+          return_filter,
+          return_key,
+          return_field,
+          return_value,
+          return_value_type,
+          return_query,
+        } = stableQueryParams;
         const params = new URLSearchParams();
 
         if (id) params.append('id', id.concat('*'));
@@ -79,6 +102,13 @@ const useReturnPaginated = (
         if (since) params.append('since', new Date(since).toISOString());
         if (until) params.append('until', new Date(until).toISOString());
         if (order_by) params.append('order_by', order_by);
+        if (return_match) params.append('return_match', return_match);
+        if (return_filter !== undefined) params.append('return_filter', return_filter);
+        if (return_key !== undefined) params.append('return_key', return_key);
+        if (return_field !== undefined) params.append('return_field', return_field);
+        if (return_value !== undefined) params.append('return_value', return_value);
+        if (return_value_type !== undefined) params.append('return_value_type', return_value_type);
+        if (return_query !== undefined) params.append('return_query', return_query);
         params.append('page', String(currentPage));
         params.append('per_page', String(rowsPerPage));
 

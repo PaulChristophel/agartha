@@ -29,6 +29,13 @@ interface ReturnsTableProps {
     limit?: number;
     page?: number;
     order_by?: string;
+    return_match?: string;
+    return_filter?: string;
+    return_key?: string;
+    return_field?: string;
+    return_value?: string;
+    return_value_type?: string;
+    return_query?: string;
   };
   setLimit: (newLimit: number) => void;
   setPage: (newPage: number) => void;

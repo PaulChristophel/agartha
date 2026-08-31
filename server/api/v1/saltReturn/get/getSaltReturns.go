@@ -31,17 +31,24 @@ import (
 //	@Failure		404	{object}	httputil.HTTPError404
 //	@Failure		500	{object}	httputil.HTTPError500
 //	@router			/api/v1/salt_return [get]
-//	@Param			id				query	string	false	"Filter items by minion id (Supports wildcards * and ? for single char matches.)"
-//	@Param			jid				query	string	false	"Filter items by jid (Supports wildcards * and ? for single char matches.)"
-//	@Param			fun				query	string	false	"Filter items by function (Supports wildcards * and ? for single char matches.)"
-//	@Param			success			query	bool	false	"Filter items by success status (true/false)."
-//	@Param			load_return		query	bool	false	"Load the return field. This defaults to false for performance reasons"
-//	@Param			load_full_ret	query	bool	false	"Load the full_ret field. This defaults to false for performance reasons"
-//	@Param			since			query	string	false	"Filter items from this date (RFC3339 format)."
-//	@Param			until			query	string	false	"Filter items up to this date (RFC3339 format)."
-//	@Param			per_page		query	int		false	"restrict to X results"
-//	@Param			page			query	int		false	"Page number of results to retrieve"
-//	@Param			order_by		query	string	false	"Order by column(s). Comma separated list of columns to order by (e.g. id,fun desc)"
+//	@Param			id					query	string	false	"Filter items by minion id (Supports wildcards * and ? for single char matches.)"
+//	@Param			jid					query	string	false	"Filter items by jid (Supports wildcards * and ? for single char matches.)"
+//	@Param			fun					query	string	false	"Filter items by function (Supports wildcards * and ? for single char matches.)"
+//	@Param			success				query	bool	false	"Filter items by success status (true/false)."
+//	@Param			load_return			query	bool	false	"Load the return field. This defaults to false for performance reasons"
+//	@Param			load_full_ret		query	bool	false	"Load the full_ret field. This defaults to false for performance reasons"
+//	@Param			return_match		query	string	false	"Match operation for the JSONB return field."	Enums(key_exists,string_equals,key_field_equals)
+//	@Param			return_filter		query	string	false	"Object key used by key_exists or root string used by string_equals."
+//	@Param			return_key			query	string	false	"Top-level object key used by key_field_equals."
+//	@Param			return_field		query	string	false	"Field immediately below return_key used by key_field_equals."
+//	@Param			return_value		query	string	false	"Value used by key_field_equals."
+//	@Param			return_value_type	query	string	false	"Type of return_value used by key_field_equals."	Enums(string,bool,int,float,null)
+//	@Param			return_query		query	string	false	"JSON return query with logic (and/or) and typed clauses. Each clause supports root, key, or any_key scope; a nested path; and eq, ne, gt, gte, lt, lte, contains, icontains, regex, exists, or not_exists."
+//	@Param			since				query	string	false	"Filter items from this date (RFC3339 format)."
+//	@Param			until				query	string	false	"Filter items up to this date (RFC3339 format)."
+//	@Param			per_page			query	int		false	"restrict to X results"
+//	@Param			page				query	int		false	"Page number of results to retrieve"
+//	@Param			order_by			query	string	false	"Order by column(s). Comma separated list of columns to order by (e.g. id,fun desc)"
 //	@Security		Bearer
 func GetSaltReturns(c *gin.Context) {
 	db := db.DB.Table(table)
@@ -55,6 +62,13 @@ func GetSaltReturns(c *gin.Context) {
 
 	loadReturn := c.Query("load_return")
 	loadFullRet := c.Query("load_full_ret")
+	returnMatch, hasReturnMatch := c.GetQuery("return_match")
+	returnFilter, hasReturnFilter := c.GetQuery("return_filter")
+	returnKey, hasReturnKey := c.GetQuery("return_key")
+	returnField, hasReturnField := c.GetQuery("return_field")
+	returnValue, hasReturnValue := c.GetQuery("return_value")
+	returnValueType, hasReturnValueType := c.GetQuery("return_value_type")
+	returnQuery, hasReturnQuery := c.GetQuery("return_query")
 
 	since := c.Query("since")
 	until := c.Query("until")
@@ -73,6 +87,12 @@ func GetSaltReturns(c *gin.Context) {
 		zap.String("success", success),
 		zap.String("load_return", loadReturn),
 		zap.String("load_full_ret", loadFullRet),
+		zap.String("return_match", returnMatch),
+		zap.Int("return_filter_length", len(returnFilter)),
+		zap.Int("return_key_length", len(returnKey)),
+		zap.Int("return_field_length", len(returnField)),
+		zap.String("return_value_type", returnValueType),
+		zap.Int("return_query_length", len(returnQuery)),
 		zap.String("since", since),
 		zap.String("until", until),
 		zap.Int("page", page),
@@ -108,6 +128,32 @@ func GetSaltReturns(c *gin.Context) {
 
 	// Construct the base query with filters
 	filterQuery := db.Select(selection).Model(&model.SaltReturn{})
+
+	filterQuery, err = applyReturnFilter(filterQuery, returnFilterOptions{
+		Match:        returnMatch,
+		Filter:       returnFilter,
+		Key:          returnKey,
+		Field:        returnField,
+		Value:        returnValue,
+		ValueType:    returnValueType,
+		HasMatch:     hasReturnMatch,
+		HasFilter:    hasReturnFilter,
+		HasKey:       hasReturnKey,
+		HasField:     hasReturnField,
+		HasValue:     hasReturnValue,
+		HasValueType: hasReturnValueType,
+	}, useJSONB)
+	if err != nil {
+		log.Debug("Invalid return filter", zap.Error(err))
+		httputil.NewError(c, http.StatusBadRequest, err.Error())
+		return
+	}
+	filterQuery, err = applyAdvancedReturnFilter(filterQuery, returnQuery, hasReturnQuery, useJSONB)
+	if err != nil {
+		log.Debug("Invalid advanced return filter", zap.Error(err))
+		httputil.NewError(c, http.StatusBadRequest, err.Error())
+		return
+	}
 
 	if id != "" {
 		if strings.Contains(id, "*") {
@@ -197,11 +243,19 @@ func GetSaltReturns(c *gin.Context) {
 
 	// First, get the total count for pagination metadata
 	var totalCount int64
-	filterQuery.Count(&totalCount)
+	if err := filterQuery.Count(&totalCount).Error; err != nil {
+		log.Error("Failed to count salt returns", zap.Error(err))
+		httputil.NewError(c, http.StatusInternalServerError, "failed to query salt returns")
+		return
+	}
 
 	// Apply pagination to the query for fetching results
 	resultsQuery := filterQuery.Offset((page - 1) * limit).Limit(limit)
-	resultsQuery.Find(&saltReturns)
+	if err := resultsQuery.Find(&saltReturns).Error; err != nil {
+		log.Error("Failed to load salt returns", zap.Error(err))
+		httputil.NewError(c, http.StatusInternalServerError, "failed to query salt returns")
+		return
+	}
 
 	log.Debug("Query executed successfully", zap.Int("results_count", len(saltReturns)))
 
