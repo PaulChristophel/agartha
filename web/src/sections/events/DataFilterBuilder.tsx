@@ -202,9 +202,7 @@ const DataFilterBuilder: React.FC<DataFilterBuilderProps> = ({ dataFilter, setDa
                 size="small"
                 label="Container path"
                 value={clause.containerPath}
-                onChange={(event) =>
-                  updateDataClause(index, { containerPath: event.target.value })
-                }
+                onChange={(event) => updateDataClause(index, { containerPath: event.target.value })}
                 placeholder="return"
                 sx={{ flex: '1 1 220px' }}
               />
