@@ -20,7 +20,7 @@ env GOCACHE=/tmp/agartha-gocache go fix ./server/...
 For frontend changes, run:
 
 ```bash
-pnpm --dir web lint
+pnpm --dir web lint --fix
 pnpm --dir web build
 ```
 
