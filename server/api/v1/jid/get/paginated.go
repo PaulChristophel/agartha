@@ -34,6 +34,7 @@ import (
 //	@router			/api/v1/jid [get]
 //	@Param			jid			query	string	false	"Filter based on JIDs starting with input string"
 //	@Param			load_load	query	bool	false	"Load the Load field. This defaults to false for performance reasons"
+//	@Param			load_query	query	string	false	"JSON load query with logic (and/or) and typed clauses. Each clause supports root, key, or any_key scope; any_key may specify a container_path; path selects a nested value; and operators include eq, ne, gt, gte, lt, lte, contains, icontains, regex, exists, or not_exists."
 //	@Param			since		query	string	false	"Filter items from this date (RFC3339 format)."
 //	@Param			until		query	string	false	"Filter items up to this date (RFC3339 format)."
 //	@Param			page		query	int		false	"Page number of results to retrieve"
@@ -52,6 +53,7 @@ func GetJIDs(c *gin.Context) {
 	}
 
 	loadLoad := c.Query("load_load")
+	loadQuery, hasLoadQuery := c.GetQuery("load_query")
 
 	boolValue, err := strconv.ParseBool(loadLoad)
 	if err != nil {
@@ -67,6 +69,12 @@ func GetJIDs(c *gin.Context) {
 
 	// Initialize base query to use throughout
 	baseQuery := db.Select(selection).Model(&model.JID{})
+	baseQuery, err = applyLoadFilter(baseQuery, loadQuery, hasLoadQuery, useJSONB)
+	if err != nil {
+		log.Debug("Invalid load filter", zap.Error(err))
+		httputil.NewError(c, http.StatusBadRequest, err.Error())
+		return
+	}
 
 	if filter != "" {
 		if strings.Contains(filter, "*") {

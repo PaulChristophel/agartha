@@ -25,6 +25,7 @@ interface JobsTableProps {
     limit?: number;
     page?: number;
     order_by?: string;
+    load_query?: string;
   };
   setLimit: (newLimit: number) => void;
   setPage: (newPage: number) => void;

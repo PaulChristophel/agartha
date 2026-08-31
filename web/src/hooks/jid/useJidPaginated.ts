@@ -36,6 +36,7 @@ interface QueryParams {
   since?: string;
   until?: string;
   order_by?: string;
+  load_query?: string;
 }
 
 const useJidPaginated = (
@@ -58,7 +59,7 @@ const useJidPaginated = (
     const fetchJobs = async () => {
       setIsLoading(true);
       try {
-        const { filter, load_load, since, until, order_by } = stableQueryParams;
+        const { filter, load_load, since, until, order_by, load_query } = stableQueryParams;
         const params = new URLSearchParams();
 
         if (filter) params.append('jid', filter.concat('*'));
@@ -66,6 +67,7 @@ const useJidPaginated = (
         if (since) params.append('since', new Date(since).toISOString());
         if (until) params.append('until', new Date(until).toISOString());
         if (order_by) params.append('order_by', order_by);
+        if (load_query !== undefined) params.append('load_query', load_query);
         params.append('page', String(currentPage));
         params.append('per_page', String(rowsPerPage));
 

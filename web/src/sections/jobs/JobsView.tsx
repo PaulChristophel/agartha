@@ -6,6 +6,11 @@ import Typography from '@mui/material/Typography';
 
 import JobsTable from './JobsTable.tsx';
 import JobsSearch from './JobsSearch.tsx';
+import {
+  parseDataFilter,
+  serializeDataFilter,
+  type DataFilterState,
+} from '../events/dataFilter.ts';
 
 function useQuery() {
   return new URLSearchParams(useLocation().search);
@@ -21,6 +26,9 @@ const JobsView: React.FC = () => {
   const [limit, setLimit] = useState<number>(Number(query.get('limit')) || 25);
   const [page, setPage] = useState<number>(Number(query.get('page')) || 1);
   const [orderBy, setOrderBy] = useState<string>(query.get('order_by') || '');
+  const [loadFilter, setLoadFilter] = useState<DataFilterState>(() =>
+    parseDataFilter(query.get('load_query'))
+  );
 
   const queryParams = useMemo(
     () => ({
@@ -31,8 +39,9 @@ const JobsView: React.FC = () => {
       limit,
       page,
       order_by: orderBy,
+      load_query: serializeDataFilter(loadFilter),
     }),
-    [filterName, since, until, limit, page, orderBy]
+    [filterName, since, until, limit, page, orderBy, loadFilter]
   );
 
   const handleSetLimit = useCallback((newLimit: number) => {
@@ -47,6 +56,11 @@ const JobsView: React.FC = () => {
     setOrderBy(newOrderBy);
   }, []);
 
+  const handleSetLoadFilter = useCallback((newLoadFilter: DataFilterState) => {
+    setLoadFilter(newLoadFilter);
+    setPage(1);
+  }, []);
+
   // Update URL when query parameters change
   useEffect(() => {
     const params = new URLSearchParams();
@@ -56,8 +70,10 @@ const JobsView: React.FC = () => {
     if (limit) params.set('limit', limit.toString());
     if (page) params.set('page', page.toString());
     if (orderBy) params.set('order_by', orderBy);
+    const serializedLoadFilter = serializeDataFilter(loadFilter);
+    if (serializedLoadFilter) params.set('load_query', serializedLoadFilter);
     navigate({ search: params.toString() }, { replace: true });
-  }, [filterName, since, until, limit, page, orderBy, navigate]);
+  }, [filterName, since, until, limit, page, orderBy, loadFilter, navigate]);
 
   return (
     <Box>
@@ -71,6 +87,8 @@ const JobsView: React.FC = () => {
         setSince={setSince}
         until={until}
         setUntil={setUntil}
+        loadFilter={loadFilter}
+        setLoadFilter={handleSetLoadFilter}
       />
       <JobsTable
         queryParams={queryParams}

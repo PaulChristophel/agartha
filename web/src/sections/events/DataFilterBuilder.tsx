@@ -23,6 +23,7 @@ import {
 interface DataFilterBuilderProps {
   dataFilter: DataFilterState;
   setDataFilter: (value: DataFilterState) => void;
+  fieldLabel?: string;
 }
 
 const editableDataFilter = (filter: DataFilterState): DataFilterState =>
@@ -40,7 +41,12 @@ const hoverHelpProps = {
   disableInteractive: true,
 };
 
-const DataFilterBuilder: React.FC<DataFilterBuilderProps> = ({ dataFilter, setDataFilter }) => {
+const DataFilterBuilder: React.FC<DataFilterBuilderProps> = ({
+  dataFilter,
+  setDataFilter,
+  fieldLabel = 'Event data',
+}) => {
+  const fieldName = fieldLabel.toLocaleLowerCase();
   const [draftDataFilter, setDraftDataFilter] = useState<DataFilterState>(() =>
     editableDataFilter(dataFilter)
   );
@@ -105,7 +111,7 @@ const DataFilterBuilder: React.FC<DataFilterBuilderProps> = ({ dataFilter, setDa
   return (
     <Box display="flex" flexDirection="column" gap={1.5} sx={{ flex: '1 1 100%' }}>
       <Box display="flex" alignItems="center" flexWrap="wrap" gap={1}>
-        <Typography variant="subtitle2">Event data conditions</Typography>
+        <Typography variant="subtitle2">{fieldLabel} conditions</Typography>
         {draftDataFilter.clauses.length > 1 && (
           <Tooltip
             {...hoverHelpProps}
@@ -157,7 +163,7 @@ const DataFilterBuilder: React.FC<DataFilterBuilderProps> = ({ dataFilter, setDa
         >
           <Tooltip
             {...hoverHelpProps}
-            title="Choose the whole data value, one exact top-level object key, or every top-level object entry."
+            title={`Choose the whole ${fieldName} value, one exact top-level object key, or every top-level object entry.`}
           >
             <TextField
               select
@@ -188,7 +194,7 @@ const DataFilterBuilder: React.FC<DataFilterBuilderProps> = ({ dataFilter, setDa
                 label="Object key"
                 value={clause.key}
                 onChange={(event) => updateDataClause(index, { key: event.target.value })}
-                placeholder="Exact top-level key in the event data"
+                placeholder={`Exact top-level key in the ${fieldName}`}
                 sx={{ flex: '3 1 420px' }}
               />
             </Tooltip>
@@ -196,7 +202,7 @@ const DataFilterBuilder: React.FC<DataFilterBuilderProps> = ({ dataFilter, setDa
           {clause.scope === 'any_key' && (
             <Tooltip
               {...hoverHelpProps}
-              title="Optionally select the object whose entries should be searched. For highstate event data, use return. Leave blank to search top-level data entries."
+              title={`Optionally select the object whose entries should be searched. Leave blank to search top-level ${fieldName} entries.`}
             >
               <TextField
                 size="small"
@@ -314,7 +320,7 @@ const DataFilterBuilder: React.FC<DataFilterBuilderProps> = ({ dataFilter, setDa
           disabled={!canApplyDataFilter}
           onClick={() => setDataFilter(draftDataFilter)}
         >
-          Apply data filter
+          Apply {fieldName} filter
         </Button>
         {dataFilter.clauses.length > 0 && (
           <>
