@@ -25,6 +25,13 @@ interface EventsTableProps {
     limit?: number;
     page?: number;
     order_by?: string;
+    data_match?: string;
+    data_filter?: string;
+    data_key?: string;
+    data_field?: string;
+    data_value?: string;
+    data_value_type?: string;
+    data_query?: string;
   };
   setLimit: (newLimit: number) => void;
   setPage: (newPage: number) => void;

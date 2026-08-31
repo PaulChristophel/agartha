@@ -2,8 +2,12 @@ package saltEvent
 
 import "github.com/PaulChristophel/agartha/server/config"
 
-var table string
+var (
+	table    string
+	useJSONB bool
+)
 
 func SetOptions(saltTables config.SaltDBTables) {
 	table = saltTables.SaltEvents
+	useJSONB = saltTables.UseJSONB
 }

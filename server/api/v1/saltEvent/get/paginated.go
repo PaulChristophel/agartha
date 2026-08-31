@@ -31,14 +31,21 @@ import (
 //	@Failure		404	{object}	httputil.HTTPError404
 //	@Failure		500	{object}	httputil.HTTPError500
 //	@router			/api/v1/salt_event [get]
-//	@Param			tag			query	string	false	"tag of the event sent to the master (Supports wildcards * and ? for single char matches.)"
-//	@Param			master_id	query	string	false	"id of the master that received the event"
-//	@Param			load_data	query	bool	false	"Load the data field. This defaults to false for performance reasons"
-//	@Param			since		query	string	false	"Filter items from this date (RFC3339 format)."
-//	@Param			until		query	string	false	"Filter items up to this date (RFC3339 format)."
-//	@Param			page		query	int		false	"Page number of results to retrieve"
-//	@Param			per_page	query	int		false	"restrict to X results"
-//	@Param			order_by	query	string	false	"Order by column(s). Comma separated list of columns to order by (e.g. tag,master_id desc)"
+//	@Param			tag				query	string	false	"tag of the event sent to the master (Supports wildcards * and ? for single char matches.)"
+//	@Param			master_id		query	string	false	"id of the master that received the event"
+//	@Param			load_data		query	bool	false	"Load the data field. This defaults to false for performance reasons"
+//	@Param			data_match		query	string	false	"Match operation for the JSONB data field."	Enums(key_exists,string_equals,key_field_equals)
+//	@Param			data_filter		query	string	false	"Object key used by key_exists or root string used by string_equals."
+//	@Param			data_key		query	string	false	"Top-level object key used by key_field_equals."
+//	@Param			data_field		query	string	false	"Field immediately below data_key used by key_field_equals."
+//	@Param			data_value		query	string	false	"Value used by key_field_equals."
+//	@Param			data_value_type	query	string	false	"Type of data_value used by key_field_equals."	Enums(string,bool,int,float,null)
+//	@Param			data_query		query	string	false	"JSON data query with logic (and/or) and typed clauses. Each clause supports root, key, or any_key scope; any_key may specify a container_path; path selects a nested value; and operators include eq, ne, gt, gte, lt, lte, contains, icontains, regex, exists, or not_exists."
+//	@Param			since			query	string	false	"Filter items from this date (RFC3339 format)."
+//	@Param			until			query	string	false	"Filter items up to this date (RFC3339 format)."
+//	@Param			page			query	int		false	"Page number of results to retrieve"
+//	@Param			per_page		query	int		false	"restrict to X results"
+//	@Param			order_by		query	string	false	"Order by column(s). Comma separated list of columns to order by (e.g. tag,master_id desc)"
 //	@Security		Bearer
 func GetSaltEvents(c *gin.Context) {
 	db := db.DB.Table(table)
@@ -48,10 +55,29 @@ func GetSaltEvents(c *gin.Context) {
 	tag := c.Query("tag")
 	masterID := c.Query("master_id")
 	loadData := c.Query("load_data")
+	dataMatch, hasDataMatch := c.GetQuery("data_match")
+	dataFilter, hasDataFilter := c.GetQuery("data_filter")
+	dataKey, hasDataKey := c.GetQuery("data_key")
+	dataField, hasDataField := c.GetQuery("data_field")
+	dataValue, hasDataValue := c.GetQuery("data_value")
+	dataValueType, hasDataValueType := c.GetQuery("data_value_type")
+	dataQuery, hasDataQuery := c.GetQuery("data_query")
 	since := c.Query("since")
 	until := c.Query("until")
 
-	log.Debug("Received request to get salt events", zap.String("tag", tag), zap.String("master_id", masterID), zap.String("load_data", loadData), zap.String("since", since), zap.String("until", until))
+	log.Debug("Received request to get salt events",
+		zap.String("tag", tag),
+		zap.String("master_id", masterID),
+		zap.String("load_data", loadData),
+		zap.String("data_match", dataMatch),
+		zap.Int("data_filter_length", len(dataFilter)),
+		zap.Int("data_key_length", len(dataKey)),
+		zap.Int("data_field_length", len(dataField)),
+		zap.String("data_value_type", dataValueType),
+		zap.Int("data_query_length", len(dataQuery)),
+		zap.String("since", since),
+		zap.String("until", until),
+	)
 
 	boolValue, err := strconv.ParseBool(loadData)
 	if err != nil {
@@ -87,6 +113,31 @@ func GetSaltEvents(c *gin.Context) {
 	}
 
 	filterQuery := db.Select(selection).Model(&model.SaltEvent{})
+	filterQuery, err = applyDataFilter(filterQuery, dataFilterOptions{
+		Match:        dataMatch,
+		Filter:       dataFilter,
+		Key:          dataKey,
+		Field:        dataField,
+		Value:        dataValue,
+		ValueType:    dataValueType,
+		HasMatch:     hasDataMatch,
+		HasFilter:    hasDataFilter,
+		HasKey:       hasDataKey,
+		HasField:     hasDataField,
+		HasValue:     hasDataValue,
+		HasValueType: hasDataValueType,
+	}, useJSONB)
+	if err != nil {
+		log.Debug("Invalid data filter", zap.Error(err))
+		httputil.NewError(c, http.StatusBadRequest, err.Error())
+		return
+	}
+	filterQuery, err = applyAdvancedDataFilter(filterQuery, dataQuery, hasDataQuery, useJSONB)
+	if err != nil {
+		log.Debug("Invalid advanced data filter", zap.Error(err))
+		httputil.NewError(c, http.StatusBadRequest, err.Error())
+		return
+	}
 	if tag != "" {
 		if strings.Contains(tag, "*") {
 			filterQuery = filterQuery.Where("tag LIKE ?", strings.ReplaceAll(tag, "*", "%"))
@@ -98,11 +149,12 @@ func GetSaltEvents(c *gin.Context) {
 		log.Debug("Applied tag filter", zap.String("tag", tag))
 	}
 	if masterID != "" {
-		masterID = strings.ReplaceAll(masterID, "_", "\\_")
 		if strings.Contains(masterID, "*") {
-			filterQuery = filterQuery.Where("master_id LIKE ?", strings.ReplaceAll(masterID, "*", "%"))
+			pattern := strings.ReplaceAll(masterID, "_", "\\_")
+			filterQuery = filterQuery.Where("master_id LIKE ?", strings.ReplaceAll(pattern, "*", "%"))
 		} else if strings.Contains(masterID, "?") {
-			filterQuery = filterQuery.Where("master_id LIKE ?", strings.ReplaceAll(masterID, "?", "_"))
+			pattern := strings.ReplaceAll(masterID, "_", "\\_")
+			filterQuery = filterQuery.Where("master_id LIKE ?", strings.ReplaceAll(pattern, "?", "_"))
 		} else {
 			filterQuery = filterQuery.Where("master_id = ?", masterID)
 		}
