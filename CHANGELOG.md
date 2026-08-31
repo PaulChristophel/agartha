@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.16.0](https://github.com/PaulChristophel/agartha/compare/v0.15.1...v0.16.0) (2026-08-31)
+
+
+### Features
+
+* More agent tweaks ([2d601d5](https://github.com/PaulChristophel/agartha/commit/2d601d55f1edc995a5dd0fc11028cd30a81c6dc5))
+
 ## [0.15.1](https://github.com/PaulChristophel/agartha/compare/v0.15.0...v0.15.1) (2026-08-28)
 
 
