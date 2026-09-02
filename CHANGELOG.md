@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.16.1](https://github.com/PaulChristophel/agartha/compare/v0.16.0...v0.16.1) (2026-08-31)
+
+
+### Features
+
+* Allow filtering jids/events/returns via jsonb ([4098a7b](https://github.com/PaulChristophel/agartha/commit/4098a7beeb1cc394d8f64d8558a63a970cde5872))
+
 ## [0.16.0](https://github.com/PaulChristophel/agartha/compare/v0.15.1...v0.16.0) (2026-08-31)
 
 
