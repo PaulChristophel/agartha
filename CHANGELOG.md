@@ -1,5 +1,23 @@
 # Changelog
 
+## [0.17.1](https://github.com/PaulChristophel/agartha/compare/v0.17.0...v0.17.1) (2026-09-03)
+
+
+### Features
+
+* update types ([4ef9ec7](https://github.com/PaulChristophel/agartha/commit/4ef9ec7082a44d51aa2f63c57711bf682987df9a))
+
+
+### Bug Fixes
+
+* Fix dependabot https://github.com/PaulChristophel/agartha/security/dependabot/11 ([f6100a1](https://github.com/PaulChristophel/agartha/commit/f6100a1a4cd1541bb4023caf20e4bf78097cbd5b))
+* Fix dependabot https://github.com/PaulChristophel/agartha/security/dependabot/41 ([3691cb8](https://github.com/PaulChristophel/agartha/commit/3691cb8974f12c3465fa3ccb12999bb7a6016ab7))
+
+
+### Miscellaneous Chores
+
+* Fix dependabot alerts and update dependencies ([a1c99e0](https://github.com/PaulChristophel/agartha/commit/a1c99e0898724fd0eb171b460282d1a7ef666706))
+
 ## [0.17.0](https://github.com/PaulChristophel/agartha/compare/v0.16.2...v0.17.0) (2026-09-03)
 
 
