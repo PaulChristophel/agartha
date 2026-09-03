@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.17.0](https://github.com/PaulChristophel/agartha/compare/v0.16.2...v0.17.0) (2026-09-03)
+
+
+### Miscellaneous Chores
+
+* Update out of date packages and dependencies ([754aeb9](https://github.com/PaulChristophel/agartha/commit/754aeb9256a17301735079730577046de0b04e70))
+* Update out of date packages and dependencies ([fc08ba1](https://github.com/PaulChristophel/agartha/commit/fc08ba14540211990a47be95d7ed39755ca85bec))
+
 ## [0.16.2](https://github.com/PaulChristophel/agartha/compare/v0.16.1...v0.16.2) (2026-09-03)
 
 
