@@ -3,18 +3,15 @@ import { defineConfig } from 'vite';
 import checker from 'vite-plugin-checker';
 import react from '@vitejs/plugin-react-swc';
 
-export default defineConfig(async ({ mode }) => {
-  // Dynamically import tsconfigPaths to avoid `require` issues
-  const { default: tsconfigPaths } = await import('vite-tsconfig-paths');
-
+export default defineConfig(({ mode }) => {
   return {
     plugins: [
       react(),
-      tsconfigPaths(),
       ...(mode === 'test'
         ? []
         : [
             checker({
+              enableBuild: false,
               eslint: {
                 lintCommand: 'eslint "./src/**/*.{js,jsx,ts,tsx}"',
               },

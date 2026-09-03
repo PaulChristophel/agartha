@@ -55,7 +55,7 @@ const ConformityDetailsPage: React.FC = () => {
   useEffect(() => {
     if (!returnData) return;
 
-    let filteredData: Record<string, ReturnData> = {};
+    let filteredData: Record<string, ReturnData>;
 
     switch (currentFilter) {
       case 'succeeded':

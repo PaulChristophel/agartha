@@ -6,12 +6,12 @@ import Link from '@mui/material/Link';
 import Card from '@mui/material/Card';
 import Stack from '@mui/material/Stack';
 import Select from '@mui/material/Select';
+import Button from '@mui/material/Button';
 import Divider from '@mui/material/Divider';
 import MenuItem from '@mui/material/MenuItem';
 import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
 import IconButton from '@mui/material/IconButton';
-import LoadingButton from '@mui/lab/LoadingButton';
 import { alpha, useTheme } from '@mui/material/styles';
 import InputAdornment from '@mui/material/InputAdornment';
 
@@ -114,7 +114,7 @@ const LoginView: React.FC = () => {
         </Link>
       </Stack>
 
-      <LoadingButton
+      <Button
         fullWidth
         size="large"
         type="submit"
@@ -123,7 +123,7 @@ const LoginView: React.FC = () => {
         onClick={handleClick}
       >
         Login
-      </LoadingButton>
+      </Button>
       {loginError && (
         <Typography role="alert" color="error" sx={{ mt: 2 }}>
           {loginError}

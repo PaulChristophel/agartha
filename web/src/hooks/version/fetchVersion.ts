@@ -15,6 +15,6 @@ export const fetchVersion = async (): Promise<VersionData> => {
     return response.data;
   } catch (error) {
     console.error('Error fetching version:', error);
-    throw new Error('Failed to fetch version data');
+    throw new Error('Failed to fetch version data', { cause: error });
   }
 };
