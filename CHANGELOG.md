@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.16.2](https://github.com/PaulChristophel/agartha/compare/v0.16.1...v0.16.2) (2026-09-03)
+
+
+### Miscellaneous Chores
+
+* release 0.16.2 ([208540d](https://github.com/PaulChristophel/agartha/commit/208540dd0aef7511ad1738981f0996387e0293de))
+
 ## [0.16.1](https://github.com/PaulChristophel/agartha/compare/v0.16.0...v0.16.1) (2026-08-31)
 
 
