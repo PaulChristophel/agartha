@@ -4,7 +4,6 @@ import Box from '@mui/material/Box';
 import Chip from '@mui/material/Chip';
 import Alert from '@mui/material/Alert';
 import Button from '@mui/material/Button';
-import MenuItem from '@mui/material/MenuItem';
 import TextField from '@mui/material/TextField';
 import Autocomplete from '@mui/material/Autocomplete';
 import RefreshIcon from '@mui/icons-material/Refresh';
@@ -13,6 +12,28 @@ import useDebounce from 'src/hooks/useDebounce.ts';
 import useRefreshKeys from 'src/hooks/saltMinion/useRefreshKeys.ts';
 import useFetchGrainsKeys from 'src/hooks/saltMinion/useFetchGrainsKeys.ts';
 import useFetchPillarKeys from 'src/hooks/saltMinion/useFetchPillarKeys.ts';
+
+import FilterTypeaheadSelect, {
+  type FilterTypeaheadOption,
+} from 'src/components/FilterTypeaheadSelect.tsx';
+
+type MinionFilterOperator = 'eq' | 'not' | 'like' | 'not_like';
+type MinionFilterType = 'string' | 'int' | 'float' | 'bool' | 'array' | 'null';
+
+const filterOperatorOptions: FilterTypeaheadOption<MinionFilterOperator>[] = [
+  { value: 'eq', label: 'Equals' },
+  { value: 'not', label: 'Not Equals' },
+  { value: 'like', label: 'Like' },
+  { value: 'not_like', label: 'Not Like' },
+];
+const filterTypeOptions: FilterTypeaheadOption<MinionFilterType>[] = [
+  { value: 'string', label: 'string' },
+  { value: 'int', label: 'int', keywords: 'integer' },
+  { value: 'float', label: 'float', keywords: 'number decimal' },
+  { value: 'bool', label: 'bool', keywords: 'boolean' },
+  { value: 'array', label: 'array' },
+  { value: 'null', label: 'null' },
+];
 
 interface MinionsSearchProps {
   minionID: string;
@@ -59,16 +80,12 @@ const MinionsSearch: React.FC<MinionsSearchProps> = ({
   const [hasMorePillars, setHasMorePillars] = useState(true);
   const [grainFilterPath, setGrainFilterPath] = useState('');
   const [grainFilterValue, setGrainFilterValue] = useState('');
-  const [grainFilterType, setGrainFilterType] = useState('string');
-  const [grainFilterOperator, setGrainFilterOperator] = useState<
-    'eq' | 'not' | 'like' | 'not_like'
-  >('eq');
+  const [grainFilterType, setGrainFilterType] = useState<MinionFilterType>('string');
+  const [grainFilterOperator, setGrainFilterOperator] = useState<MinionFilterOperator>('eq');
   const [pillarFilterPath, setPillarFilterPath] = useState('');
   const [pillarFilterValue, setPillarFilterValue] = useState('');
-  const [pillarFilterType, setPillarFilterType] = useState('string');
-  const [pillarFilterOperator, setPillarFilterOperator] = useState<
-    'eq' | 'not' | 'like' | 'not_like'
-  >('eq');
+  const [pillarFilterType, setPillarFilterType] = useState<MinionFilterType>('string');
+  const [pillarFilterOperator, setPillarFilterOperator] = useState<MinionFilterOperator>('eq');
   const debouncedGrainInputValue = useDebounce(grainInputValue, 500);
   const debouncedPillarInputValue = useDebounce(pillarInputValue, 500);
   const autoRefreshAttempted = useRef(false);
@@ -354,23 +371,14 @@ const MinionsSearch: React.FC<MinionsSearchProps> = ({
               />
             )}
           />
-          <TextField
-            select
+          <FilterTypeaheadSelect
             label="Operator"
             value={grainFilterOperator}
-            onChange={(e) =>
-              setGrainFilterOperator(e.target.value as 'eq' | 'not' | 'like' | 'not_like')
-            }
+            options={filterOperatorOptions}
+            onChange={setGrainFilterOperator}
+            shrinkLabel
             sx={{ width: 160 }}
-            InputLabelProps={{
-              shrink: true,
-            }}
-          >
-            <MenuItem value="eq">Equals</MenuItem>
-            <MenuItem value="not">Not Equals</MenuItem>
-            <MenuItem value="like">Like</MenuItem>
-            <MenuItem value="not_like">Not Like</MenuItem>
-          </TextField>
+          />
           <TextField
             label="Value"
             value={grainFilterValue}
@@ -387,23 +395,14 @@ const MinionsSearch: React.FC<MinionsSearchProps> = ({
               }
             }}
           />
-          <TextField
-            select
+          <FilterTypeaheadSelect
             label="Type"
             value={grainFilterType}
-            onChange={(e) => setGrainFilterType(e.target.value)}
+            options={filterTypeOptions}
+            onChange={setGrainFilterType}
+            shrinkLabel
             sx={{ width: 120 }}
-            InputLabelProps={{
-              shrink: true,
-            }}
-          >
-            <MenuItem value="string">string</MenuItem>
-            <MenuItem value="int">int</MenuItem>
-            <MenuItem value="float">float</MenuItem>
-            <MenuItem value="bool">bool</MenuItem>
-            <MenuItem value="array">array</MenuItem>
-            <MenuItem value="null">null</MenuItem>
-          </TextField>
+          />
           <Button variant="outlined" onClick={handleAddGrainFilter} sx={{ whiteSpace: 'nowrap' }}>
             Add
           </Button>
@@ -439,23 +438,14 @@ const MinionsSearch: React.FC<MinionsSearchProps> = ({
               />
             )}
           />
-          <TextField
-            select
+          <FilterTypeaheadSelect
             label="Operator"
             value={pillarFilterOperator}
-            onChange={(e) =>
-              setPillarFilterOperator(e.target.value as 'eq' | 'not' | 'like' | 'not_like')
-            }
+            options={filterOperatorOptions}
+            onChange={setPillarFilterOperator}
+            shrinkLabel
             sx={{ width: 160 }}
-            InputLabelProps={{
-              shrink: true,
-            }}
-          >
-            <MenuItem value="eq">Equals</MenuItem>
-            <MenuItem value="not">Not Equals</MenuItem>
-            <MenuItem value="like">Like</MenuItem>
-            <MenuItem value="not_like">Not Like</MenuItem>
-          </TextField>
+          />
           <TextField
             label="Value"
             value={pillarFilterValue}
@@ -472,23 +462,14 @@ const MinionsSearch: React.FC<MinionsSearchProps> = ({
               }
             }}
           />
-          <TextField
-            select
+          <FilterTypeaheadSelect
             label="Type"
             value={pillarFilterType}
-            onChange={(e) => setPillarFilterType(e.target.value)}
+            options={filterTypeOptions}
+            onChange={setPillarFilterType}
+            shrinkLabel
             sx={{ width: 120 }}
-            InputLabelProps={{
-              shrink: true,
-            }}
-          >
-            <MenuItem value="string">string</MenuItem>
-            <MenuItem value="int">int</MenuItem>
-            <MenuItem value="float">float</MenuItem>
-            <MenuItem value="bool">bool</MenuItem>
-            <MenuItem value="array">array</MenuItem>
-            <MenuItem value="null">null</MenuItem>
-          </TextField>
+          />
           <Button variant="outlined" onClick={handleAddPillarFilter} sx={{ whiteSpace: 'nowrap' }}>
             Add
           </Button>

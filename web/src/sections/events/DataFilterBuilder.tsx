@@ -8,6 +8,10 @@ import MenuItem from '@mui/material/MenuItem';
 import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
 
+import FilterTypeaheadSelect, {
+  type FilterTypeaheadOption,
+} from 'src/components/FilterTypeaheadSelect.tsx';
+
 import {
   parseDataPath,
   emptyDataFilter,
@@ -31,6 +35,26 @@ const editableDataFilter = (filter: DataFilterState): DataFilterState =>
 
 const numericOperators: DataFilterOperator[] = ['gt', 'gte', 'lt', 'lte'];
 const stringOperators: DataFilterOperator[] = ['contains', 'icontains', 'regex'];
+const operatorOptions: FilterTypeaheadOption<DataFilterOperator>[] = [
+  { value: 'eq', label: 'equals' },
+  { value: 'ne', label: 'does not equal' },
+  { value: 'gt', label: 'greater than' },
+  { value: 'gte', label: 'greater or equal' },
+  { value: 'lt', label: 'less than' },
+  { value: 'lte', label: 'less or equal' },
+  { value: 'contains', label: 'contains' },
+  { value: 'icontains', label: 'contains (ignore case)' },
+  { value: 'regex', label: 'regular expression' },
+  { value: 'exists', label: 'exists' },
+  { value: 'not_exists', label: 'does not exist' },
+];
+const valueTypeOptions: FilterTypeaheadOption<DataValueType>[] = [
+  { value: 'string', label: 'string' },
+  { value: 'bool', label: 'bool', keywords: 'boolean' },
+  { value: 'int', label: 'int', keywords: 'integer' },
+  { value: 'float', label: 'float', keywords: 'number decimal' },
+  { value: 'null', label: 'null' },
+];
 const hoverHelpProps = {
   arrow: true,
   placement: 'top' as const,
@@ -233,28 +257,14 @@ const DataFilterBuilder: React.FC<DataFilterBuilderProps> = ({
             {...hoverHelpProps}
             title="Choose how the selected JSON value is compared. Numeric and string comparisons enforce compatible value types."
           >
-            <TextField
-              select
-              size="small"
+            <FilterTypeaheadSelect
               label="Comparison"
               value={clause.operator}
-              onChange={(event) =>
-                changeDataOperator(index, event.target.value as DataFilterOperator)
-              }
+              options={operatorOptions}
+              onChange={(operator) => changeDataOperator(index, operator)}
+              size="small"
               sx={{ flex: '0 1 170px' }}
-            >
-              <MenuItem value="eq">equals</MenuItem>
-              <MenuItem value="ne">does not equal</MenuItem>
-              <MenuItem value="gt">greater than</MenuItem>
-              <MenuItem value="gte">greater or equal</MenuItem>
-              <MenuItem value="lt">less than</MenuItem>
-              <MenuItem value="lte">less or equal</MenuItem>
-              <MenuItem value="contains">contains</MenuItem>
-              <MenuItem value="icontains">contains (ignore case)</MenuItem>
-              <MenuItem value="regex">regular expression</MenuItem>
-              <MenuItem value="exists">exists</MenuItem>
-              <MenuItem value="not_exists">does not exist</MenuItem>
-            </TextField>
+            />
           </Tooltip>
           {dataOperatorNeedsValue(clause.operator) && (
             <>
@@ -277,25 +287,19 @@ const DataFilterBuilder: React.FC<DataFilterBuilderProps> = ({
                 {...hoverHelpProps}
                 title="Select the JSON type used to parse the comparison value. Numeric-looking identifiers should usually remain strings."
               >
-                <TextField
-                  select
-                  size="small"
+                <FilterTypeaheadSelect
                   label="Type"
                   value={clause.valueType}
-                  onChange={(event) =>
+                  options={valueTypeOptions}
+                  onChange={(valueType) =>
                     updateDataClause(index, {
-                      valueType: event.target.value as DataValueType,
-                      value: event.target.value === 'null' ? '' : clause.value,
+                      valueType,
+                      value: valueType === 'null' ? '' : clause.value,
                     })
                   }
+                  size="small"
                   sx={{ flex: '0 1 120px' }}
-                >
-                  <MenuItem value="string">string</MenuItem>
-                  <MenuItem value="bool">bool</MenuItem>
-                  <MenuItem value="int">int</MenuItem>
-                  <MenuItem value="float">float</MenuItem>
-                  <MenuItem value="null">null</MenuItem>
-                </TextField>
+                />
               </Tooltip>
             </>
           )}

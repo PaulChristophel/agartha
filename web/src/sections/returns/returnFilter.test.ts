@@ -1,8 +1,17 @@
 import { it, expect, describe } from 'vitest';
 
-import { parseReturnPath, parseReturnFilter, serializeReturnFilter } from './returnFilter.ts';
+import {
+  parseReturnPath,
+  parseReturnFilter,
+  serializeReturnFilter,
+  newReturnFilterClause,
+} from './returnFilter.ts';
 
 describe('return filter serialization', () => {
+  it('starts new clauses with empty string inputs', () => {
+    expect(newReturnFilterClause()).toMatchObject({ path: '', value: '', valueType: 'string' });
+  });
+
   it('serializes multiple typed clauses and escaped paths', () => {
     const serialized = serializeReturnFilter({
       logic: 'and',

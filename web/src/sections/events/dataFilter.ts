@@ -62,10 +62,10 @@ export const newDataFilterClause = (): DataFilterClause => ({
   scope: 'root',
   key: '',
   containerPath: '',
-  path: 'result',
+  path: '',
   operator: 'eq',
-  value: 'false',
-  valueType: 'bool',
+  value: '',
+  valueType: 'string',
 });
 
 export const emptyDataFilter = (): DataFilterState => ({

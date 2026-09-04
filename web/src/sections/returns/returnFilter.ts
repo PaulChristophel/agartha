@@ -59,10 +59,10 @@ const valueTypes: ReturnValueType[] = ['string', 'bool', 'int', 'float', 'null']
 export const newReturnFilterClause = (): ReturnFilterClause => ({
   scope: 'key',
   key: '',
-  path: 'result',
+  path: '',
   operator: 'eq',
-  value: 'false',
-  valueType: 'bool',
+  value: '',
+  valueType: 'string',
 });
 
 export const emptyReturnFilter = (): ReturnFilterState => ({

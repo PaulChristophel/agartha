@@ -1,8 +1,17 @@
 import { it, expect, describe } from 'vitest';
 
-import { parseDataPath, parseDataFilter, serializeDataFilter } from './dataFilter.ts';
+import {
+  parseDataPath,
+  parseDataFilter,
+  serializeDataFilter,
+  newDataFilterClause,
+} from './dataFilter.ts';
 
 describe('event data filter serialization', () => {
+  it('starts new clauses with empty string inputs', () => {
+    expect(newDataFilterClause()).toMatchObject({ path: '', value: '', valueType: 'string' });
+  });
+
   it('serializes multiple typed clauses and escaped paths', () => {
     const serialized = serializeDataFilter({
       logic: 'or',
