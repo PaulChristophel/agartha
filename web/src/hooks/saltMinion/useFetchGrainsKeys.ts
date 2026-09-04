@@ -14,10 +14,11 @@ interface PaginatedResponse {
   results: string[];
 }
 
-const useFetchGrainsKeys = (likeIncludes: string, page: number) => {
+const useFetchGrainsKeys = (likeIncludes: string, page: number, revision: number = 0) => {
   const [grainsKeys, setGrainsKeys] = useState<string[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
+  const [isEmpty, setIsEmpty] = useState(false);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -36,11 +37,17 @@ const useFetchGrainsKeys = (likeIncludes: string, page: number) => {
         });
         const keys = response.data.results.map((key) => toColonNotation(key));
         setGrainsKeys(keys);
+        setIsEmpty(keys.length === 0);
       } catch (err) {
         if (controller.signal.aborted) return;
-        if (axios.isAxiosError(err)) {
+        if (axios.isAxiosError(err) && err.response?.status === 404) {
+          setGrainsKeys([]);
+          setIsEmpty(true);
+        } else if (axios.isAxiosError(err)) {
+          setIsEmpty(false);
           setError(err.message);
         } else {
+          setIsEmpty(false);
           setError('An unexpected error occurred');
         }
       } finally {
@@ -50,9 +57,9 @@ const useFetchGrainsKeys = (likeIncludes: string, page: number) => {
 
     void fetchGrainsKeys();
     return () => controller.abort();
-  }, [likeIncludes, page]);
+  }, [likeIncludes, page, revision]);
 
-  return { grainsKeys, loading, error };
+  return { grainsKeys, loading, error, isEmpty };
 };
 
 export default useFetchGrainsKeys;

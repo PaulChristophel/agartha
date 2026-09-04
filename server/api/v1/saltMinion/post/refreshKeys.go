@@ -2,7 +2,7 @@ package saltMinion
 
 import (
 	"net/http"
-	"sync"
+	"sync/atomic"
 
 	_ "github.com/PaulChristophel/agartha/server/httputil"
 
@@ -14,8 +14,8 @@ import (
 )
 
 var (
-	refreshMu    sync.Mutex
-	isRefreshing *bool
+	isRefreshing *atomic.Bool
+	refreshError *atomic.Pointer[string]
 )
 
 type RefreshStatus struct {
@@ -44,7 +44,7 @@ func (r RefreshStatus) MarshalLogObject(enc zapcore.ObjectEncoder) error {
 func RefreshKeys(c *gin.Context) {
 	log := logger.GetLogger()
 	sugar := log.Sugar()
-	if *isRefreshing {
+	if !isRefreshing.CompareAndSwap(false, true) {
 		status := RefreshStatus{
 			Status:  "pending",
 			Message: "Materialized view refresh is already in progress",
@@ -53,24 +53,24 @@ func RefreshKeys(c *gin.Context) {
 		c.JSON(http.StatusOK, status)
 		return
 	}
-	log.Debug("Locking the table to block futher goroutines")
-	refreshMu.Lock()
+	refreshError.Store(nil)
 	go func() {
-		*isRefreshing = true
 		defer func() {
-			*isRefreshing = false
-			log.Debug("Unlocking the table and allowing goroutines")
-			refreshMu.Unlock()
+			isRefreshing.Store(false)
 		}()
 
 		result := db.DB.Exec("REFRESH MATERIALIZED VIEW CONCURRENTLY mat_salt_minions_grains_keys;")
 		if result.Error != nil {
-			sugar.Errorf("Failed to refresh materialized view: %s", result.Error)
+			message := "Failed to refresh the grains dropdown list"
+			refreshError.Store(&message)
+			sugar.Errorf("%s: %s", message, result.Error)
 			return
 		}
 		result = db.DB.Exec("REFRESH MATERIALIZED VIEW CONCURRENTLY mat_salt_minions_pillar_keys;")
 		if result.Error != nil {
-			sugar.Errorf("Failed to refresh materialized view: %s", result.Error)
+			message := "Failed to refresh the pillar dropdown list"
+			refreshError.Store(&message)
+			sugar.Errorf("%s: %s", message, result.Error)
 			return
 		}
 
@@ -85,6 +85,7 @@ func RefreshKeys(c *gin.Context) {
 	c.JSON(http.StatusOK, status)
 }
 
-func SetRefreshing(refreshing *bool) {
+func SetRefreshState(refreshing *atomic.Bool, lastError *atomic.Pointer[string]) {
 	isRefreshing = refreshing
+	refreshError = lastError
 }

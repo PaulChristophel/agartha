@@ -13,10 +13,11 @@ interface PaginatedResponse {
   results: string[];
 }
 
-const useFetchPillarKeys = (likeIncludes: string, page: number) => {
+const useFetchPillarKeys = (likeIncludes: string, page: number, revision: number = 0) => {
   const [pillarKeys, setPillarKeys] = useState<string[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
+  const [isEmpty, setIsEmpty] = useState(false);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -35,11 +36,17 @@ const useFetchPillarKeys = (likeIncludes: string, page: number) => {
         });
         const keys = response.data.results.map((key) => toColonNotation(key));
         setPillarKeys(keys);
+        setIsEmpty(keys.length === 0);
       } catch (err) {
         if (controller.signal.aborted) return;
-        if (axios.isAxiosError(err)) {
+        if (axios.isAxiosError(err) && err.response?.status === 404) {
+          setPillarKeys([]);
+          setIsEmpty(true);
+        } else if (axios.isAxiosError(err)) {
+          setIsEmpty(false);
           setError(err.message);
         } else {
+          setIsEmpty(false);
           setError('An unexpected error occurred');
         }
       } finally {
@@ -49,9 +56,9 @@ const useFetchPillarKeys = (likeIncludes: string, page: number) => {
 
     void fetchPillarKeys();
     return () => controller.abort();
-  }, [likeIncludes, page]);
+  }, [likeIncludes, page, revision]);
 
-  return { pillarKeys, loading, error };
+  return { pillarKeys, loading, error, isEmpty };
 };
 
 export default useFetchPillarKeys;

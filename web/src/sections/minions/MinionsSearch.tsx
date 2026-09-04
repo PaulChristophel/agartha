@@ -1,13 +1,16 @@
-import React, { useState, useEffect } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 
 import Box from '@mui/material/Box';
 import Chip from '@mui/material/Chip';
+import Alert from '@mui/material/Alert';
 import Button from '@mui/material/Button';
 import MenuItem from '@mui/material/MenuItem';
 import TextField from '@mui/material/TextField';
 import Autocomplete from '@mui/material/Autocomplete';
+import RefreshIcon from '@mui/icons-material/Refresh';
 
 import useDebounce from 'src/hooks/useDebounce.ts';
+import useRefreshKeys from 'src/hooks/saltMinion/useRefreshKeys.ts';
 import useFetchGrainsKeys from 'src/hooks/saltMinion/useFetchGrainsKeys.ts';
 import useFetchPillarKeys from 'src/hooks/saltMinion/useFetchPillarKeys.ts';
 
@@ -68,17 +71,46 @@ const MinionsSearch: React.FC<MinionsSearchProps> = ({
   >('eq');
   const debouncedGrainInputValue = useDebounce(grainInputValue, 500);
   const debouncedPillarInputValue = useDebounce(pillarInputValue, 500);
+  const autoRefreshAttempted = useRef(false);
+  const { isRefreshing, error: refreshError, message, revision, refreshKeys } = useRefreshKeys();
 
   const {
     grainsKeys,
     loading: grainsLoading,
     error: grainsError,
-  } = useFetchGrainsKeys(debouncedGrainInputValue, grainPage);
+    isEmpty: grainsEmpty,
+  } = useFetchGrainsKeys(debouncedGrainInputValue, grainPage, revision);
   const {
     pillarKeys: fetchedPillarKeys,
     loading: pillarsLoading,
     error: pillarsError,
-  } = useFetchPillarKeys(debouncedPillarInputValue, pillarPage);
+    isEmpty: pillarsEmpty,
+  } = useFetchPillarKeys(debouncedPillarInputValue, pillarPage, revision);
+
+  useEffect(() => {
+    const initialListsLoaded =
+      !grainsLoading &&
+      !pillarsLoading &&
+      grainPage === 1 &&
+      pillarPage === 1 &&
+      debouncedGrainInputValue === '' &&
+      debouncedPillarInputValue === '';
+
+    if (initialListsLoaded && (grainsEmpty || pillarsEmpty) && !autoRefreshAttempted.current) {
+      autoRefreshAttempted.current = true;
+      void refreshKeys();
+    }
+  }, [
+    debouncedGrainInputValue,
+    debouncedPillarInputValue,
+    grainPage,
+    grainsEmpty,
+    grainsLoading,
+    pillarPage,
+    pillarsEmpty,
+    pillarsLoading,
+    refreshKeys,
+  ]);
 
   useEffect(() => {
     if (grainPage === 1) {
@@ -487,6 +519,23 @@ const MinionsSearch: React.FC<MinionsSearchProps> = ({
           shrink: true,
         }}
       />
+      <Button
+        variant="outlined"
+        startIcon={<RefreshIcon />}
+        disabled={isRefreshing}
+        onClick={() => void refreshKeys()}
+        sx={{ flex: '0 0 auto', whiteSpace: 'nowrap' }}
+      >
+        {isRefreshing ? 'Refreshing lists...' : 'Refresh dropdown lists'}
+      </Button>
+      {(message || refreshError) && (
+        <Alert
+          severity={refreshError ? 'error' : isRefreshing ? 'info' : 'success'}
+          sx={{ flex: '1 1 100%' }}
+        >
+          {refreshError || message}
+        </Alert>
+      )}
     </Box>
   );
 };

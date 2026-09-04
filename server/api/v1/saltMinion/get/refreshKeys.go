@@ -2,6 +2,7 @@ package saltMinion
 
 import (
 	"net/http"
+	"sync/atomic"
 
 	_ "github.com/PaulChristophel/agartha/server/httputil"
 
@@ -12,7 +13,8 @@ import (
 )
 
 var (
-	isRefreshing *bool
+	isRefreshing *atomic.Bool
+	refreshError *atomic.Pointer[string]
 )
 
 type RefreshStatus struct {
@@ -42,10 +44,15 @@ func RefreshKeys(c *gin.Context) {
 	var status RefreshStatus
 	log := logger.GetLogger()
 
-	if *isRefreshing {
+	if isRefreshing.Load() {
 		status = RefreshStatus{
 			Status:  "pending",
 			Message: "Materialized view refresh is already in progress",
+		}
+	} else if message := refreshError.Load(); message != nil {
+		status = RefreshStatus{
+			Status:  "failed",
+			Message: *message,
 		}
 	} else {
 		status = RefreshStatus{
@@ -58,6 +65,7 @@ func RefreshKeys(c *gin.Context) {
 	c.JSON(http.StatusOK, status)
 }
 
-func SetRefreshing(refreshing *bool) {
+func SetRefreshState(refreshing *atomic.Bool, lastError *atomic.Pointer[string]) {
 	isRefreshing = refreshing
+	refreshError = lastError
 }

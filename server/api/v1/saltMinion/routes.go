@@ -1,6 +1,7 @@
 package saltMinion
 
 import (
+	"sync/atomic"
 
 	// "strings"
 	get "github.com/PaulChristophel/agartha/server/api/v1/saltMinion/get"
@@ -10,14 +11,15 @@ import (
 )
 
 var (
-	isRefreshing bool = false
+	isRefreshing atomic.Bool
+	refreshError atomic.Pointer[string]
 )
 
 func AddRoutes(rg *gin.RouterGroup) {
 	grp := rg.Group("/salt_minion")
 
-	post.SetRefreshing(&isRefreshing)
-	get.SetRefreshing(&isRefreshing)
+	post.SetRefreshState(&isRefreshing, &refreshError)
+	get.SetRefreshState(&isRefreshing, &refreshError)
 
 	grp.GET("", get.GetSaltMinion)
 	grp.GET("/uuid/:uuid", get.GetSaltMinionUUID)
