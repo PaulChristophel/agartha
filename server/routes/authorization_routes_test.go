@@ -58,6 +58,14 @@ func TestSensitiveRoutesEnforceSaltAuthorization(t *testing.T) {
 
 	tests := []authorizationRouteCase{
 		{
+			name:               "unified job detail",
+			method:             http.MethodGet,
+			path:               "/api/v1/jobs/20260904120000000000",
+			allowedPermissions: `["@jobs"]`,
+			deniedPermissions:  `[]`,
+			allowedStatus:      http.StatusNotFound,
+		},
+		{
 			name:               "v1 Salt data read",
 			method:             http.MethodGet,
 			path:               "/api/v1/conformity/refresh",
@@ -203,7 +211,7 @@ func serveAuthorizedRoute(
 	db.DB = database
 	options.Secret = routeAuthorizationSecret
 	saltOptions.URL = upstreamURL
-	saltDBTables = config.SaltDBTables{SaltCache: "salt_cache", SaltKeys: "salt_keys"}
+	saltDBTables = config.SaltDBTables{SaltCache: "salt_cache", SaltKeys: "salt_keys", JIDs: "jids", SaltReturns: "salt_returns"}
 	t.Cleanup(func() {
 		db.DB = previousDB
 		options = previousOptions
@@ -217,6 +225,11 @@ func serveAuthorizedRoute(
 
 	expectActiveRouteUser(mock)
 	expectRouteSaltPermissions(mock, permissions)
+	if test.name == "unified job detail" && permissions == test.allowedPermissions {
+		mock.ExpectQuery(regexp.QuoteMeta(`SELECT * FROM "jids" WHERE jid = $1`)).
+			WithArgs("20260904120000000000").
+			WillReturnRows(sqlmock.NewRows([]string{"jid", "load", "alter_time"}))
+	}
 	if expectSaltKeys {
 		expectMissingSaltKeysTable(mock)
 	}

@@ -1,4 +1,5 @@
 import yaml from 'js-yaml';
+import { Link } from 'react-router-dom';
 import React, { lazy, Suspense, useState, useEffect } from 'react';
 
 import Grid from '@mui/material/Grid';
@@ -41,6 +42,9 @@ const FormattedView: React.FC<{
   showInfoMessage,
 }) => {
   const [asyncState, setAsyncState] = useState(aSync || false);
+  const [submittedJob, setSubmittedJob] = useState<{ jid: string; submittedAt: number } | null>(
+    null
+  );
   const [batchState, setBatchState] = useState(batch || '');
   const [funState, setFunState] = useState(fun || '');
   const [tgtState, setTgtState] = useState(tgt || '');
@@ -84,6 +88,7 @@ const FormattedView: React.FC<{
   };
 
   const onRunClick = async () => {
+    setSubmittedJob(null);
     showInfoMessage('Command sent.');
     try {
       const output = await handleRun(
@@ -102,6 +107,9 @@ const FormattedView: React.FC<{
 
       // Parse the JSON output to an object
       const outputObj = JSON.parse(output);
+      if (asyncState && typeof outputObj?.jid === 'string') {
+        setSubmittedJob({ jid: outputObj.jid, submittedAt: Date.now() });
+      }
 
       // Convert the object to YAML with proper formatting
       const outputYaml = yaml.dump(outputObj, { indent: 2, lineWidth: 80 });
@@ -114,6 +122,7 @@ const FormattedView: React.FC<{
   };
 
   const onRunTestClick = async () => {
+    setSubmittedJob(null);
     showInfoMessage('Test command sent.');
     try {
       const output = await handleRun(
@@ -133,6 +142,9 @@ const FormattedView: React.FC<{
 
       // Parse the JSON output to an object
       const outputObj = JSON.parse(output);
+      if (asyncState && typeof outputObj?.jid === 'string') {
+        setSubmittedJob({ jid: outputObj.jid, submittedAt: Date.now() });
+      }
 
       // Convert the object to YAML with proper formatting
       const outputYaml = yaml.dump(outputObj, { indent: 2, lineWidth: 80 });
@@ -146,6 +158,17 @@ const FormattedView: React.FC<{
 
   return (
     <Grid container spacing={2} alignItems="center">
+      {submittedJob && (
+        <Grid item xs={12}>
+          <Button
+            component={Link}
+            to={`/job/${encodeURIComponent(submittedJob.jid)}`}
+            state={{ submittedAt: submittedJob.submittedAt }}
+          >
+            View job {submittedJob.jid}
+          </Button>
+        </Grid>
+      )}
       <Grid item xs={12} sm={6} md={3}>
         <FormControl fullWidth variant="outlined">
           <InputLabel>Client Type</InputLabel>

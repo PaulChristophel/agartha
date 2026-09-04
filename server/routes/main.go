@@ -24,6 +24,7 @@ import (
 	"github.com/PaulChristophel/agartha/server/api/v1/conformity"
 	"github.com/PaulChristophel/agartha/server/api/v1/highState"
 	"github.com/PaulChristophel/agartha/server/api/v1/jid"
+	"github.com/PaulChristophel/agartha/server/api/v1/jobs"
 	"github.com/PaulChristophel/agartha/server/api/v1/netapi"
 	"github.com/PaulChristophel/agartha/server/api/v1/saltCache"
 	"github.com/PaulChristophel/agartha/server/api/v1/saltEvent"
@@ -238,6 +239,7 @@ func addServerRoutes(router *gin.Engine) {
 	conformity.AddRoutes(saltOperational)
 	jid.SetOptions(saltDBTables)
 	jid.AddRoutes(saltOperational)
+	jobs.AddRoutes(saltOperational, db.DB, saltDBTables)
 	saltCache.SetOptions(saltDBTables)
 	saltCache.AddRoutes(saltOperational)
 	saltKeys.SetOptions(saltDBTables)

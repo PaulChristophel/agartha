@@ -88,7 +88,7 @@ const JobsTable: React.FC<JobsTableProps> = ({ queryParams, setLimit, setPage, s
                   direction={queryParams.order_by?.endsWith('desc') ? 'desc' : 'asc'}
                   onClick={() => handleRequestSort('alter_time')}
                 >
-                  Start Time
+                  Job recorded
                 </TableSortLabel>
               </TableCell>
             </TableRow>

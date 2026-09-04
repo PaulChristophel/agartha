@@ -30,6 +30,9 @@ export const queryKeys = {
     all: () => ['jids'] as const,
     detail: (id: string) => ['jids', id] as const,
   },
+  jobs: {
+    detail: (id: string) => ['job-details', id] as const,
+  },
   saltEvents: {
     all: () => ['salt-events'] as const,
     detail: (id: number) => ['salt-events', id] as const,
