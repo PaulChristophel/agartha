@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.19.0](https://github.com/PaulChristophel/agartha/compare/v0.18.1...v0.19.0) (2026-09-04)
+
+
+### Features
+
+* Add a unified job-detail endpoint ([8086175](https://github.com/PaulChristophel/agartha/commit/8086175184f3c939affc6e78bb329a36c5745dd4))
+
 ## [0.18.1](https://github.com/PaulChristophel/agartha/compare/v0.18.0...v0.18.1) (2026-09-04)
 
 
