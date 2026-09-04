@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.18.1](https://github.com/PaulChristophel/agartha/compare/v0.18.0...v0.18.1) (2026-09-04)
+
+
+### Bug Fixes
+
+* Add user controlled and automatic refreshing for materialized-view-backed dropdowns on the returns page ([dca7583](https://github.com/PaulChristophel/agartha/commit/dca7583cd2f1670b03eb8b42d371a3c10818471e))
+* Add user controlled and automatic refreshing for materialized-view-backed dropdowns on the returns page ([787d004](https://github.com/PaulChristophel/agartha/commit/787d004a2d763ca44ba0a45b4c2f5dc9b372451b))
+
 ## [0.18.0](https://github.com/PaulChristophel/agartha/compare/v0.17.1...v0.18.0) (2026-09-04)
 
 
