@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.18.0](https://github.com/PaulChristophel/agartha/compare/v0.17.1...v0.18.0) (2026-09-04)
+
+
+### Features
+
+* Add user controlled and automatic refreshing for materialized-view-backed dropdowns ([b218b5d](https://github.com/PaulChristophel/agartha/commit/b218b5d718d92069b7dcde745c861ef884b8e77e))
+
+
+### Bug Fixes
+
+* remove default values in filters ([1a2e95a](https://github.com/PaulChristophel/agartha/commit/1a2e95ab7d12b8db308672cc265edf19319273d1))
+* typeahead in comparison/operator fields. ([1a2e95a](https://github.com/PaulChristophel/agartha/commit/1a2e95ab7d12b8db308672cc265edf19319273d1))
+
 ## [0.17.1](https://github.com/PaulChristophel/agartha/compare/v0.17.0...v0.17.1) (2026-09-03)
 
 
