@@ -1,5 +1,5 @@
 // src/hooks/saltReturn/useFetchFunKeys.ts
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 
 import { apiClient as axios } from 'src/api/client.ts';
 
@@ -16,6 +16,9 @@ const useFetchFunKeys = (likeIncludes: string, page: number, since?: string, unt
   const [funKeys, setFunKeys] = useState<string[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
+  const [isEmpty, setIsEmpty] = useState(false);
+  const [revision, setRevision] = useState(0);
+  const refresh = useCallback(() => setRevision((current) => current + 1), []);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -38,11 +41,17 @@ const useFetchFunKeys = (likeIncludes: string, page: number, since?: string, unt
 
         const keys = response.data.results.map((x) => x);
         setFunKeys(keys);
+        setIsEmpty(keys.length === 0);
       } catch (err) {
         if (controller.signal.aborted) return;
-        if (axios.isAxiosError(err)) {
+        if (axios.isAxiosError(err) && err.response?.status === 404) {
+          setFunKeys([]);
+          setIsEmpty(true);
+        } else if (axios.isAxiosError(err)) {
+          setIsEmpty(false);
           setError(err.message);
         } else {
+          setIsEmpty(false);
           setError('An unexpected error occurred');
         }
       } finally {
@@ -52,9 +61,15 @@ const useFetchFunKeys = (likeIncludes: string, page: number, since?: string, unt
 
     void fetchFunKeys();
     return () => controller.abort();
-  }, [likeIncludes, page, since, until]);
+  }, [likeIncludes, page, since, until, revision]);
 
-  return { funKeys, loading, error };
+  return {
+    funKeys,
+    loading,
+    error,
+    isEmpty,
+    refresh,
+  };
 };
 
 export default useFetchFunKeys;

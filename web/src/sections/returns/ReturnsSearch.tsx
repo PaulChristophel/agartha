@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 
 import Box from '@mui/material/Box';
 import Chip from '@mui/material/Chip';
@@ -8,6 +8,7 @@ import MenuItem from '@mui/material/MenuItem';
 import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
 import Autocomplete from '@mui/material/Autocomplete';
+import RefreshIcon from '@mui/icons-material/Refresh';
 
 import useDebounce from 'src/hooks/useDebounce.ts';
 import useFetchFunKeys from 'src/hooks/saltReturn/useFetchFunKeys.ts';
@@ -100,12 +101,26 @@ const ReturnsSearch: React.FC<ReturnsSearchProps> = ({
   const [page, setPage] = useState(1);
   const [allFunKeys, setAllFunKeys] = useState<string[]>([]);
   const [hasMore, setHasMore] = useState(true);
+  const autoRefreshAttempted = useRef(false);
   const [draftReturnFilter, setDraftReturnFilter] = useState<ReturnFilterState>(() =>
     editableReturnFilter(returnFilter)
   );
   const debouncedInputValue = useDebounce(inputValue, 500);
 
-  const { funKeys, loading, error } = useFetchFunKeys(debouncedInputValue, page, since, until);
+  const { funKeys, loading, error, isEmpty, refresh } = useFetchFunKeys(
+    debouncedInputValue,
+    page,
+    since,
+    until
+  );
+
+  useEffect(() => {
+    const initialListLoaded = !loading && page === 1 && debouncedInputValue === '';
+    if (initialListLoaded && isEmpty && !autoRefreshAttempted.current) {
+      autoRefreshAttempted.current = true;
+      refresh();
+    }
+  }, [debouncedInputValue, isEmpty, loading, page, refresh]);
 
   useEffect(() => {
     if (page === 1) {
@@ -284,6 +299,23 @@ const ReturnsSearch: React.FC<ReturnsSearchProps> = ({
           sx={{ flex: '1 1 220px' }}
           InputLabelProps={{ shrink: true }}
         />
+      </Tooltip>
+      <Tooltip {...hoverHelpProps} title="Reload the function dropdown from the returns table.">
+        <span>
+          <Button
+            variant="outlined"
+            startIcon={<RefreshIcon />}
+            disabled={loading}
+            onClick={() => {
+              setAllFunKeys([]);
+              setPage(1);
+              refresh();
+            }}
+            sx={{ whiteSpace: 'nowrap' }}
+          >
+            {loading ? 'Refreshing list...' : 'Refresh function list'}
+          </Button>
+        </span>
       </Tooltip>
 
       <Box display="flex" flexDirection="column" gap={1.5} sx={{ flex: '1 1 100%' }}>
