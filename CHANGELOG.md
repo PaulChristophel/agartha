@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.19.3](https://github.com/PaulChristophel/agartha/compare/v0.19.2...v0.19.3) (2026-09-12)
+
+
+### Bug Fixes
+
+* bump dependencies ([e1f8459](https://github.com/PaulChristophel/agartha/commit/e1f8459babb31c169fc5785b59477f83fbeb7b67))
+* rebuild with latest node ([d992ca7](https://github.com/PaulChristophel/agartha/commit/d992ca75f1fa6e960cfeacd1fb4022feb16d99ff))
+
 ## [0.19.2](https://github.com/PaulChristophel/agartha/compare/v0.19.1...v0.19.2) (2026-09-10)
 
 
