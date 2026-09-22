@@ -32,8 +32,8 @@ jobs:
           cache-dependency-path: go.sum
       - uses: pnpm/setup@v2
         with:
-          version: 11.25.0
-          runtime: node@24
+          version: 12.5.1
+          runtime: node@26
           cache: true
           cache-dependency-path: web/pnpm-lock.yaml
           install: false
