@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.20.1](https://github.com/PaulChristophel/agartha/compare/v0.20.0...v0.20.1) (2026-10-23)
+
+
+### Miscellaneous Chores
+
+* Update dependencies ([5870e13](https://github.com/PaulChristophel/agartha/commit/5870e1351c51f3cedf3f9bf46936e188e9745220))
+
 ## [0.20.0](https://github.com/PaulChristophel/agartha/compare/v0.19.4...v0.20.0) (2026-10-02)
 
 
