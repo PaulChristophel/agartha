@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.20.3](https://github.com/PaulChristophel/agartha/compare/v0.20.2...v0.20.3) (2026-10-27)
+
+
+### Bug Fixes
+
+* use cache bank names for minion tab labels ([c5cc4a2](https://github.com/PaulChristophel/agartha/commit/c5cc4a20011396e0a03014fd2e3c7d9008660651))
+
 ## [0.20.2](https://github.com/PaulChristophel/agartha/compare/v0.20.1...v0.20.2) (2026-10-27)
 
 
