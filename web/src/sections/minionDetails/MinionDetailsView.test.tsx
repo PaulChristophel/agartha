@@ -72,6 +72,31 @@ describe('MinionDetailsView', () => {
     expect(screen.getByText('cache row: migrated')).toBeInTheDocument();
   });
 
+  it('labels bare-minion keys by bank and keeps distinct custom tabs', async () => {
+    mocks.caches = [
+      { bank: 'minions/minion-1', psql_key: 'gted_sssd', id: 'legacy' },
+      { bank: 'gted_sssd', psql_key: 'minion-1', id: 'sssd' },
+      { bank: 'other_cache', psql_key: 'minion-1', id: 'other' },
+      { bank: 'conformity', psql_key: 'minion-1', id: 'conformity' },
+    ];
+    render(
+      <MemoryRouter initialEntries={['/minion/minion-1']}>
+        <Routes>
+          <Route path="/minion/:id" element={<MinionDetailsView />} />
+        </Routes>
+      </MemoryRouter>
+    );
+
+    expect(await screen.findAllByRole('tab', { name: 'gted_sssd' })).toHaveLength(1);
+    expect(screen.getByRole('tab', { name: 'other_cache' })).toBeInTheDocument();
+    expect(screen.queryByRole('tab', { name: 'minion-1' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('tab', { name: 'conformity' })).not.toBeInTheDocument();
+    await userEvent.setup().click(screen.getByRole('tab', { name: 'gted_sssd' }));
+    expect(screen.getByText('cache row: sssd')).toBeInTheDocument();
+    await userEvent.setup().click(screen.getByRole('tab', { name: 'other_cache' }));
+    expect(screen.getByText('cache row: other')).toBeInTheDocument();
+  });
+
   it('submits highstate for the routed minion through the API client', async () => {
     const user = userEvent.setup();
     render(

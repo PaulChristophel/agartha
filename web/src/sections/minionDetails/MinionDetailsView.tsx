@@ -67,16 +67,16 @@ const MinionDetailsView: React.FC = () => {
     const builtInKeys = new Set(['data', 'grains', 'pillar', 'conformity']);
     const isBuiltInCache = (cache: { bank: string; psql_key: string }) =>
       builtInKeys.has(cache.psql_key) ||
-      Boolean(
-        minionID &&
-        (cache.bank === 'grains' || cache.bank === 'pillar') &&
-        cache.psql_key === minionID
-      );
+      Boolean(minionID && builtInKeys.has(cache.bank) && cache.psql_key === minionID);
     const tabLabel = (cache: { bank: string; psql_key: string }) => {
       const pillarEnvPrefix = `${minionID}:`;
 
       if (cache.bank === 'pillar' && minionID && cache.psql_key.startsWith(pillarEnvPrefix)) {
         return `Pillar:${cache.psql_key.slice(pillarEnvPrefix.length)}`;
+      }
+
+      if (cache.psql_key === minionID) {
+        return cache.bank;
       }
 
       return cache.psql_key;
