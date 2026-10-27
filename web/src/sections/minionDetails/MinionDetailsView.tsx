@@ -30,7 +30,7 @@ const MinionDetailsView: React.FC = () => {
   const navigate = useNavigate();
   const { id: minionID } = useParams<{ id: string }>();
   const [tabValue, setTabValue] = useState(0);
-  const [tabs, setTabs] = useState<{ label: string; key: string; bank?: string }[]>([]);
+  const [tabs, setTabs] = useState<{ label: string; key: string; id?: string }[]>([]);
   const [refreshing, setRefreshing] = useState<boolean>(false);
   const [highstateRunning, setHighstateRunning] = useState<boolean>(false);
 
@@ -47,6 +47,13 @@ const MinionDetailsView: React.FC = () => {
     [minionID]
   );
 
+  const migratedCacheQueryParams = useMemo(
+    () => ({ key: minionID ? `minions/${minionID}` : '' }),
+    [minionID]
+  );
+
+  const { caches: migratedCaches, isLoading: isLoadingMigratedCaches } =
+    useCachePaginated(migratedCacheQueryParams);
   const { caches: oldBankCaches, isLoading: isLoadingOldBankCaches } =
     useCachePaginated(oldBankQueryParams);
   const { caches: newCacheCaches, isLoading: isLoadingNewCacheCaches } =
@@ -56,7 +63,7 @@ const MinionDetailsView: React.FC = () => {
   const minionData = useMemo(() => ({ grains, pillar }), [grains, pillar]);
 
   useEffect(() => {
-    const otherTabsByKey = new Map<string, { label: string; key: string; bank: string }>();
+    const otherTabsByKey = new Map<string, { label: string; key: string; id: string }>();
     const builtInKeys = new Set(['data', 'grains', 'pillar', 'conformity']);
     const isBuiltInCache = (cache: { bank: string; psql_key: string }) =>
       builtInKeys.has(cache.psql_key) ||
@@ -75,25 +82,24 @@ const MinionDetailsView: React.FC = () => {
       return cache.psql_key;
     };
 
-    for (const cache of oldBankCaches) {
-      if (isBuiltInCache(cache)) {
+    // Process migrated rows last so they replace legacy rows for the same tab.
+    for (const cache of [...oldBankCaches, ...newCacheCaches, ...migratedCaches]) {
+      const migrated = cache.psql_key === `minions/${minionID}`;
+      const legacy = cache.bank === `minions/${minionID}`;
+      const salt3008 =
+        cache.psql_key === minionID ||
+        (cache.bank === 'pillar' && cache.psql_key.startsWith(`${minionID}:`));
+      if (
+        (!migrated && !legacy && !salt3008) ||
+        (migrated ? builtInKeys.has(cache.bank) : isBuiltInCache(cache))
+      ) {
         continue;
       }
-      otherTabsByKey.set(cache.psql_key, {
-        label: tabLabel(cache),
-        key: cache.psql_key,
-        bank: cache.bank,
-      });
-    }
-
-    for (const cache of newCacheCaches) {
-      if (isBuiltInCache(cache)) {
-        continue;
-      }
-      otherTabsByKey.set(cache.psql_key, {
-        label: tabLabel(cache),
-        key: cache.psql_key,
-        bank: cache.bank,
+      const label = migrated ? cache.bank : tabLabel(cache);
+      otherTabsByKey.set(label, {
+        label,
+        key: label,
+        id: cache.id,
       });
     }
 
@@ -111,9 +117,14 @@ const MinionDetailsView: React.FC = () => {
     ];
 
     setTabs(newTabs);
-  }, [minionID, newCacheCaches, oldBankCaches]);
+  }, [minionID, migratedCaches, newCacheCaches, oldBankCaches]);
 
-  if (isLoadingOldBankCaches || isLoadingNewCacheCaches || isLoadingMinionData) {
+  if (
+    isLoadingMigratedCaches ||
+    isLoadingOldBankCaches ||
+    isLoadingNewCacheCaches ||
+    isLoadingMinionData
+  ) {
     return <CircularProgress color="success" />; // Render loading state if grainData is not available
   }
 
@@ -121,7 +132,7 @@ const MinionDetailsView: React.FC = () => {
     setTabValue(newValue);
   };
 
-  const renderTabContent = (tab: { key: string; bank?: string }) => {
+  const renderTabContent = (tab: { key: string; id?: string }) => {
     const { key } = tab;
     if (key === 'grains' || key === 'pillar') {
       const yamlData = yaml.dump(minionData[key]);
@@ -130,7 +141,7 @@ const MinionDetailsView: React.FC = () => {
     if (key === 'conformity') {
       return <ConformityDetailsView />; // Render ConformityDetailsView for the new tab
     }
-    return <CodeView bank={tab.bank || `minions/${minionID}`} cacheKey={`${key}`} />;
+    return <CodeView cacheID={tab.id || ''} />;
   };
 
   const handleHighstate = async () => {

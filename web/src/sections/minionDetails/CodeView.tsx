@@ -8,15 +8,14 @@ import { search, searchKeymap } from '@codemirror/search';
 
 import CircularProgress from '@mui/material/CircularProgress';
 
-import useSaltCacheBankKey from 'src/hooks/saltCache/useSaltCacheBankKey.ts';
+import useSaltCacheID from 'src/hooks/saltCache/useSaltCacheID.ts';
 
 interface CodeViewComponentProps {
-  bank: string;
-  cacheKey: string;
+  cacheID: string;
 }
 
-const CodeView: React.FC<CodeViewComponentProps> = ({ bank, cacheKey }) => {
-  const { cacheData, isLoading, error } = useSaltCacheBankKey(bank, cacheKey);
+const CodeView: React.FC<CodeViewComponentProps> = ({ cacheID }) => {
+  const { cacheData, isLoading, error } = useSaltCacheID(cacheID);
 
   const yamlData = useMemo(() => {
     try {
