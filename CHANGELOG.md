@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.20.2](https://github.com/PaulChristophel/agartha/compare/v0.20.1...v0.20.2) (2026-10-27)
+
+
+### Bug Fixes
+
+* support both minion cache layouts in detail tabs ([029abfe](https://github.com/PaulChristophel/agartha/commit/029abfe6eebc6329f73ebbd6b82e17b9253ef9fc))
+* support both minion cache layouts in detail tabs ([48f2670](https://github.com/PaulChristophel/agartha/commit/48f267074e0d0e2ffed19f97a8a78c2050ce6a9f))
+
 ## [0.20.1](https://github.com/PaulChristophel/agartha/compare/v0.20.0...v0.20.1) (2026-10-23)
 
 
