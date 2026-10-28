@@ -125,9 +125,9 @@ Sylvite is licensed under the AGPL-3.0 License. See the [LICENSE](./LICENSE) fil
 Sylvite was previously named Agartha. Update deployment references together:
 
 - The executable is now `sylvite`; container application paths use `/opt/sylvite`.
-- Configuration environment variables now use the `SYLVITE_` prefix.
-- System and user configuration directories are `/etc/sylvite/` and `$HOME/.sylvite/`.
-- The Salt authentication plugin is `extras/auth/sylvite.py`; configure its eauth name as `sylvite`.
+- Configuration environment variables prefer the `SYLVITE_` prefix; legacy `AGARTHA_` variables remain supported. For the same setting, a nonempty `SYLVITE_` value takes precedence over `AGARTHA_`, and either prefix overrides file values. Empty environment values are ignored.
+- Configuration files are searched in this order: `/etc/sylvite/`, `$HOME/.sylvite/`, the current directory, `/etc/agartha/`, and `$HOME/.agartha/`. The first matching file is used; files are not combined. An invalid file reports an error rather than falling back silently.
+- The Salt authentication plugin is `extras/auth/sylvite.py` with eauth name `sylvite`. The self-contained legacy `extras/auth/agartha.py` remains available with eauth name `agartha`; existing Salt deployments can keep that filename and configuration. Set `salt.auth: agartha` (or `AGARTHA_SALT_AUTH=agartha`) when connecting to a master that still uses the legacy eauth name.
 - Default database and user names are now `sylvite`. For an existing installation, explicitly configure the existing database name, user, and credentials to retain its data. Update Salt cache and returner connection settings consistently.
 - Image and repository references in this project now use `sylvite`; publishing images and renaming the hosted repository are separate deployment operations.
 

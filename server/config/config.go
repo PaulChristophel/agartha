@@ -289,6 +289,11 @@ func isExampleHost(host string) bool {
 var SylviteConfig *Config
 
 func InitConfig() error {
+	return initConfig([]string{"/etc/sylvite/", "$HOME/.sylvite/", ".", "/etc/agartha/", "$HOME/.agartha/"})
+}
+
+// initConfig loads the first available configuration file, then applies environment overrides.
+func initConfig(paths []string) error {
 	v := viper.New()
 
 	b, err := yaml.Marshal(NewConfig())
@@ -301,10 +306,10 @@ func InitConfig() error {
 		return err
 	}
 
-	v.SetConfigName("config")          // name of config file (without extension)
-	v.AddConfigPath("/etc/sylvite/")   // path to look for the config file in
-	v.AddConfigPath("$HOME/.sylvite/") // call multiple times to add many search paths
-	v.AddConfigPath(".")               // optionally look for config in the working directory
+	v.SetConfigName("config")
+	for _, path := range paths {
+		v.AddConfigPath(path)
+	}
 
 	if err := v.MergeInConfig(); err != nil {
 		if _, ok := err.(viper.ConfigFileNotFoundError); !ok {
@@ -315,6 +320,12 @@ func InitConfig() error {
 	v.AutomaticEnv()
 	v.SetEnvPrefix(envVarPrefix)
 	v.SetEnvKeyReplacer(strings.NewReplacer(".", "_"))
+	for _, key := range v.AllKeys() {
+		suffix := strings.ToUpper(strings.ReplaceAll(key, ".", "_"))
+		if err := v.BindEnv(key, "SYLVITE_"+suffix, "AGARTHA_"+suffix); err != nil {
+			return err
+		}
+	}
 
 	if startTLS := v.Get("ldap.start_tls"); startTLS == nil {
 		v.Set("ldap.start_tls", false)

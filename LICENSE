@@ -769,7 +769,7 @@ On Debian systems, the full text of the Apache License, Version 2.0 can be
 found in the file
 `/usr/share/common-licenses/Apache-2.0'.
 
-Files: extras/auth/sylvite.py
+Files: extras/auth/sylvite.py extras/auth/agartha.py
 Copyright: 2014 SaltStack Team
 License: Apache-2.0
 Licensed under the Apache License, Version 2.0 (the "License");
