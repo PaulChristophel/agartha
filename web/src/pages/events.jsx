@@ -10,7 +10,7 @@ export default function EventsPage() {
   return (
     <>
       <Helmet>
-        <title> Events | Agartha </title>
+        <title> Events | Sylvite </title>
       </Helmet>
 
       <AuthWrapper>

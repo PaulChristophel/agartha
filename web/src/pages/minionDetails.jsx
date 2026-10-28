@@ -9,7 +9,7 @@ export default function MinionDetailsPage() {
   return (
     <>
       <Helmet>
-        <title> Minion Details | Agartha </title>
+        <title> Minion Details | Sylvite </title>
       </Helmet>
 
       <AuthWrapper>

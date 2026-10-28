@@ -10,9 +10,9 @@ import (
 	"testing"
 
 	"github.com/DATA-DOG/go-sqlmock"
-	"github.com/PaulChristophel/agartha/server/config"
-	"github.com/PaulChristophel/agartha/server/db"
-	"github.com/PaulChristophel/agartha/server/logger"
+	"github.com/PaulChristophel/sylvite/server/config"
+	"github.com/PaulChristophel/sylvite/server/db"
+	"github.com/PaulChristophel/sylvite/server/logger"
 	"github.com/gin-gonic/gin"
 	"github.com/go-ldap/ldap/v3"
 	"github.com/stretchr/testify/require"
@@ -296,7 +296,7 @@ func TestAuthCASRequiresAuthenticationSuccess(t *testing.T) {
 			client := &http.Client{Transport: roundTripFunc(func(r *http.Request) (*http.Response, error) {
 				require.Equal(t, "/cas/serviceValidate", r.URL.Path)
 				require.Equal(t, "ticket-value", r.URL.Query().Get("ticket"))
-				require.Equal(t, "https://agartha.example.com/cas", r.URL.Query().Get("service"))
+				require.Equal(t, "https://sylvite.example.com/cas", r.URL.Query().Get("service"))
 				return &http.Response{
 					StatusCode: http.StatusOK,
 					Header:     http.Header{"Content-Type": []string{"application/xml"}},
@@ -309,7 +309,7 @@ func TestAuthCASRequiresAuthenticationSuccess(t *testing.T) {
 			originalClient := casHTTPClient
 			casOptions = config.CASOptions{
 				Server:       "https://cas.example.test/cas",
-				ServiceURL:   "https://agartha.example.com/cas",
+				ServiceURL:   "https://sylvite.example.com/cas",
 				ValidatePath: "/serviceValidate",
 			}
 			casHTTPClient = client

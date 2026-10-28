@@ -3,9 +3,9 @@ package db
 import (
 	"log"
 
-	"github.com/PaulChristophel/agartha/server/config"
-	agartha "github.com/PaulChristophel/agartha/server/model/agartha"
-	salt "github.com/PaulChristophel/agartha/server/model/salt"
+	"github.com/PaulChristophel/sylvite/server/config"
+	sylvite "github.com/PaulChristophel/sylvite/server/model/sylvite"
+	salt "github.com/PaulChristophel/sylvite/server/model/salt"
 )
 
 func Migrate(options config.SaltDBTables) error {
@@ -88,35 +88,35 @@ func Migrate(options config.SaltDBTables) error {
 		}
 
 		// Configure AuthUser
-		err = DB.AutoMigrate(&agartha.AuthUser{})
+		err = DB.AutoMigrate(&sylvite.AuthUser{})
 		if err != nil {
 			log.Printf("Error during migration: %v", err)
 			return err
 		}
 
 		// Configure JobTemplates
-		err = DB.AutoMigrate(&agartha.JobTemplate{})
+		err = DB.AutoMigrate(&sylvite.JobTemplate{})
 		if err != nil {
 			log.Printf("Error during migration: %v", err)
 			return err
 		}
 
 		// Configure UserSettings
-		err = DB.AutoMigrate(&agartha.UserSettings{})
+		err = DB.AutoMigrate(&sylvite.UserSettings{})
 		if err != nil {
 			log.Printf("Error during migration: %v", err)
 			return err
 		}
 
 		// Configure Session
-		err = DB.AutoMigrate(&agartha.Session{})
+		err = DB.AutoMigrate(&sylvite.Session{})
 		if err != nil {
 			log.Printf("Error during migration: %v", err)
 			return err
 		}
 
 		// Configure SessionUserMap
-		err = DB.AutoMigrate(&agartha.SessionUserMap{})
+		err = DB.AutoMigrate(&sylvite.SessionUserMap{})
 		if err != nil {
 			log.Printf("Error during migration: %v", err)
 			return err

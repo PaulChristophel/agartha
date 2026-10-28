@@ -8,9 +8,9 @@ import (
 	"testing"
 
 	"github.com/DATA-DOG/go-sqlmock"
-	"github.com/PaulChristophel/agartha/server/config"
-	"github.com/PaulChristophel/agartha/server/db"
-	"github.com/PaulChristophel/agartha/server/logger"
+	"github.com/PaulChristophel/sylvite/server/config"
+	"github.com/PaulChristophel/sylvite/server/db"
+	"github.com/PaulChristophel/sylvite/server/logger"
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-contrib/sessions/cookie"
 	"github.com/gin-gonic/gin"
@@ -235,7 +235,7 @@ func serveAuthorizedRoute(
 	}
 
 	engine := gin.New()
-	engine.Use(sessions.Sessions("agarthaAuthSession", cookie.NewStore([]byte(routeAuthorizationSecret))))
+	engine.Use(sessions.Sessions("sylviteAuthSession", cookie.NewStore([]byte(routeAuthorizationSecret))))
 	addServerRoutes(engine)
 
 	request := httptest.NewRequest(test.method, test.path, bytes.NewBufferString(test.body))

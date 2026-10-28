@@ -5,7 +5,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/PaulChristophel/agartha/server/config"
+	"github.com/PaulChristophel/sylvite/server/config"
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-contrib/sessions/cookie"
 	"github.com/gin-gonic/gin"
@@ -24,7 +24,7 @@ func TestLogoutExpiresSecureHttpOnlySessionCookie(t *testing.T) {
 		SameSite: http.SameSiteLaxMode,
 	})
 	router := gin.New()
-	router.Use(sessions.Sessions("agarthaAuthSession", store))
+	router.Use(sessions.Sessions("sylviteAuthSession", store))
 	router.GET("/seed", func(c *gin.Context) {
 		session := sessions.Default(c)
 		session.Set("username", "alice")

@@ -7,7 +7,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/PaulChristophel/agartha/server/config"
+	"github.com/PaulChristophel/sylvite/server/config"
 )
 
 const (
@@ -16,11 +16,11 @@ const (
 )
 
 func withMigrationLock(fn func() error) (err error) {
-	if config.AgarthaConfig == nil {
+	if config.SylviteConfig == nil {
 		return errors.New("config not initialized")
 	}
 
-	dbOptions := config.AgarthaConfig.DB
+	dbOptions := config.SylviteConfig.DB
 	dsn := fmt.Sprintf(
 		"host=%s port=%d user=%s password=%s dbname=%s sslmode=%s",
 		dbOptions.Host,

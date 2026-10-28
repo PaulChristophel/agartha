@@ -7,14 +7,14 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/PaulChristophel/agartha/server/db"
-	"github.com/PaulChristophel/agartha/server/logger"
+	"github.com/PaulChristophel/sylvite/server/db"
+	"github.com/PaulChristophel/sylvite/server/logger"
 	"gorm.io/gorm"
 
-	model "github.com/PaulChristophel/agartha/server/model/agartha"
+	model "github.com/PaulChristophel/sylvite/server/model/sylvite"
 
-	"github.com/PaulChristophel/agartha/server/httputil"
-	"github.com/PaulChristophel/agartha/server/middleware"
+	"github.com/PaulChristophel/sylvite/server/httputil"
+	"github.com/PaulChristophel/sylvite/server/middleware"
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v5"
@@ -44,7 +44,7 @@ type AuthMethods struct {
 }
 
 const (
-	authSessionCookieName = "agarthaAuthSession"
+	authSessionCookieName = "sylviteAuthSession"
 	legacyAuthCookiePath  = "/auth"
 )
 

@@ -1,4 +1,4 @@
-name: Prepare and publish Agartha releases
+name: Prepare and publish Sylvite releases
 
 on:
   push:

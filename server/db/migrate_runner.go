@@ -5,7 +5,7 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/PaulChristophel/agartha/server/config"
+	"github.com/PaulChristophel/sylvite/server/config"
 	"github.com/golang-migrate/migrate/v4"
 	"github.com/golang-migrate/migrate/v4/database/postgres"
 	iofs "github.com/golang-migrate/migrate/v4/source/iofs"
@@ -13,11 +13,11 @@ import (
 )
 
 func runSQLMigrations() (err error) {
-	if config.AgarthaConfig == nil {
+	if config.SylviteConfig == nil {
 		return errors.New("config not initialized")
 	}
 
-	dbOptions := config.AgarthaConfig.DB
+	dbOptions := config.SylviteConfig.DB
 	dsn := fmt.Sprintf(
 		"host=%s port=%d user=%s password=%s dbname=%s sslmode=%s",
 		dbOptions.Host,

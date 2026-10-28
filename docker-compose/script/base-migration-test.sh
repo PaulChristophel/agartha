@@ -25,7 +25,7 @@ cleanup() {
 
 wait_for_db() {
 	for _ in $(seq 1 30); do
-		if compose exec -T db pg_isready -U agartha -d agartha -h 127.0.0.1 -p 5432 >/dev/null 2>&1; then
+		if compose exec -T db pg_isready -U sylvite -d sylvite -h 127.0.0.1 -p 5432 >/dev/null 2>&1; then
 			return 0
 		fi
 		sleep 1
@@ -36,11 +36,11 @@ wait_for_db() {
 }
 
 run_migrate() {
-	compose run --rm -e "AGARTHA_DB_TABLES_USE_JSONB=$1" migrate
+	compose run --rm -e "SYLVITE_DB_TABLES_USE_JSONB=$1" migrate
 }
 
 psql() {
-	compose exec -T db psql -U agartha -d agartha -v ON_ERROR_STOP=1 "$@"
+	compose exec -T db psql -U sylvite -d sylvite -v ON_ERROR_STOP=1 "$@"
 }
 
 trap cleanup EXIT INT TERM

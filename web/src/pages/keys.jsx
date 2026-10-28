@@ -8,7 +8,7 @@ export default function KeysPage() {
   return (
     <>
       <Helmet>
-        <title> Keys | Agartha </title>
+        <title> Keys | Sylvite </title>
       </Helmet>
 
       <KeysView />

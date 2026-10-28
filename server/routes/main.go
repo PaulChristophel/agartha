@@ -21,29 +21,29 @@ import (
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
 
-	"github.com/PaulChristophel/agartha/server/api/v1/conformity"
-	"github.com/PaulChristophel/agartha/server/api/v1/highState"
-	"github.com/PaulChristophel/agartha/server/api/v1/jid"
-	"github.com/PaulChristophel/agartha/server/api/v1/jobs"
-	"github.com/PaulChristophel/agartha/server/api/v1/netapi"
-	"github.com/PaulChristophel/agartha/server/api/v1/saltCache"
-	"github.com/PaulChristophel/agartha/server/api/v1/saltEvent"
-	"github.com/PaulChristophel/agartha/server/api/v1/saltKeys"
-	"github.com/PaulChristophel/agartha/server/api/v1/saltMinion"
-	"github.com/PaulChristophel/agartha/server/api/v1/saltReturn"
-	"github.com/PaulChristophel/agartha/server/api/v1/secure/authUser"
-	"github.com/PaulChristophel/agartha/server/api/v1/secure/userSettings"
-	"github.com/PaulChristophel/agartha/server/api/v1/validate"
+	"github.com/PaulChristophel/sylvite/server/api/v1/conformity"
+	"github.com/PaulChristophel/sylvite/server/api/v1/highState"
+	"github.com/PaulChristophel/sylvite/server/api/v1/jid"
+	"github.com/PaulChristophel/sylvite/server/api/v1/jobs"
+	"github.com/PaulChristophel/sylvite/server/api/v1/netapi"
+	"github.com/PaulChristophel/sylvite/server/api/v1/saltCache"
+	"github.com/PaulChristophel/sylvite/server/api/v1/saltEvent"
+	"github.com/PaulChristophel/sylvite/server/api/v1/saltKeys"
+	"github.com/PaulChristophel/sylvite/server/api/v1/saltMinion"
+	"github.com/PaulChristophel/sylvite/server/api/v1/saltReturn"
+	"github.com/PaulChristophel/sylvite/server/api/v1/secure/authUser"
+	"github.com/PaulChristophel/sylvite/server/api/v1/secure/userSettings"
+	"github.com/PaulChristophel/sylvite/server/api/v1/validate"
 
-	v2SaltCache "github.com/PaulChristophel/agartha/server/api/v2/saltCache"
+	v2SaltCache "github.com/PaulChristophel/sylvite/server/api/v2/saltCache"
 
-	// saltCachev2 "github.com/PaulChristophel/agartha/server/api/v2/saltCache"
-	"github.com/PaulChristophel/agartha/server/auth"
-	"github.com/PaulChristophel/agartha/server/config"
-	"github.com/PaulChristophel/agartha/server/db"
-	docsV1 "github.com/PaulChristophel/agartha/server/docs/v1"
-	"github.com/PaulChristophel/agartha/server/logger"
-	"github.com/PaulChristophel/agartha/server/middleware"
+	// saltCachev2 "github.com/PaulChristophel/sylvite/server/api/v2/saltCache"
+	"github.com/PaulChristophel/sylvite/server/auth"
+	"github.com/PaulChristophel/sylvite/server/config"
+	"github.com/PaulChristophel/sylvite/server/db"
+	docsV1 "github.com/PaulChristophel/sylvite/server/docs/v1"
+	"github.com/PaulChristophel/sylvite/server/logger"
+	"github.com/PaulChristophel/sylvite/server/middleware"
 	gormsessions "github.com/gin-contrib/sessions/gorm"
 	swaggerfiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
@@ -60,14 +60,14 @@ var (
 	log          *zap.Logger
 )
 
-func Router(frontend embed.FS, agarthaOptions config.Config) error {
-	options = agarthaOptions.HTTP
-	ldapOptions = agarthaOptions.LDAP
-	casOptions = agarthaOptions.CAS
-	saltOptions = agarthaOptions.Salt
-	saltDBTables = agarthaOptions.DB.Tables
+func Router(frontend embed.FS, sylviteOptions config.Config) error {
+	options = sylviteOptions.HTTP
+	ldapOptions = sylviteOptions.LDAP
+	casOptions = sylviteOptions.CAS
+	saltOptions = sylviteOptions.Salt
+	saltDBTables = sylviteOptions.DB.Tables
 	var err error
-	authMethods, err = agarthaOptions.EffectiveAuthMethods()
+	authMethods, err = sylviteOptions.EffectiveAuthMethods()
 	if err != nil {
 		return err
 	}
@@ -127,7 +127,7 @@ func Router(frontend embed.FS, agarthaOptions config.Config) error {
 		Secure:   options.CookieSecure,
 		SameSite: http.SameSiteLaxMode,
 	})
-	router.Use(sessions.Sessions("agarthaAuthSession", store))
+	router.Use(sessions.Sessions("sylviteAuthSession", store))
 	addServerRoutes(router)
 	addStaticRoutes(router, frontend)
 

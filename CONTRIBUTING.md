@@ -1,4 +1,4 @@
-# Contributing to Agartha
+# Contributing to Sylvite
 We love your input! We want to make contributing to this project as easy and transparent as possible, whether it's:
 
 - Reporting a bug
@@ -23,8 +23,8 @@ Pull requests are the best way to propose changes to the codebase (we use [Githu
 ## Any contributions you make will be under the GNU Affero General Public Software License
 In short, when you submit code changes, your submissions are understood to be under the same [AGPL 3.0 License](http://choosealicense.com/licenses/agpl-3.0) that covers the project. Feel free to contact the maintainers if that's a concern.
 
-## Report bugs using GitHub [issues](https://github.com/PaulChristophel/agartha/issues)
-We use GitHub issues to track public bugs. Report a bug by [opening a new issue](https://github.com/PaulChristophel/agartha/issues/new).
+## Report bugs using GitHub [issues](https://github.com/PaulChristophel/sylvite/issues)
+We use GitHub issues to track public bugs. Report a bug by [opening a new issue](https://github.com/PaulChristophel/sylvite/issues/new).
 
 ## Write bug reports with detail, background, and sample code
 [This is an example](http://stackoverflow.com/q/12488905/180626) of a bug report someone wrote, and I think it's not a bad model. Here's [another example from Craig Hockenberry](http://www.openradar.me/11905408), an app developer whom I greatly respect.

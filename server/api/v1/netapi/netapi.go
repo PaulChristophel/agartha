@@ -14,9 +14,9 @@ import (
 
 	"github.com/gin-gonic/gin"
 
-	"github.com/PaulChristophel/agartha/server/api/validate"
-	"github.com/PaulChristophel/agartha/server/logger"
-	"github.com/PaulChristophel/agartha/server/middleware"
+	"github.com/PaulChristophel/sylvite/server/api/validate"
+	"github.com/PaulChristophel/sylvite/server/logger"
+	"github.com/PaulChristophel/sylvite/server/middleware"
 	"github.com/gin-contrib/sessions"
 	"gorm.io/gorm"
 )

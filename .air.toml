@@ -4,10 +4,10 @@ tmp_dir = "bin/debug"
 
 [build]
   args_bin = []
-  bin = "bin/debug/agartha"
-  full_bin = "GIN_MODE=debug bin/debug/agartha serve"
-  cmd = "GIN_MODE=debug go build -o ./bin/debug/agartha ."
-  post_cmd = ["ps | awk '!/awk/&&/agartha serve/ { print $1 }' | xargs -I {} kill {}"]
+  bin = "bin/debug/sylvite"
+  full_bin = "GIN_MODE=debug bin/debug/sylvite serve"
+  cmd = "GIN_MODE=debug go build -o ./bin/debug/sylvite ."
+  post_cmd = ["ps | awk '!/awk/&&/sylvite serve/ { print $1 }' | xargs -I {} kill {}"]
   delay = 1000
   exclude_dir = ["assets", "tmp", "vendor", "testdata", "web", "bin", "server/docs", "extras", "docker-compose", ".pnpm-store", ".github"]
   exclude_file = [".gitignore", ".dockerignore", ".containerignore", "LICENSE", "Makefile"]

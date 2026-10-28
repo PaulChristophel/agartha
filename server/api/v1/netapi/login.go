@@ -6,9 +6,9 @@ import (
 	"io"
 	"net/http"
 
-	_ "github.com/PaulChristophel/agartha/server/httputil"
+	_ "github.com/PaulChristophel/sylvite/server/httputil"
 
-	"github.com/PaulChristophel/agartha/server/logger"
+	"github.com/PaulChristophel/sylvite/server/logger"
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
 )
@@ -19,7 +19,7 @@ type AuthDetails struct {
 	Expire      float64     `json:"expire" example:"1719387217.7491617"`
 	Start       float64     `json:"start" example:"1719344017.7491612"`
 	User        string      `json:"user" example:"megadude"`
-	Eauth       string      `json:"eauth" example:"agartha"`
+	Eauth       string      `json:"eauth" example:"sylvite"`
 	Permissions Permissions `json:"perms" example:".*,@jobs,@runner,@wheel"`
 }
 
@@ -35,7 +35,7 @@ type Permissions []string
 type Credentials struct {
 	Username string `json:"username" example:"megadude"`
 	Password string `json:"password" example:"Bearer foo.bar.baz"`
-	Eauth    string `json:"eauth" example:"agartha"`
+	Eauth    string `json:"eauth" example:"sylvite"`
 }
 
 // class salt.netapi.rest_cherrypy.app.Login(*args, **kwargs)
@@ -81,7 +81,7 @@ func DecodeTokenAndCreateCredentials() gin.HandlerFunc {
 		creds := Credentials{
 			Username: username,
 			Password: authHeader,
-			Eauth:    "agartha",
+			Eauth:    "sylvite",
 		}
 
 		// Replace the request body with the credentials JSON

@@ -1,11 +1,11 @@
 package saltKeys
 
 import (
-	delete "github.com/PaulChristophel/agartha/server/api/v1/saltKeys/delete"
-	get "github.com/PaulChristophel/agartha/server/api/v1/saltKeys/get"
-	post "github.com/PaulChristophel/agartha/server/api/v1/saltKeys/post"
-	"github.com/PaulChristophel/agartha/server/config"
-	"github.com/PaulChristophel/agartha/server/middleware"
+	delete "github.com/PaulChristophel/sylvite/server/api/v1/saltKeys/delete"
+	get "github.com/PaulChristophel/sylvite/server/api/v1/saltKeys/get"
+	post "github.com/PaulChristophel/sylvite/server/api/v1/saltKeys/post"
+	"github.com/PaulChristophel/sylvite/server/config"
+	"github.com/PaulChristophel/sylvite/server/middleware"
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 )

@@ -4,7 +4,7 @@ import (
 	"net/http"
 
 	// So swagger can document the function
-	"github.com/PaulChristophel/agartha/server/httputil"
+	"github.com/PaulChristophel/sylvite/server/httputil"
 	"github.com/gin-gonic/gin"
 )
 

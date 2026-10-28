@@ -8,7 +8,7 @@ import (
 	"testing"
 
 	"github.com/DATA-DOG/go-sqlmock"
-	model "github.com/PaulChristophel/agartha/server/model/agartha"
+	model "github.com/PaulChristophel/sylvite/server/model/sylvite"
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/require"
 	"gorm.io/driver/postgres"

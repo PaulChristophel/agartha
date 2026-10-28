@@ -1,9 +1,9 @@
 http:
   host: ""
   port: 8080
-  # Set through AGARTHA_HTTP_SECRET in production. Must be at least 32 characters.
+  # Set through SYLVITE_HTTP_SECRET in production. Must be at least 32 characters.
   secret: REPLACE_WITH_AT_LEAST_32_RANDOM_CHARACTERS
-  # Keep true when Agartha is served over HTTPS. Set false only for local HTTP development.
+  # Keep true when Sylvite is served over HTTPS. Set false only for local HTTP development.
   cookie_secure: true
   # Empty means do not trust forwarded client IP/protocol headers from any proxy.
   trusted_proxies: []
@@ -45,12 +45,12 @@ ldap:
   filter: (&(ObjectClass=person)(sAMAccountName=%s))
 cas:
   server: https://cas.example.com
-  service_url: https://agartha.example.com/cas
+  service_url: https://sylvite.example.com/cas
   validate_path: /serviceValidate
   login_path: /login
   logout_path: /logout
 salt:
-  auth: agartha
+  auth: sylvite
   url: http://salt-api.example.svc.cluster.local:8080
   external_url: https://salt.example.com
   insecure: false

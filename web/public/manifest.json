@@ -1,7 +1,7 @@
 {
-  "short_name": "agartha",
-  "name": "Agartha",
-  "description": "A simple web interface for SaltStack",
+  "short_name": "sylvite",
+  "name": "Sylvite",
+  "description": "A Salt management console",
   "icons": [
     {
       "src": "favicon/android-chrome-192x192.png",

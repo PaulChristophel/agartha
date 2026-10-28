@@ -10,7 +10,7 @@ export default function RunPage() {
   return (
     <>
       <Helmet>
-        <title> Run | Agartha </title>
+        <title> Run | Sylvite </title>
       </Helmet>
 
       <AuthWrapper>

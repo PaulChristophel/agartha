@@ -10,7 +10,7 @@ export default function ConformityPage() {
   return (
     <>
       <Helmet>
-        <title> Conformity Details | Agartha </title>
+        <title> Conformity Details | Sylvite </title>
       </Helmet>
 
       <AuthWrapper>

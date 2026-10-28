@@ -1,6 +1,6 @@
 package dto
 
-import model "github.com/PaulChristophel/agartha/server/model/salt"
+import model "github.com/PaulChristophel/sylvite/server/model/salt"
 
 // SaltKeyPageResponse is a paginated salt_keys API response.
 type SaltKeyPageResponse struct {

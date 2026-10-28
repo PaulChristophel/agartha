@@ -1,7 +1,7 @@
 package netapi
 
 import (
-	_ "github.com/PaulChristophel/agartha/server/httputil"
+	_ "github.com/PaulChristophel/sylvite/server/httputil"
 )
 
 type Accept struct {

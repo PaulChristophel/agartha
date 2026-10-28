@@ -1,8 +1,8 @@
 package saltReturn
 
 import (
-	get "github.com/PaulChristophel/agartha/server/api/v1/saltReturn/get"
-	"github.com/PaulChristophel/agartha/server/config"
+	get "github.com/PaulChristophel/sylvite/server/api/v1/saltReturn/get"
+	"github.com/PaulChristophel/sylvite/server/config"
 	"github.com/gin-gonic/gin"
 )
 

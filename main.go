@@ -6,21 +6,21 @@ import (
 	"log"
 	"os"
 
-	"github.com/PaulChristophel/agartha/server/config"
-	"github.com/PaulChristophel/agartha/server/db"
-	"github.com/PaulChristophel/agartha/server/routes"
+	"github.com/PaulChristophel/sylvite/server/config"
+	"github.com/PaulChristophel/sylvite/server/db"
+	"github.com/PaulChristophel/sylvite/server/routes"
 	"github.com/akamensky/argparse"
 )
 
 //go:embed web/dist/*
 var dist embed.FS
 
-//	@title			Agartha API
+//	@title			Sylvite API
 //	@version		1.0
-//	@description	This is the Agartha API Backend
+//	@description	A Salt management console
 
 //	@contact.name	API Support
-//	@contact.url	https://github.com/PaulChristophel/agartha/issues
+//	@contact.url	https://github.com/PaulChristophel/sylvite/issues
 //	@contact.email	kind.frog8344@fastmail.com
 
 //	@license.name	AGPL 3.0
@@ -32,7 +32,7 @@ var dist embed.FS
 // @description				Type "Bearer" followed by a space and JWT token.
 func main() {
 	// Create new parser object
-	parser := argparse.NewParser("agartha", "A web frontend for Salt and API for the Salt database.")
+	parser := argparse.NewParser("sylvite", "A Salt management console")
 
 	// Define commands
 	migrateCmd := parser.NewCommand("migrate", "Run migrations.")
@@ -57,29 +57,29 @@ func main() {
 	// Handle commands
 	switch {
 	case migrateCmd.Happened():
-		if err := config.AgarthaConfig.ValidateDatabase(); err != nil {
+		if err := config.SylviteConfig.ValidateDatabase(); err != nil {
 			log.Fatalf("Invalid configuration: %v", err)
 		}
-		if err := db.ConnectToDatabase(config.AgarthaConfig.DB); err != nil {
+		if err := db.ConnectToDatabase(config.SylviteConfig.DB); err != nil {
 			log.Fatalf("Database connection failed: %v", err)
 		}
-		if config.AgarthaConfig.DB.Tables.UseJSONB {
-			err = db.MigrateJSONB(config.AgarthaConfig.DB.Tables)
+		if config.SylviteConfig.DB.Tables.UseJSONB {
+			err = db.MigrateJSONB(config.SylviteConfig.DB.Tables)
 		} else {
-			err = db.Migrate(config.AgarthaConfig.DB.Tables)
+			err = db.Migrate(config.SylviteConfig.DB.Tables)
 		}
 		if err != nil {
 			log.Fatalf("Migration failed: %v", err)
 		}
 		log.Println("Migration completed successfully.")
 	case serveCmd.Happened():
-		if err := config.AgarthaConfig.ValidateForServe(); err != nil {
+		if err := config.SylviteConfig.ValidateForServe(); err != nil {
 			log.Fatalf("Invalid configuration: %v", err)
 		}
-		if err := db.ConnectToDatabase(config.AgarthaConfig.DB); err != nil {
+		if err := db.ConnectToDatabase(config.SylviteConfig.DB); err != nil {
 			log.Fatalf("Database connection failed: %v", err)
 		}
-		err = routes.Router(dist, *config.AgarthaConfig)
+		err = routes.Router(dist, *config.SylviteConfig)
 		if err != nil {
 			log.Fatalf("Server failed: %v", err)
 		}

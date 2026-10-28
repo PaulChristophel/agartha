@@ -8,13 +8,13 @@ import (
 	"slices"
 	"strings"
 
-	"github.com/PaulChristophel/agartha/server/httputil"
-	model "github.com/PaulChristophel/agartha/server/model/agartha"
+	"github.com/PaulChristophel/sylvite/server/httputil"
+	model "github.com/PaulChristophel/sylvite/server/model/sylvite"
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 )
 
-// SaltCapability is an Agartha authorization boundary derived from the
+// SaltCapability is an Sylvite authorization boundary derived from the
 // effective permissions returned by Salt eauth.
 type SaltCapability string
 
@@ -128,7 +128,7 @@ func SaltWheelAdministrationRequired(database *gorm.DB) gin.HandlerFunc {
 	}
 }
 
-// AdministrationRequired reserves Agartha user and settings administration for
+// AdministrationRequired reserves Sylvite user and settings administration for
 // superusers. Salt command permissions and is_staff do not cross this boundary.
 // func AdministrationRequired() gin.HandlerFunc {
 // 	return func(c *gin.Context) {
@@ -139,7 +139,7 @@ func SaltWheelAdministrationRequired(database *gorm.DB) gin.HandlerFunc {
 // 			return
 // 		}
 // 		if !user.IsSuperuser {
-// 			httputil.NewError(c, http.StatusForbidden, "Permission denied: Agartha administration requires superuser access.")
+// 			httputil.NewError(c, http.StatusForbidden, "Permission denied: Sylvite administration requires superuser access.")
 // 			c.Abort()
 // 			return
 // 		}

@@ -3,8 +3,8 @@ package saltKeys
 import (
 	"net/http"
 
-	"github.com/PaulChristophel/agartha/server/db"
-	model "github.com/PaulChristophel/agartha/server/model/salt"
+	"github.com/PaulChristophel/sylvite/server/db"
+	model "github.com/PaulChristophel/sylvite/server/model/salt"
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 )

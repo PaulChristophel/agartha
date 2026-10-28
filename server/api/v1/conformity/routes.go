@@ -1,8 +1,8 @@
 package conformity
 
 import (
-	get "github.com/PaulChristophel/agartha/server/api/v1/conformity/get"
-	post "github.com/PaulChristophel/agartha/server/api/v1/conformity/post"
+	get "github.com/PaulChristophel/sylvite/server/api/v1/conformity/get"
+	post "github.com/PaulChristophel/sylvite/server/api/v1/conformity/post"
 	"github.com/gin-gonic/gin"
 )
 

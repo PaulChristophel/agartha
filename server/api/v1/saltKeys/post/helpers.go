@@ -4,7 +4,7 @@ import (
 	"errors"
 	"net/http"
 
-	"github.com/PaulChristophel/agartha/server/httputil"
+	"github.com/PaulChristophel/sylvite/server/httputil"
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 )

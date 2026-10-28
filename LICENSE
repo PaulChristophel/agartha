@@ -662,12 +662,12 @@ For more information on this, and how to apply and follow the GNU AGPL, see
 
 ===========================================================================
 Below is a summary of the licensing used by external modules that are
-bundled with Agartha.
+bundled with Sylvite.
 
 Format: http://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
-Upstream-Name: agartha
+Upstream-Name: sylvite
 Upstream-Contact: Paul Christophel <kind.frog8344@fastmail.com>
-Source: https://github.com/PaulChristophel/agartha
+Source: https://github.com/PaulChristophel/sylvite
 
 Files: *
 Copyright: Paul Christophel  <kind.frog8344@fastmail.com>
@@ -769,7 +769,7 @@ On Debian systems, the full text of the Apache License, Version 2.0 can be
 found in the file
 `/usr/share/common-licenses/Apache-2.0'.
 
-Files: extras/auth/agartha.py
+Files: extras/auth/sylvite.py
 Copyright: 2014 SaltStack Team
 License: Apache-2.0
 Licensed under the Apache License, Version 2.0 (the "License");

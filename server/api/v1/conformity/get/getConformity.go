@@ -3,10 +3,10 @@ package conformity
 import (
 	"net/http"
 
-	"github.com/PaulChristophel/agartha/server/db"
-	"github.com/PaulChristophel/agartha/server/httputil"
-	"github.com/PaulChristophel/agartha/server/logger"
-	model "github.com/PaulChristophel/agartha/server/model/salt/view"
+	"github.com/PaulChristophel/sylvite/server/db"
+	"github.com/PaulChristophel/sylvite/server/httputil"
+	"github.com/PaulChristophel/sylvite/server/logger"
+	model "github.com/PaulChristophel/sylvite/server/model/salt/view"
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
 )

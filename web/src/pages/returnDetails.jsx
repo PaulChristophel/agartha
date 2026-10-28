@@ -10,7 +10,7 @@ export default function ReturnDetailsPage() {
   return (
     <>
       <Helmet>
-        <title> Return Details | Agartha </title>
+        <title> Return Details | Sylvite </title>
       </Helmet>
 
       <AuthWrapper>

@@ -1,7 +1,7 @@
 package jobs
 
 import (
-	"github.com/PaulChristophel/agartha/server/config"
+	"github.com/PaulChristophel/sylvite/server/config"
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 )

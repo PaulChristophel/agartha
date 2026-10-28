@@ -1,17 +1,17 @@
 # -*- coding: utf-8 -*-
 
 """
-Agartha authentication.
+Sylvite authentication.
 
 Provide authentication using Postgres.
 Use Returner database connection settings.
 
-Enable Agartha authentication.
+Enable Sylvite authentication.
 
 .. code-block:: yaml
 
     external_auth:
-      Agartha:
+      Sylvite:
         paul:
           - test.*
 
@@ -44,7 +44,7 @@ try:
 except ImportError:
     HAS_LDAP = False
 
-__virtualname__ = "agartha"
+__virtualname__ = "sylvite"
 
 
 def __virtual__():
@@ -776,7 +776,7 @@ def auth(username, password):
 
             result = cur.fetchone()
             if result:
-                log.debug("Agartha authentication successful.")
+                log.debug("Sylvite authentication successful.")
                 is_active, is_superuser = result
                 if not is_active:
                     log.debug("User failed is_active check.")
@@ -788,5 +788,5 @@ def auth(username, password):
                     return True
                 log.debug("Attempting ldap authorization.")
                 return _ldap_user(username)
-            log.debug("Agartha authentication failed.")
+            log.debug("Sylvite authentication failed.")
     return False

@@ -7,16 +7,16 @@ import (
 	"strings"
 	"time"
 
-	"github.com/PaulChristophel/agartha/server/httputil"
-	"github.com/PaulChristophel/agartha/server/logger"
+	"github.com/PaulChristophel/sylvite/server/httputil"
+	"github.com/PaulChristophel/sylvite/server/logger"
 
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
 )
 
 var (
-	Build       = "" // Set at compile time with -ldflags -X github.com/PaulChristophel/agartha/server/routes.Build=b6902e2846042d9d0c2ce27ca290ef54cc013ba8"
-	Version     = "" // Set at compile time with -ldflags -X github.com/PaulChristophel/agartha/server/routes.Version=3006.8.0+b6902e2"
+	Build       = "" // Set at compile time with -ldflags -X github.com/PaulChristophel/sylvite/server/routes.Build=b6902e2846042d9d0c2ce27ca290ef54cc013ba8"
+	Version     = "" // Set at compile time with -ldflags -X github.com/PaulChristophel/sylvite/server/routes.Version=3006.8.0+b6902e2"
 	CommitDate  = ""
 	CompileDate = ""
 	GoVersion   = ""
@@ -29,7 +29,7 @@ type VersionInfo struct {
 	CommitDate  *time.Time `mapstructure:"commit_time" json:"commit_time" example:"2024-07-18T19:51:41Z"`
 	GoVersion   string     `mapstructure:"go_version" json:"go_version" example:"go1.22.5"`
 	Platform    string     `mapstructure:"platform" json:"platform" example:"linux/amd64"`
-	Path        string     `mapstructure:"path" json:"path" example:"github.com/PaulChristophel/agartha"`
+	Path        string     `mapstructure:"path" json:"path" example:"github.com/PaulChristophel/sylvite"`
 }
 
 func ReadVersionInfo() (*VersionInfo, error) {

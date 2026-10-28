@@ -5,7 +5,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/PaulChristophel/agartha/server/model/custom"
+	"github.com/PaulChristophel/sylvite/server/model/custom"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 )

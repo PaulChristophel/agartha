@@ -4,10 +4,10 @@ import (
 	"errors"
 	"net/http"
 
-	"github.com/PaulChristophel/agartha/server/db"
-	"github.com/PaulChristophel/agartha/server/httputil"
-	custom "github.com/PaulChristophel/agartha/server/model/custom"
-	model "github.com/PaulChristophel/agartha/server/model/salt"
+	"github.com/PaulChristophel/sylvite/server/db"
+	"github.com/PaulChristophel/sylvite/server/httputil"
+	custom "github.com/PaulChristophel/sylvite/server/model/custom"
+	model "github.com/PaulChristophel/sylvite/server/model/salt"
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 )

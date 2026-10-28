@@ -1,6 +1,6 @@
-# Agartha web application
+# Sylvite web application
 
-This directory contains Agartha's React and Vite frontend. The production build is embedded in the Go server.
+This directory contains Sylvite's React and Vite frontend. The production build is embedded in the Go server.
 
 ## Development
 
@@ -16,7 +16,7 @@ Run the frontend development server:
 pnpm --dir web dev
 ```
 
-Vite proxies Agartha API, authentication, version, and documentation requests to the backend at `http://localhost:8080`.
+Vite proxies Sylvite API, authentication, version, and documentation requests to the backend at `http://localhost:8080`.
 
 ## Validation
 

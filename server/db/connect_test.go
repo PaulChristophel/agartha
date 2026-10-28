@@ -6,7 +6,7 @@ import (
 	"time"
 
 	"github.com/DATA-DOG/go-sqlmock"
-	"github.com/PaulChristophel/agartha/server/config"
+	"github.com/PaulChristophel/sylvite/server/config"
 	"github.com/stretchr/testify/require"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
@@ -16,9 +16,9 @@ func TestConnectToDatabase(t *testing.T) {
 	options := config.DBOptions{
 		Host:                "db",
 		Port:                5432,
-		User:                "agartha",
-		Password:            "agartha",
-		DBName:              "agartha",
+		User:                "sylvite",
+		Password:            "sylvite",
+		DBName:              "sylvite",
 		SSLMode:             "disable",
 		RetryAttempts:       3,
 		RetryInitialBackoff: time.Second,
@@ -61,9 +61,9 @@ func TestConnectToDatabaseReturnsErrorAfterConfiguredBackoff(t *testing.T) {
 	options := config.DBOptions{
 		Host:                "db",
 		Port:                5432,
-		User:                "agartha",
+		User:                "sylvite",
 		Password:            "not-a-placeholder",
-		DBName:              "agartha",
+		DBName:              "sylvite",
 		SSLMode:             "require",
 		RetryAttempts:       5,
 		RetryInitialBackoff: time.Second,

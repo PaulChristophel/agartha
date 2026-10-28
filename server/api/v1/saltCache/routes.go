@@ -3,10 +3,10 @@ package saltCache
 import (
 
 	// "strings"
-	delete "github.com/PaulChristophel/agartha/server/api/v1/saltCache/delete"
-	get "github.com/PaulChristophel/agartha/server/api/v1/saltCache/get"
-	post "github.com/PaulChristophel/agartha/server/api/v1/saltCache/post"
-	"github.com/PaulChristophel/agartha/server/config"
+	delete "github.com/PaulChristophel/sylvite/server/api/v1/saltCache/delete"
+	get "github.com/PaulChristophel/sylvite/server/api/v1/saltCache/get"
+	post "github.com/PaulChristophel/sylvite/server/api/v1/saltCache/post"
+	"github.com/PaulChristophel/sylvite/server/config"
 
 	"github.com/gin-gonic/gin"
 )

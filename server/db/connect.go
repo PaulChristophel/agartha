@@ -6,7 +6,7 @@ import (
 	"log"
 	"time"
 
-	"github.com/PaulChristophel/agartha/server/config"
+	"github.com/PaulChristophel/sylvite/server/config"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )

@@ -1,6 +1,6 @@
 package dto
 
-import model "github.com/PaulChristophel/agartha/server/model/salt"
+import model "github.com/PaulChristophel/sylvite/server/model/salt"
 
 // JIDPageResponse structures the paginated response for salt jid queries.
 type JIDPageResponse struct {

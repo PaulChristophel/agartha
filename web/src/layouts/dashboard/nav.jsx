@@ -7,7 +7,7 @@ import Drawer from '@mui/material/Drawer';
 import Divider from '@mui/material/Divider'; // Import Divider component
 // import Avatar from '@mui/material/Avatar';
 import { alpha } from '@mui/material/styles';
-// import Typography from '@mui/material/Typography';
+import Typography from '@mui/material/Typography';
 import ListItemButton from '@mui/material/ListItemButton';
 
 import { usePathname } from 'src/routes/hooks';
@@ -84,6 +84,12 @@ export default function Nav({ openNav, onCloseNav }) {
       }}
     >
       <Logo sx={{ mt: 3, ml: 4 }} />
+      <Box sx={{ mt: 2, px: 3 }}>
+        <Typography variant="h6">Sylvite</Typography>
+        <Typography variant="body2" color="text.secondary">
+          A Salt management console
+        </Typography>
+      </Box>
 
       {renderMenu}
 

@@ -1,19 +1,19 @@
 cache: pgjsonb
-cache.pgjsonb.dbname: 'agartha'
+cache.pgjsonb.dbname: 'sylvite'
 cache.pgjsonb.host: 'db'
-cache.pgjsonb.password: 'agartha'
+cache.pgjsonb.password: 'sylvite'
 cache.pgjsonb.port: 5432
-cache.pgjsonb.user: 'agartha'
+cache.pgjsonb.user: 'sylvite'
 event_return:
   - pgupsert
 master_job_cache: pgupsert
-returner.pgupsert.db: 'agartha'
+returner.pgupsert.db: 'sylvite'
 returner.pgupsert.host: 'db'
-returner.pgupsert.passwd: 'agartha'
+returner.pgupsert.passwd: 'sylvite'
 returner.pgupsert.port: 5432
-returner.pgupsert.user: 'agartha'
+returner.pgupsert.user: 'sylvite'
 external_auth:
-  agartha:
+  sylvite:
     megaman:
       - test.ping
       - minion\*:

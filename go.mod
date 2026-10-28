@@ -1,4 +1,4 @@
-module github.com/PaulChristophel/agartha
+module github.com/PaulChristophel/sylvite
 
 go 1.27
 

@@ -4,10 +4,10 @@ import (
 	"net/http"
 	"sync"
 
-	_ "github.com/PaulChristophel/agartha/server/httputil"
+	_ "github.com/PaulChristophel/sylvite/server/httputil"
 
-	"github.com/PaulChristophel/agartha/server/db"
-	"github.com/PaulChristophel/agartha/server/logger"
+	"github.com/PaulChristophel/sylvite/server/db"
+	"github.com/PaulChristophel/sylvite/server/logger"
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"

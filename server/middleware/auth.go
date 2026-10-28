@@ -8,8 +8,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/PaulChristophel/agartha/server/httputil"
-	model "github.com/PaulChristophel/agartha/server/model/agartha"
+	"github.com/PaulChristophel/sylvite/server/httputil"
+	model "github.com/PaulChristophel/sylvite/server/model/sylvite"
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v5"

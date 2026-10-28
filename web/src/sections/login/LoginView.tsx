@@ -159,9 +159,13 @@ const LoginView: React.FC = () => {
           }}
         >
           <Stack direction="row" alignItems="center" justifyContent="space-between">
-            <Typography variant="h4">Sign in to Agartha</Typography>
-            <img src="/assets/logo.svg" alt="Agartha logo" style={{ width: 96, height: 96 }} />
+            <Typography variant="h4">Sign in to Sylvite</Typography>
+            <img src="/assets/logo.svg" alt="Sylvite logo" style={{ width: 96, height: 96 }} />
           </Stack>
+
+          <Typography variant="subtitle1" sx={{ mt: 1, color: 'text.secondary' }}>
+            A Salt management console
+          </Typography>
 
           <Typography variant="body2" sx={{ mt: 2, mb: 5 }}>
             Don’t have a login?

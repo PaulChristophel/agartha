@@ -10,7 +10,7 @@ export default function AppPage() {
   return (
     <>
       <Helmet>
-        <title> Dashboard | Agartha </title>
+        <title> Dashboard | Sylvite </title>
       </Helmet>
       <AuthWrapper>
         <AppView />

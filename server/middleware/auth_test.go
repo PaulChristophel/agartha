@@ -8,7 +8,7 @@ import (
 	"time"
 
 	"github.com/DATA-DOG/go-sqlmock"
-	model "github.com/PaulChristophel/agartha/server/model/agartha"
+	model "github.com/PaulChristophel/sylvite/server/model/sylvite"
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-contrib/sessions/cookie"
 	"github.com/gin-gonic/gin"
@@ -72,7 +72,7 @@ func TestAuthRequiredAcceptsServerSideSession(t *testing.T) {
 	router := gin.New()
 	store := cookie.NewStore([]byte("01234567890123456789012345678901"))
 	store.Options(sessions.Options{Path: "/", HttpOnly: true, SameSite: http.SameSiteLaxMode})
-	router.Use(sessions.Sessions("agarthaAuthSession", store))
+	router.Use(sessions.Sessions("sylviteAuthSession", store))
 	router.GET("/login", func(c *gin.Context) {
 		session := sessions.Default(c)
 		session.Set("username", "alice")

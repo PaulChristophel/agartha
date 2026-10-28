@@ -23,7 +23,8 @@ const Logo = forwardRef(({ disabledLink = false, sx, ...other }, ref) => {
   const logo = (
     <Box
       component="img"
-      src="/favicon/favicon.svg"
+      src="/assets/logo.svg"
+      alt="Sylvite logo"
       sx={{ width: 40, height: 40, cursor: 'pointer', ...sx }}
     />
   );

@@ -1,9 +1,11 @@
-[![Pull Request Quality Gate](https://github.com/PaulChristophel/agartha/actions/workflows/ci.yaml/badge.svg)](https://github.com/PaulChristophel/agartha/actions/workflows/ci.yaml)
-[![Prepare and Publish Releases](https://github.com/PaulChristophel/agartha/actions/workflows/release.yml/badge.svg?branch=master)](https://github.com/PaulChristophel/agartha/actions/workflows/release.yml)
+[![Pull Request Quality Gate](https://github.com/PaulChristophel/sylvite/actions/workflows/ci.yaml/badge.svg)](https://github.com/PaulChristophel/sylvite/actions/workflows/ci.yaml)
+[![Prepare and Publish Releases](https://github.com/PaulChristophel/sylvite/actions/workflows/release.yml/badge.svg?branch=master)](https://github.com/PaulChristophel/sylvite/actions/workflows/release.yml)
 
-# Agartha
+# Sylvite
 
-Agartha is a web interface for [salt](https://github.com/saltstack/salt). The primary goal of this project is to provide a user-friendly interface for managing and interacting with job, event, minion, and return data, and offer a convenient interface to run salt commands.
+*A Salt management console*
+
+Sylvite is a web interface for [salt](https://github.com/saltstack/salt). The primary goal of this project is to provide a user-friendly interface for managing and interacting with job, event, minion, and return data, and offer a convenient interface to run salt commands.
 
 ## Features
 
@@ -26,13 +28,13 @@ Agartha is a web interface for [salt](https://github.com/saltstack/salt). The pr
 
 ## Installation from source
 
-To get started with Agartha, follow these steps:
+To get started with Sylvite, follow these steps:
 
 1. Clone the repository:
 
 ```bash
-git clone https://github.com/PaulChristophel/agartha.git
-cd agartha
+git clone https://github.com/PaulChristophel/sylvite.git
+cd sylvite
 ```
 
 2. Install dependencies:
@@ -57,18 +59,18 @@ ENV=debug make run
 Run the backend tests and frontend validation before submitting changes:
 
 ```bash
-env GOCACHE=/tmp/agartha-gocache go test ./...
+env GOCACHE=/tmp/sylvite-gocache go test ./...
 pnpm --dir web lint
 pnpm --dir web build
 ```
 
 ## Database migrations
 
-Agartha now uses [golang-migrate](https://github.com/golang-migrate/migrate) to manage database objects such as views, triggers, and materialized views. Running `make migrate` (or starting the server) automatically applies any pending SQL files stored under `server/db/migrations`. To add a new migration, create a matching pair of files following the `NNNN_description.up.sql` / `NNNN_description.down.sql` naming pattern in that directory and commit them alongside your feature.
+Sylvite now uses [golang-migrate](https://github.com/golang-migrate/migrate) to manage database objects such as views, triggers, and materialized views. Running `make migrate` (or starting the server) automatically applies any pending SQL files stored under `server/db/migrations`. To add a new migration, create a matching pair of files following the `NNNN_description.up.sql` / `NNNN_description.down.sql` naming pattern in that directory and commit them alongside your feature.
 
 ## Usage
 
-Once the application is running, open your web browser and navigate to http://localhost:8080 to access the Agartha interface. Log in with your credentials and start managing your Salt jobs and minions.
+Once the application is running, open your web browser and navigate to http://localhost:8080 to access the Sylvite interface. Log in with your credentials and start managing your Salt jobs and minions.
 
 ## Authorization
 
@@ -78,7 +80,7 @@ Local authentication validates passwords stored in `auth_user`; the former demon
 
 ## Releases
 
-Git tags are the source of truth for Agartha release versions. Pull requests
+Git tags are the source of truth for Sylvite release versions. Pull requests
 run the quality gate and build the debug image variants with symbols retained.
 Pull requests from branches in this repository also publish development images
 with immutable version/date/commit tags and movable `pr-<number>` tags. Forked
@@ -105,7 +107,7 @@ requests.
 
 ## Contributing
 
-We welcome contributions to Agartha! If you'd like to contribute, please follow these steps:
+We welcome contributions to Sylvite! If you'd like to contribute, please follow these steps:
 
 1. Fork the repository.
 2. Create a new branch: `git checkout -b feature/your-feature-name`.
@@ -116,4 +118,17 @@ We welcome contributions to Agartha! If you'd like to contribute, please follow 
 
 ## License
 
-Agartha is licensed under the AGPL-3.0 License. See the [LICENSE](./LICENSE) file for more information.
+Sylvite is licensed under the AGPL-3.0 License. See the [LICENSE](./LICENSE) file for more information.
+
+## Renaming an existing installation
+
+Sylvite was previously named Agartha. Update deployment references together:
+
+- The executable is now `sylvite`; container application paths use `/opt/sylvite`.
+- Configuration environment variables now use the `SYLVITE_` prefix.
+- System and user configuration directories are `/etc/sylvite/` and `$HOME/.sylvite/`.
+- The Salt authentication plugin is `extras/auth/sylvite.py`; configure its eauth name as `sylvite`.
+- Default database and user names are now `sylvite`. For an existing installation, explicitly configure the existing database name, user, and credentials to retain its data. Update Salt cache and returner connection settings consistently.
+- Image and repository references in this project now use `sylvite`; publishing images and renaming the hosted repository are separate deployment operations.
+
+The disposable migration test database remains named exactly `agartha_migration_test` to preserve its safety guard; its connection variable is `SYLVITE_TEST_DATABASE_URL`.

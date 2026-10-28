@@ -8,12 +8,12 @@ import (
 	"strings"
 	"time"
 
-	"github.com/PaulChristophel/agartha/server/api/validate"
-	"github.com/PaulChristophel/agartha/server/db"
-	"github.com/PaulChristophel/agartha/server/dto"
-	"github.com/PaulChristophel/agartha/server/httputil"
-	"github.com/PaulChristophel/agartha/server/logger"
-	model "github.com/PaulChristophel/agartha/server/model/salt"
+	"github.com/PaulChristophel/sylvite/server/api/validate"
+	"github.com/PaulChristophel/sylvite/server/db"
+	"github.com/PaulChristophel/sylvite/server/dto"
+	"github.com/PaulChristophel/sylvite/server/httputil"
+	"github.com/PaulChristophel/sylvite/server/logger"
+	model "github.com/PaulChristophel/sylvite/server/model/salt"
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
 )

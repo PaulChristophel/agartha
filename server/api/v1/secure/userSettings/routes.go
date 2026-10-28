@@ -1,7 +1,7 @@
 package userSettings
 
 import (
-	get "github.com/PaulChristophel/agartha/server/api/v1/secure/userSettings/get"
+	get "github.com/PaulChristophel/sylvite/server/api/v1/secure/userSettings/get"
 	"github.com/gin-gonic/gin"
 )
 

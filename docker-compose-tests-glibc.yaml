@@ -37,13 +37,13 @@ services:
     image: postgres:alpine
     restart: always
     environment:
-      POSTGRES_DB: agartha
-      POSTGRES_USER: agartha
-      POSTGRES_PASSWORD: agartha
+      POSTGRES_DB: sylvite
+      POSTGRES_USER: sylvite
+      POSTGRES_PASSWORD: sylvite
     ports:
       - "5432:5432"
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U agartha -d agartha -h 127.0.0.1 -p 5432"]
+      test: ["CMD-SHELL", "pg_isready -U sylvite -d sylvite -h 127.0.0.1 -p 5432"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -130,11 +130,11 @@ services:
       - .:/app
     working_dir: /app
     environment:
-      AGARTHA_DB_DB_BACKEND: agartha
-      AGARTHA_DB_DB_NAME: agartha
-      AGARTHA_DB_USER: agartha
-      AGARTHA_DB_PASSWORD: agartha
-      AGARTHA_DB_HOST: db
-      AGARTHA_DB_PORT: 5432
-      AGARTHA_DB_SSLMODE: disable
+      SYLVITE_DB_DB_BACKEND: sylvite
+      SYLVITE_DB_DB_NAME: sylvite
+      SYLVITE_DB_USER: sylvite
+      SYLVITE_DB_PASSWORD: sylvite
+      SYLVITE_DB_HOST: db
+      SYLVITE_DB_PORT: 5432
+      SYLVITE_DB_SSLMODE: disable
     command: sh -c "make test-ci"

@@ -6,9 +6,9 @@ import (
 	"net/url"
 	"strings"
 
-	"github.com/PaulChristophel/agartha/server/db"
-	"github.com/PaulChristophel/agartha/server/httputil"
-	model "github.com/PaulChristophel/agartha/server/model/salt"
+	"github.com/PaulChristophel/sylvite/server/db"
+	"github.com/PaulChristophel/sylvite/server/httputil"
+	model "github.com/PaulChristophel/sylvite/server/model/salt"
 	"github.com/gin-gonic/gin"
 )
 

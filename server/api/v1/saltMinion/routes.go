@@ -4,8 +4,8 @@ import (
 	"sync/atomic"
 
 	// "strings"
-	get "github.com/PaulChristophel/agartha/server/api/v1/saltMinion/get"
-	post "github.com/PaulChristophel/agartha/server/api/v1/saltMinion/post"
+	get "github.com/PaulChristophel/sylvite/server/api/v1/saltMinion/get"
+	post "github.com/PaulChristophel/sylvite/server/api/v1/saltMinion/post"
 
 	"github.com/gin-gonic/gin"
 )

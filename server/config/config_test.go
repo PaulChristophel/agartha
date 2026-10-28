@@ -114,12 +114,12 @@ func TestValidateForServeRejectsInvalidTrustedProxy(t *testing.T) {
 }
 
 func TestInitConfigDecodesDurationAndAuthMethodEnvironmentValues(t *testing.T) {
-	originalConfig := AgarthaConfig
-	t.Cleanup(func() { AgarthaConfig = originalConfig })
-	t.Setenv("AGARTHA_HTTP_READ_TIMEOUT", "17s")
-	t.Setenv("AGARTHA_AUTH_METHODS", "local,ldap")
+	originalConfig := SylviteConfig
+	t.Cleanup(func() { SylviteConfig = originalConfig })
+	t.Setenv("SYLVITE_HTTP_READ_TIMEOUT", "17s")
+	t.Setenv("SYLVITE_AUTH_METHODS", "local,ldap")
 
 	require.NoError(t, InitConfig())
-	require.Equal(t, 17*time.Second, AgarthaConfig.HTTP.ReadTimeout)
-	require.Equal(t, []string{"local", "ldap"}, AgarthaConfig.Auth.Methods)
+	require.Equal(t, 17*time.Second, SylviteConfig.HTTP.ReadTimeout)
+	require.Equal(t, []string{"local", "ldap"}, SylviteConfig.Auth.Methods)
 }

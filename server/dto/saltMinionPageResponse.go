@@ -1,6 +1,6 @@
 package dto
 
-import model "github.com/PaulChristophel/agartha/server/model/salt/view"
+import model "github.com/PaulChristophel/sylvite/server/model/salt/view"
 
 type SaltMinionPageResponse struct {
 	Paging  PageResponse       `json:"paging"`

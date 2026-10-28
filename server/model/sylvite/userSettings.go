@@ -5,7 +5,7 @@ import (
 	"log"
 	"time"
 
-	"github.com/PaulChristophel/agartha/server/model/custom"
+	"github.com/PaulChristophel/sylvite/server/model/custom"
 )
 
 // UserSettings represents the settings and permissions for a user.

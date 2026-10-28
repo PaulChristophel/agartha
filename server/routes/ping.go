@@ -5,9 +5,9 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/PaulChristophel/agartha/server/db"
+	"github.com/PaulChristophel/sylvite/server/db"
 	// So swagger can document the function
-	_ "github.com/PaulChristophel/agartha/server/httputil"
+	_ "github.com/PaulChristophel/sylvite/server/httputil"
 	"github.com/gin-gonic/gin"
 )
 

@@ -1,7 +1,7 @@
 package validate
 
 import (
-	get "github.com/PaulChristophel/agartha/server/api/v1/validate/get"
+	get "github.com/PaulChristophel/sylvite/server/api/v1/validate/get"
 	"github.com/gin-gonic/gin"
 )
 

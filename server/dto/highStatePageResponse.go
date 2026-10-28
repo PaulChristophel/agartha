@@ -1,6 +1,6 @@
 package dto
 
-import model "github.com/PaulChristophel/agartha/server/model/salt/view"
+import model "github.com/PaulChristophel/sylvite/server/model/salt/view"
 
 // HighStatePageResponse structures the paginated response for salt highstate queries.
 type HighStatePageResponse struct {

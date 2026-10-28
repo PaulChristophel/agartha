@@ -3,7 +3,7 @@ package model
 import (
 	"time"
 
-	"github.com/PaulChristophel/agartha/server/model/custom"
+	"github.com/PaulChristophel/sylvite/server/model/custom"
 )
 
 type JID struct {

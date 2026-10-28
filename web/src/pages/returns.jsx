@@ -10,7 +10,7 @@ export default function ReturnsPage() {
   return (
     <>
       <Helmet>
-        <title> Salt Returns | Agartha </title>
+        <title> Salt Returns | Sylvite </title>
       </Helmet>
 
       <AuthWrapper>

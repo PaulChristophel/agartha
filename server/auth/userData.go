@@ -10,9 +10,9 @@ import (
 	"net/url"
 	"strings"
 
-	"github.com/PaulChristophel/agartha/server/db"
-	"github.com/PaulChristophel/agartha/server/logger"
-	model "github.com/PaulChristophel/agartha/server/model/agartha"
+	"github.com/PaulChristophel/sylvite/server/db"
+	"github.com/PaulChristophel/sylvite/server/logger"
+	model "github.com/PaulChristophel/sylvite/server/model/sylvite"
 
 	"github.com/gin-gonic/gin"
 	"github.com/go-ldap/ldap/v3"

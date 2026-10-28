@@ -9,7 +9,7 @@ export default function MinionsPage() {
   return (
     <>
       <Helmet>
-        <title> Minions | Agartha </title>
+        <title> Minions | Sylvite </title>
       </Helmet>
 
       <AuthWrapper>

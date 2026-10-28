@@ -6,10 +6,10 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/PaulChristophel/agartha/server/db"
-	"github.com/PaulChristophel/agartha/server/dto"
-	"github.com/PaulChristophel/agartha/server/httputil"
-	"github.com/PaulChristophel/agartha/server/logger"
+	"github.com/PaulChristophel/sylvite/server/db"
+	"github.com/PaulChristophel/sylvite/server/dto"
+	"github.com/PaulChristophel/sylvite/server/httputil"
+	"github.com/PaulChristophel/sylvite/server/logger"
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
 )

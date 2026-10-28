@@ -1,4 +1,4 @@
-BINARY_NAME = agartha
+BINARY_NAME = sylvite
 OS := $(shell uname -s)
 src_dir = $(CURDIR)
 build_dir = $(CURDIR)/bin
@@ -8,7 +8,7 @@ release_dir = $(build_dir)/release
 
 COMPILE_DATE :=$(or $(GITHUB_DATE),$(shell date -u +"%Y-%m-%dT%H:%M:%SZ"))
 DATE := $(shell TZ=UTC0 git show --quiet --date='format-local:%Y%m%d%H%M%S' --format="%cd" | tail -n 1)
-PREFIX = github.com/PaulChristophel/agartha
+PREFIX = github.com/PaulChristophel/sylvite
 BUILD := $(or $(SHORT_SHA),$(shell git rev-parse --short=12 HEAD))
 FULLBUILD := $(or $(GITHUB_SHA),$(shell git rev-parse HEAD))
 VERSION := $(or $(GITHUB_VERSION),0.0.0-dev.$(BUILD))

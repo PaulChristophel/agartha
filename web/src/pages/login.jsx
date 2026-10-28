@@ -8,7 +8,7 @@ export default function LoginPage() {
   return (
     <>
       <Helmet>
-        <title> Login | Agartha </title>
+        <title> Login | Sylvite </title>
       </Helmet>
 
       <LoginView />

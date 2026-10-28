@@ -19,7 +19,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-const migrationTestDatabaseURL = "AGARTHA_TEST_DATABASE_URL"
+const migrationTestDatabaseURL = "SYLVITE_TEST_DATABASE_URL"
 
 type minionFixture struct {
 	ID     string

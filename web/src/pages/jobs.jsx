@@ -10,7 +10,7 @@ export default function JobsPage() {
   return (
     <>
       <Helmet>
-        <title> Jobs | Agartha </title>
+        <title> Jobs | Sylvite </title>
       </Helmet>
 
       <AuthWrapper>

@@ -1,7 +1,7 @@
 package authUser
 
 import (
-	get "github.com/PaulChristophel/agartha/server/api/v1/secure/authUser/get"
+	get "github.com/PaulChristophel/sylvite/server/api/v1/secure/authUser/get"
 	"github.com/gin-gonic/gin"
 )
 

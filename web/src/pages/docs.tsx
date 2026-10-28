@@ -14,7 +14,7 @@ export default function DocsPage() {
   return (
     <>
       <Helmet>
-        <title> Documentation | Agartha </title>
+        <title> Documentation | Sylvite </title>
       </Helmet>
       <div>Redirecting to Documentation...</div>
     </>

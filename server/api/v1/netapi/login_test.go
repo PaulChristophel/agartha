@@ -6,7 +6,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/PaulChristophel/agartha/server/logger"
+	"github.com/PaulChristophel/sylvite/server/logger"
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-contrib/sessions/cookie"
 	"github.com/gin-gonic/gin"
@@ -19,7 +19,7 @@ func TestDecodeTokenAndCreateCredentialsUsesServerSessionToken(t *testing.T) {
 	require.NoError(t, err)
 	router := gin.New()
 	router.Use(sessions.Sessions(
-		"agarthaAuthSession",
+		"sylviteAuthSession",
 		cookie.NewStore([]byte("01234567890123456789012345678901")),
 	))
 	router.GET("/seed", func(c *gin.Context) {
@@ -52,5 +52,5 @@ func TestDecodeTokenAndCreateCredentialsUsesServerSessionToken(t *testing.T) {
 	router.ServeHTTP(response, request)
 
 	require.Equal(t, http.StatusOK, response.Code)
-	require.JSONEq(t, `{"username":"alice","password":"Bearer server-side-token","eauth":"agartha"}`, response.Body.String())
+	require.JSONEq(t, `{"username":"alice","password":"Bearer server-side-token","eauth":"sylvite"}`, response.Body.String())
 }

@@ -1,6 +1,6 @@
 package saltCache
 
-import "github.com/PaulChristophel/agartha/server/config"
+import "github.com/PaulChristophel/sylvite/server/config"
 
 var table string
 

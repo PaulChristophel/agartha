@@ -1,5 +1,5 @@
 {
-  "image": "docker.io/pcm0/agartha",
+  "image": "docker.io/pcm0/sylvite",
   "platform": "linux/amd64",
   "variants": [
     {

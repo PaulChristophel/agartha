@@ -120,7 +120,7 @@ const StatusWidget: React.FC<StatusWidgetProps> = ({ sx, ...other }) => {
                   </TableCell>
                 </TableRow>
                 <TableRow>
-                  <TableCell align="left">Agartha</TableCell>
+                  <TableCell align="left">Sylvite</TableCell>
                   <TableCell align="right">{Version}</TableCell>
                 </TableRow>
                 <TableRow>

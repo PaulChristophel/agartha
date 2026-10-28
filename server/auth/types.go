@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/PaulChristophel/agartha/server/config"
+	"github.com/PaulChristophel/sylvite/server/config"
 	"github.com/gin-contrib/sessions"
 	"github.com/go-ldap/ldap/v3"
 )

@@ -14,7 +14,7 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-const envVarPrefix = "agartha"
+const envVarPrefix = "sylvite"
 
 type Config struct {
 	HTTP HTTPOptions `mapstructure:"http" yaml:"http"`
@@ -50,8 +50,8 @@ func NewConfig() *Config {
 		},
 		DB: DBOptions{
 			Host:                "localhost",
-			DBName:              "agartha",
-			User:                "agartha",
+			DBName:              "sylvite",
+			User:                "sylvite",
 			Password:            "password",
 			Port:                5432,
 			SSLMode:             "disable",
@@ -72,7 +72,7 @@ func NewConfig() *Config {
 		Salt: SaltOptions{
 			URL:         "",
 			ExternalURL: "",
-			Auth:        "agartha",
+			Auth:        "sylvite",
 			Insecure:    false,
 		},
 		SAML: SAMLOptions{
@@ -85,7 +85,7 @@ func NewConfig() *Config {
 		},
 		CAS: CASOptions{
 			Server:       "https://cas.example.com",
-			ServiceURL:   "http://agartha.example.com/cas",
+			ServiceURL:   "http://sylvite.example.com/cas",
 			ValidatePath: "/serviceValidate",
 			LoginPath:    "/login",
 			LogoutPath:   "/logout",
@@ -286,7 +286,7 @@ func isExampleHost(host string) bool {
 	return host == "example.com" || strings.HasSuffix(host, ".example.com")
 }
 
-var AgarthaConfig *Config
+var SylviteConfig *Config
 
 func InitConfig() error {
 	v := viper.New()
@@ -302,8 +302,8 @@ func InitConfig() error {
 	}
 
 	v.SetConfigName("config")          // name of config file (without extension)
-	v.AddConfigPath("/etc/agartha/")   // path to look for the config file in
-	v.AddConfigPath("$HOME/.agartha/") // call multiple times to add many search paths
+	v.AddConfigPath("/etc/sylvite/")   // path to look for the config file in
+	v.AddConfigPath("$HOME/.sylvite/") // call multiple times to add many search paths
 	v.AddConfigPath(".")               // optionally look for config in the working directory
 
 	if err := v.MergeInConfig(); err != nil {
@@ -322,6 +322,6 @@ func InitConfig() error {
 		v.Set("ldap.start_tls", false)
 	}
 
-	AgarthaConfig = &Config{}
-	return v.Unmarshal(AgarthaConfig)
+	SylviteConfig = &Config{}
+	return v.Unmarshal(SylviteConfig)
 }
